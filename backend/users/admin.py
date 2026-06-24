@@ -1,6 +1,9 @@
 from django import forms
 from django.contrib import admin
+from django.contrib.admin.sites import NotRegistered
 from django.contrib.admin.widgets import FilteredSelectMultiple
+from django.contrib.auth import get_user_model
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
 from .models import (
     Permission,
@@ -9,6 +12,8 @@ from .models import (
     UserPermissionOverride,
     UserProfile,
 )
+
+User = get_user_model()
 
 
 class RoleAdminForm(forms.ModelForm):
@@ -62,6 +67,81 @@ class RoleAdminForm(forms.ModelForm):
         ).delete()
 
 
+class UserProfileInline(admin.StackedInline):
+    model = UserProfile
+    can_delete = False
+    extra = 0
+    max_num = 1
+    fields = (
+        "role",
+        "department",
+        "email_notifications_enabled",
+        "avatar",
+    )
+
+
+try:
+    admin.site.unregister(User)
+except NotRegistered:
+    pass
+
+
+@admin.register(User)
+class UserAdmin(DjangoUserAdmin):
+    inlines = (UserProfileInline,)
+    list_display = (
+        "username",
+        "email",
+        "full_name",
+        "profile_role",
+        "profile_department",
+        "is_active",
+        "date_joined",
+    )
+    search_fields = (
+        "username",
+        "first_name",
+        "last_name",
+        "email",
+    )
+    list_filter = (
+        "profile__role",
+        "profile__department",
+        "is_active",
+    )
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("profile__role", "profile__department")
+
+    def get_inline_instances(self, request, obj=None):
+        if obj is None:
+            return []
+        return super().get_inline_instances(request, obj)
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        UserProfile.objects.get_or_create(user=obj)
+
+    @admin.display(description="Имя и фамилия", ordering="first_name")
+    def full_name(self, obj):
+        return obj.get_full_name()
+
+    @admin.display(description="Роль", ordering="profile__role__name")
+    def profile_role(self, obj):
+        try:
+            return obj.profile.role
+        except UserProfile.DoesNotExist:
+            return None
+
+    @admin.display(description="Отдел", ordering="profile__department__name")
+    def profile_department(self, obj):
+        try:
+            return obj.profile.department
+        except UserProfile.DoesNotExist:
+            return None
+
+
 @admin.register(Role)
 class RoleAdmin(admin.ModelAdmin):
     form = RoleAdminForm
@@ -112,6 +192,7 @@ class UserProfileAdmin(admin.ModelAdmin):
     list_display = (
         "user",
         "role",
+        "department",
         "email_notifications_enabled",
         "created_at",
         "updated_at",
@@ -119,6 +200,7 @@ class UserProfileAdmin(admin.ModelAdmin):
 
     list_filter = (
         "role",
+        "department",
         "email_notifications_enabled",
         "created_at",
         "updated_at",
@@ -131,4 +213,6 @@ class UserProfileAdmin(admin.ModelAdmin):
         "user__last_name",
         "role__code",
         "role__name",
+        "department__code",
+        "department__name",
     )

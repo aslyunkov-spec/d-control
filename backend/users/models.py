@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from departments.models import Department
 
 
 class Role(models.Model):
@@ -117,6 +118,14 @@ class UserProfile(models.Model):
         blank=True,
     )
 
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.PROTECT,
+        related_name="user_profiles",
+        verbose_name="Отдел",
+        null=True,
+        blank=True,
+    )
     avatar = models.ImageField(
         "Аватар",
         upload_to="avatars/",
