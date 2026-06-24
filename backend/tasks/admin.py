@@ -7,6 +7,7 @@ from .models import (
     TaskAssignment,
     TaskComment,
     TaskFile,
+    TaskHistory,
     TaskStatus,
 )
 
@@ -63,6 +64,28 @@ class TaskFileInline(admin.TabularInline):
     )
 
 
+class TaskHistoryInline(admin.TabularInline):
+    model = TaskHistory
+    extra = 0
+    can_delete = False
+    fields = (
+        "created_at",
+        "user",
+        "event_type",
+        "description",
+    )
+    readonly_fields = fields
+    ordering = (
+        "-created_at",
+    )
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(TaskStatus)
 class TaskStatusAdmin(admin.ModelAdmin):
     list_display = (
@@ -114,6 +137,7 @@ class TaskAdmin(admin.ModelAdmin):
         TaskAssignmentInline,
         TaskCommentInline,
         TaskFileInline,
+        TaskHistoryInline,
     )
     list_display = (
         "number",
@@ -336,3 +360,54 @@ class TaskFileAdmin(admin.ModelAdmin):
         "task",
         "uploaded_by",
     )
+
+
+@admin.register(TaskHistory)
+class TaskHistoryAdmin(admin.ModelAdmin):
+    list_display = (
+        "task",
+        "user",
+        "event_type",
+        "short_description",
+        "created_at",
+    )
+    list_filter = (
+        "event_type",
+        "created_at",
+    )
+    search_fields = (
+        "task__number",
+        "task__title",
+        "user__username",
+        "user__email",
+        "user__first_name",
+        "user__last_name",
+        "description",
+    )
+    readonly_fields = (
+        "task",
+        "user",
+        "event_type",
+        "description",
+        "created_at",
+    )
+    autocomplete_fields = (
+        "task",
+        "user",
+    )
+    list_select_related = (
+        "task",
+        "user",
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    @admin.display(description="Описание")
+    def short_description(self, obj):
+        if len(obj.description) <= 80:
+            return obj.description
+        return f"{obj.description[:77]}..."

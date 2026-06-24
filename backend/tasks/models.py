@@ -118,6 +118,19 @@ class Task(models.Model):
     def __str__(self):
         return f"{self.number} — {self.title}"
 
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+
+        if is_new:
+            TaskHistory.objects.create(
+                task=self,
+                user=self.created_by,
+                event_type=TaskHistory.EVENT_CREATED,
+                description=f"Задача {self.number} создана.",
+            )
+
+
 class TaskAssignment(models.Model):
     STATUS_ASSIGNED = "assigned"
     STATUS_IN_PROGRESS = "in_progress"
@@ -162,6 +175,7 @@ class TaskAssignment(models.Model):
     def __str__(self):
         return f"{self.task} → {self.user}"
 
+
 class TaskComment(models.Model):
     task = models.ForeignKey(
         Task,
@@ -186,6 +200,18 @@ class TaskComment(models.Model):
 
     def __str__(self):
         return f"{self.task.number} — {self.author}"
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+
+        if is_new:
+            TaskHistory.objects.create(
+                task=self.task,
+                user=self.author,
+                event_type=TaskHistory.EVENT_COMMENTED,
+                description="Добавлен комментарий.",
+            )
 
 
 class TaskFile(models.Model):
@@ -215,3 +241,67 @@ class TaskFile(models.Model):
 
     def __str__(self):
         return self.original_name
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+
+        if is_new:
+            TaskHistory.objects.create(
+                task=self.task,
+                user=self.uploaded_by,
+                event_type=TaskHistory.EVENT_FILE_UPLOADED,
+                description=f"Загружен файл: {self.original_name}.",
+            )
+
+
+class TaskHistory(models.Model):
+    EVENT_CREATED = "created"
+    EVENT_UPDATED = "updated"
+    EVENT_STATUS_CHANGED = "status_changed"
+    EVENT_ASSIGNED = "assigned"
+    EVENT_UNASSIGNED = "unassigned"
+    EVENT_COMMENTED = "commented"
+    EVENT_FILE_UPLOADED = "file_uploaded"
+    EVENT_COMPLETED = "completed"
+    EVENT_ARCHIVED = "archived"
+
+    EVENT_TYPE_CHOICES = [
+        (EVENT_CREATED, "Задача создана"),
+        (EVENT_UPDATED, "Задача изменена"),
+        (EVENT_STATUS_CHANGED, "Изменён статус"),
+        (EVENT_ASSIGNED, "Назначен исполнитель"),
+        (EVENT_UNASSIGNED, "Снят исполнитель"),
+        (EVENT_COMMENTED, "Добавлен комментарий"),
+        (EVENT_FILE_UPLOADED, "Загружен файл"),
+        (EVENT_COMPLETED, "Задача выполнена"),
+        (EVENT_ARCHIVED, "Задача перенесена в архив"),
+    ]
+
+    task = models.ForeignKey(
+        Task,
+        on_delete=models.CASCADE,
+        related_name="history_events",
+        verbose_name="Задача",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="task_history_events",
+        verbose_name="Пользователь",
+    )
+    event_type = models.CharField(
+        "Тип события",
+        max_length=30,
+        choices=EVENT_TYPE_CHOICES,
+    )
+    description = models.TextField("Описание")
+    created_at = models.DateTimeField("Дата события", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Событие задачи"
+        verbose_name_plural = "История задач"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.task.number} — {self.get_event_type_display()}"
