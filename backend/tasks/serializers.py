@@ -5,6 +5,7 @@ from .models import Task, TaskComment, TaskFile, TaskHistory
 
 class TaskSerializer(serializers.ModelSerializer):
     status = serializers.StringRelatedField()
+    status_system_type = serializers.CharField(source="status.system_type", read_only=True)
     priority = serializers.StringRelatedField()
     department = serializers.StringRelatedField()
     column = serializers.IntegerField(source="column_id", read_only=True)
@@ -16,6 +17,7 @@ class TaskSerializer(serializers.ModelSerializer):
             "number",
             "title",
             "status",
+            "status_system_type",
             "priority",
             "department",
             "column",
