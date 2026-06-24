@@ -4,6 +4,31 @@ from django.conf import settings
 from departments.models import Department, DepartmentColumn
 
 
+COMPLETED_STATUS_CODES = {"completed", "done"}
+COMPLETED_STATUS_NAMES = {"выполнено", "завершено"}
+
+
+def is_completed_status(status):
+    if status is None:
+        return False
+
+    code = (status.code or "").strip().lower()
+    name = (status.name or "").strip().lower()
+
+    return (
+        status.system_type == TaskStatus.SYSTEM_COMPLETED
+        or code in COMPLETED_STATUS_CODES
+        or name in COMPLETED_STATUS_NAMES
+    )
+
+
+def user_display_name(user):
+    full_name = user.get_full_name()
+    if full_name:
+        return full_name
+    return user.get_username()
+
+
 class TaskStatus(models.Model):
     SYSTEM_ACTIVE = "active"
     SYSTEM_DEFERRED = "deferred"
@@ -120,6 +145,18 @@ class Task(models.Model):
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
+        update_fields = kwargs.get("update_fields")
+        track_status = not is_new and (
+            update_fields is None
+            or "status" in update_fields
+            or "status_id" in update_fields
+        )
+        old_status = None
+
+        if track_status:
+            old_task = Task.objects.select_related("status").get(pk=self.pk)
+            old_status = old_task.status
+
         super().save(*args, **kwargs)
 
         if is_new:
@@ -129,6 +166,25 @@ class Task(models.Model):
                 event_type=TaskHistory.EVENT_CREATED,
                 description=f"Задача {self.number} создана.",
             )
+            return
+
+        if track_status and old_status and old_status.pk != self.status_id:
+            TaskHistory.objects.create(
+                task=self,
+                user=self.created_by,
+                event_type=TaskHistory.EVENT_STATUS_CHANGED,
+                description=(
+                    f"Статус изменён: {old_status.name} → {self.status.name}."
+                ),
+            )
+
+            if is_completed_status(self.status):
+                TaskHistory.objects.create(
+                    task=self,
+                    user=self.created_by,
+                    event_type=TaskHistory.EVENT_COMPLETED,
+                    description=f"Задача {self.number} отмечена выполненной.",
+                )
 
 
 class TaskAssignment(models.Model):
@@ -174,6 +230,32 @@ class TaskAssignment(models.Model):
 
     def __str__(self):
         return f"{self.task} → {self.user}"
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+
+        if is_new:
+            TaskHistory.objects.create(
+                task=self.task,
+                user=self.task.created_by,
+                event_type=TaskHistory.EVENT_ASSIGNED,
+                description=f"Назначен исполнитель: {user_display_name(self.user)}.",
+            )
+
+    def delete(self, *args, **kwargs):
+        task = self.task
+        assigned_user_name = user_display_name(self.user)
+        history_user = task.created_by
+
+        super().delete(*args, **kwargs)
+
+        TaskHistory.objects.create(
+            task=task,
+            user=history_user,
+            event_type=TaskHistory.EVENT_UNASSIGNED,
+            description=f"Снят исполнитель: {assigned_user_name}.",
+        )
 
 
 class TaskComment(models.Model):
