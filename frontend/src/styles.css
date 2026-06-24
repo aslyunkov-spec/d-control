@@ -25,6 +25,17 @@ select {
   padding: 24px;
 }
 
+.kanban-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(450px, 500px);
+  gap: 24px;
+  align-items: start;
+}
+
+.kanban-main {
+  min-width: 0;
+}
+
 .page-header {
   display: flex;
   align-items: center;
@@ -214,22 +225,18 @@ h1 {
   color: #b42318;
   font-weight: 600;
 }
-.drawer-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  display: flex;
-  justify-content: flex-end;
-  background: rgb(16 24 40 / 32%);
-}
 
 .task-drawer {
+  position: sticky;
+  top: 24px;
   display: flex;
   flex-direction: column;
-  width: min(500px, 100vw);
-  height: 100vh;
+  width: 100%;
+  height: calc(100vh - 48px);
+  border: 1px solid #d7dde5;
+  border-radius: 8px;
   background: #ffffff;
-  box-shadow: -12px 0 28px rgb(16 24 40 / 18%);
+  box-shadow: 0 4px 16px rgb(16 24 40 / 8%);
 }
 
 .task-drawer__header {
@@ -332,4 +339,34 @@ h1 {
 
 .drawer-empty {
   margin-bottom: 0;
+}
+.drawer-placeholder {
+  display: grid;
+  align-content: center;
+  min-height: 220px;
+  color: #667085;
+}
+
+.drawer-placeholder h3 {
+  margin-bottom: 8px;
+  color: #1d2430;
+}
+
+@media (max-width: 1100px) {
+  .kanban-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .task-drawer {
+  position: sticky;
+  top: 24px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: calc(100vh - 48px);
+  border: 1px solid #d7dde5;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgb(16 24 40 / 8%);
+}
 }

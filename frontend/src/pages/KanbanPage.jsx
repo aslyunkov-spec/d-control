@@ -135,7 +135,6 @@ export function KanbanPage() {
   }, [columns, tasks]);
 
   async function handleOpenTask(task) {
-    setSelectedTask(null);
     setTaskError("");
     setIsTaskLoading(true);
 
@@ -157,62 +156,66 @@ export function KanbanPage() {
 
   return (
     <main className="kanban-page">
-      <header className="page-header">
-        <div>
-          <p className="eyebrow">D-Control</p>
-          <h1>Kanban</h1>
+      <div className="kanban-workspace">
+        <div className="kanban-main">
+          <header className="page-header">
+            <div>
+              <p className="eyebrow">D-Control</p>
+              <h1>Kanban</h1>
+            </div>
+          </header>
+
+          <section className="toolbar" aria-label="Фильтры доски">
+            {isDepartmentsLoading ? (
+              <span className="muted">Загрузка отделов...</span>
+            ) : (
+              <DepartmentSelector
+                departments={departments}
+                selectedDepartmentId={selectedDepartmentId}
+                onChange={setSelectedDepartmentId}
+              />
+            )}
+          </section>
+
+          {error && <p className="error-message">{error}</p>}
+
+          <section className="board-shell" aria-label="Доска отдела">
+            <div className="board-header">
+              <div>
+                <p className="eyebrow">Отдел</p>
+                <h2>{selectedDepartment ? selectedDepartment.name : "Отдел не выбран"}</h2>
+              </div>
+              {isBoardLoading && <span className="muted">Загрузка доски...</span>}
+            </div>
+
+            <div className="kanban-board">
+              {columns.map((column) => (
+                <KanbanColumn
+                  key={column.id}
+                  title={column.name}
+                  tasks={tasksByColumn.groupedTasks.get(String(column.id)) || []}
+                  onOpenTask={handleOpenTask}
+                />
+              ))}
+
+              {tasksByColumn.withoutColumn.length > 0 && (
+                <KanbanColumn
+                  title="Без колонки"
+                  tasks={tasksByColumn.withoutColumn}
+                  onOpenTask={handleOpenTask}
+                />
+              )}
+            </div>
+          </section>
         </div>
-      </header>
 
-      <section className="toolbar" aria-label="Фильтры доски">
-        {isDepartmentsLoading ? (
-          <span className="muted">Загрузка отделов...</span>
-        ) : (
-          <DepartmentSelector
-            departments={departments}
-            selectedDepartmentId={selectedDepartmentId}
-            onChange={setSelectedDepartmentId}
-          />
-        )}
-      </section>
-
-      {error && <p className="error-message">{error}</p>}
-
-      <section className="board-shell" aria-label="Доска отдела">
-        <div className="board-header">
-          <div>
-            <p className="eyebrow">Отдел</p>
-            <h2>{selectedDepartment ? selectedDepartment.name : "Отдел не выбран"}</h2>
-          </div>
-          {isBoardLoading && <span className="muted">Загрузка доски...</span>}
-        </div>
-
-        <div className="kanban-board">
-          {columns.map((column) => (
-            <KanbanColumn
-              key={column.id}
-              title={column.name}
-              tasks={tasksByColumn.groupedTasks.get(String(column.id)) || []}
-              onOpenTask={handleOpenTask}
-            />
-          ))}
-
-          {tasksByColumn.withoutColumn.length > 0 && (
-            <KanbanColumn
-              title="Без колонки"
-              tasks={tasksByColumn.withoutColumn}
-              onOpenTask={handleOpenTask}
-            />
-          )}
-        </div>
-      </section>
-
-      <TaskDetailsDrawer
-        task={selectedTask}
-        isLoading={isTaskLoading}
-        error={taskError}
-        onClose={handleCloseTask}
-      />
+        <TaskDetailsDrawer
+          task={selectedTask}
+          isLoading={isTaskLoading}
+          error={taskError}
+          onClose={handleCloseTask}
+        />
+      </div>
     </main>
   );
 }
