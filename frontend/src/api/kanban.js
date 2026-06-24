@@ -11,3 +11,7 @@ export function getDepartmentColumns(departmentId) {
 export function getTasksByDepartment(departmentId) {
   return apiRequest(`/api/tasks/?department=${departmentId}`);
 }
+
+export function getTaskDetails(taskId) {
+  return apiRequest(`/api/tasks/${taskId}/`);
+}

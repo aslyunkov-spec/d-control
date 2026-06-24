@@ -1,8 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { getDepartmentColumns, getDepartments, getTasksByDepartment } from "../api/kanban";
+import {
+  getDepartmentColumns,
+  getDepartments,
+  getTaskDetails,
+  getTasksByDepartment,
+} from "../api/kanban";
 import { DepartmentSelector } from "../components/DepartmentSelector";
 import { KanbanColumn } from "../components/KanbanColumn";
+import { TaskDetailsDrawer } from "../components/TaskDetailsDrawer";
 
 function getTaskColumnId(task) {
   if (task.column_id) {
@@ -25,9 +31,12 @@ export function KanbanPage() {
   const [columns, setColumns] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [selectedDepartmentId, setSelectedDepartmentId] = useState("");
+  const [selectedTask, setSelectedTask] = useState(null);
   const [isDepartmentsLoading, setIsDepartmentsLoading] = useState(true);
   const [isBoardLoading, setIsBoardLoading] = useState(false);
+  const [isTaskLoading, setIsTaskLoading] = useState(false);
   const [error, setError] = useState("");
+  const [taskError, setTaskError] = useState("");
 
   useEffect(() => {
     let isMounted = true;
@@ -125,6 +134,27 @@ export function KanbanPage() {
     return { groupedTasks, withoutColumn };
   }, [columns, tasks]);
 
+  async function handleOpenTask(task) {
+    setSelectedTask(null);
+    setTaskError("");
+    setIsTaskLoading(true);
+
+    try {
+      const taskDetails = await getTaskDetails(task.id);
+      setSelectedTask(taskDetails);
+    } catch (loadError) {
+      setTaskError("Не удалось загрузить карточку задачи.");
+    } finally {
+      setIsTaskLoading(false);
+    }
+  }
+
+  function handleCloseTask() {
+    setSelectedTask(null);
+    setTaskError("");
+    setIsTaskLoading(false);
+  }
+
   return (
     <main className="kanban-page">
       <header className="page-header">
@@ -163,14 +193,26 @@ export function KanbanPage() {
               key={column.id}
               title={column.name}
               tasks={tasksByColumn.groupedTasks.get(String(column.id)) || []}
+              onOpenTask={handleOpenTask}
             />
           ))}
 
           {tasksByColumn.withoutColumn.length > 0 && (
-            <KanbanColumn title="Без колонки" tasks={tasksByColumn.withoutColumn} />
+            <KanbanColumn
+              title="Без колонки"
+              tasks={tasksByColumn.withoutColumn}
+              onOpenTask={handleOpenTask}
+            />
           )}
         </div>
       </section>
+
+      <TaskDetailsDrawer
+        task={selectedTask}
+        isLoading={isTaskLoading}
+        error={taskError}
+        onClose={handleCloseTask}
+      />
     </main>
   );
 }
