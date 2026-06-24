@@ -1,7 +1,14 @@
 from django.contrib import admin
 from django.db.models import Count
 
-from .models import Priority, Task, TaskAssignment, TaskStatus
+from .models import (
+    Priority,
+    Task,
+    TaskAssignment,
+    TaskComment,
+    TaskFile,
+    TaskStatus,
+)
 
 
 class TaskAssignmentInline(admin.TabularInline):
@@ -18,6 +25,41 @@ class TaskAssignmentInline(admin.TabularInline):
     )
     autocomplete_fields = (
         "user",
+    )
+
+
+class TaskCommentInline(admin.TabularInline):
+    model = TaskComment
+    extra = 1
+    fields = (
+        "author",
+        "text",
+        "created_at",
+        "updated_at",
+    )
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+    )
+    autocomplete_fields = (
+        "author",
+    )
+
+
+class TaskFileInline(admin.TabularInline):
+    model = TaskFile
+    extra = 1
+    fields = (
+        "uploaded_by",
+        "file",
+        "original_name",
+        "uploaded_at",
+    )
+    readonly_fields = (
+        "uploaded_at",
+    )
+    autocomplete_fields = (
+        "uploaded_by",
     )
 
 
@@ -70,6 +112,8 @@ class PriorityAdmin(admin.ModelAdmin):
 class TaskAdmin(admin.ModelAdmin):
     inlines = (
         TaskAssignmentInline,
+        TaskCommentInline,
+        TaskFileInline,
     )
     list_display = (
         "number",
@@ -216,4 +260,79 @@ class TaskAssignmentAdmin(admin.ModelAdmin):
     list_select_related = (
         "task",
         "user",
+    )
+
+
+@admin.register(TaskComment)
+class TaskCommentAdmin(admin.ModelAdmin):
+    list_display = (
+        "task",
+        "author",
+        "short_text",
+        "created_at",
+    )
+    list_filter = (
+        "created_at",
+        "updated_at",
+    )
+    search_fields = (
+        "task__number",
+        "task__title",
+        "author__username",
+        "author__email",
+        "author__first_name",
+        "author__last_name",
+        "text",
+    )
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+    )
+    autocomplete_fields = (
+        "task",
+        "author",
+    )
+    list_select_related = (
+        "task",
+        "author",
+    )
+
+    @admin.display(description="Текст")
+    def short_text(self, obj):
+        if len(obj.text) <= 80:
+            return obj.text
+        return f"{obj.text[:77]}..."
+
+
+@admin.register(TaskFile)
+class TaskFileAdmin(admin.ModelAdmin):
+    list_display = (
+        "task",
+        "uploaded_by",
+        "original_name",
+        "uploaded_at",
+    )
+    list_filter = (
+        "uploaded_at",
+    )
+    search_fields = (
+        "task__number",
+        "task__title",
+        "uploaded_by__username",
+        "uploaded_by__email",
+        "uploaded_by__first_name",
+        "uploaded_by__last_name",
+        "original_name",
+        "file",
+    )
+    readonly_fields = (
+        "uploaded_at",
+    )
+    autocomplete_fields = (
+        "task",
+        "uploaded_by",
+    )
+    list_select_related = (
+        "task",
+        "uploaded_by",
     )

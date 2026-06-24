@@ -161,3 +161,57 @@ class TaskAssignment(models.Model):
 
     def __str__(self):
         return f"{self.task} → {self.user}"
+
+class TaskComment(models.Model):
+    task = models.ForeignKey(
+        Task,
+        on_delete=models.CASCADE,
+        related_name="comments",
+        verbose_name="Задача",
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="task_comments",
+        verbose_name="Автор",
+    )
+    text = models.TextField("Комментарий")
+    created_at = models.DateTimeField("Дата создания", auto_now_add=True)
+    updated_at = models.DateTimeField("Дата изменения", auto_now=True)
+
+    class Meta:
+        verbose_name = "Комментарий к задаче"
+        verbose_name_plural = "Комментарии к задачам"
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"{self.task.number} — {self.author}"
+
+
+class TaskFile(models.Model):
+    task = models.ForeignKey(
+        Task,
+        on_delete=models.CASCADE,
+        related_name="files",
+        verbose_name="Задача",
+    )
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="uploaded_task_files",
+        verbose_name="Загрузил",
+    )
+    file = models.FileField(
+        "Файл",
+        upload_to="task_files/%Y/%m/%d/",
+    )
+    original_name = models.CharField("Исходное имя файла", max_length=255)
+    uploaded_at = models.DateTimeField("Дата загрузки", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Файл задачи"
+        verbose_name_plural = "Файлы задач"
+        ordering = ["-uploaded_at"]
+
+    def __str__(self):
+        return self.original_name
