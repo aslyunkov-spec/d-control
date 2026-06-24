@@ -3,51 +3,108 @@ function formatDateTime(value) {
     return "";
   }
 
-  return new Date(value).toLocaleString("ru-RU");
+  return new Date(value).toLocaleString("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
-function DetailRow({ label, value }) {
-  return (
-    <div className="drawer-detail-row">
-      <dt>{label}</dt>
-      <dd>{value || "Не указано"}</dd>
-    </div>
+function formatDate(value) {
+  if (!value) {
+    return "";
+  }
+
+  return new Date(value).toLocaleDateString("ru-RU");
+}
+
+function getAssigneeName(assignee) {
+  const fullName = `${assignee.first_name || ""} ${assignee.last_name || ""}`.trim();
+  return fullName || assignee.username;
+}
+
+function getAssigneeMark(assignee) {
+  const status = String(assignee.status || "").toLowerCase();
+  return ["returned", "unassigned", "removed"].includes(status) ? "X" : "✓";
+}
+
+function buildTimeline(task) {
+  const comments = (task.comments || []).map((comment) => ({
+    id: `comment-${comment.id}`,
+    author: comment.author || "Комментарий",
+    date: comment.created_at,
+    text: comment.text,
+  }));
+
+  const files = (task.files || []).map((file) => ({
+    id: `file-${file.id}`,
+    author: "Файл",
+    date: file.uploaded_at,
+    text: `Загружен файл: ${file.original_name}`,
+  }));
+
+  const history = (task.history || []).map((event) => ({
+    id: `history-${event.id}`,
+    author: event.event_type,
+    date: event.created_at,
+    text: event.description,
+  }));
+
+  return [...comments, ...files, ...history].sort(
+    (left, right) => new Date(right.date || 0) - new Date(left.date || 0)
   );
 }
 
-function Section({ title, children }) {
+function AssigneesCompact({ assignees = [] }) {
   return (
-    <section className="drawer-section">
-      <h3>{title}</h3>
-      {children}
+    <section className="drawer-assignees" aria-label="Исполнители">
+      <h3>Исполнители</h3>
+      {assignees.length ? (
+        <ul className="assignee-list">
+          {assignees.map((assignee) => (
+            <li key={assignee.id}>
+              <span>{getAssigneeMark(assignee)}</span>
+              {getAssigneeName(assignee)}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>Исполнители не назначены</p>
+      )}
     </section>
   );
 }
 
-function EmptySection() {
-  return <p className="drawer-empty">Нет данных</p>;
-}
-
 export function TaskDetailsDrawer({ task, isLoading, error, onClose }) {
+  const timeline = task ? buildTimeline(task) : [];
+  const commentsCount = task?.comments?.length || 0;
+  const filesCount = task?.files?.length || 0;
+  const subtasks = Array.isArray(task?.subtasks) ? task.subtasks : [];
+  const subtasksTotal = subtasks.length;
+
   return (
     <aside className="task-drawer" aria-label="Карточка задачи">
-      <header className="task-drawer__header">
-        <div>
-          <p className="eyebrow">Задача</p>
-          <h2>{task ? `${task.number} ${task.title}` : "Выберите задачу"}</h2>
-        </div>
-        {task && (
-          <button className="drawer-close" type="button" onClick={onClose} aria-label="Закрыть">
-            ×
-          </button>
-        )}
-      </header>
+      <div className="task-drawer__topbar">
+        <button className="drawer-back" type="button" onClick={onClose}>
+          <span aria-hidden="true">‹</span> Закрыть панель
+        </button>
+      </div>
+
+      <div className="task-actions" aria-label="Действия с задачей">
+        <button type="button" disabled>Готово</button>
+        <button type="button" disabled>Дораб.</button>
+        <button type="button" disabled>Закрыть</button>
+        <button type="button" disabled>Архив</button>
+        <button type="button" disabled>Удалить</button>
+      </div>
 
       <div className="task-drawer__content">
         {!task && !isLoading && !error && (
           <div className="drawer-placeholder">
-            <h3>Выберите задачу</h3>
-            <p>Кликните по карточке на доске, чтобы открыть подробности задачи.</p>
+            <h2>Выберите задачу</h2>
+            <p>Кликните по карточке на доске, чтобы открыть подробности.</p>
           </div>
         )}
 
@@ -56,82 +113,65 @@ export function TaskDetailsDrawer({ task, isLoading, error, onClose }) {
 
         {task && (
           <>
-            <Section title="Основная информация">
-              <dl className="drawer-details">
-                <DetailRow label="Номер" value={task.number} />
-                <DetailRow label="Название" value={task.title} />
-                <DetailRow label="Описание" value={task.description} />
-                <DetailRow label="Статус" value={task.status} />
-                <DetailRow label="Приоритет" value={task.priority} />
-                <DetailRow label="Срок" value={formatDateTime(task.due_date)} />
-              </dl>
-            </Section>
+            <header className="task-title-block">
+              <div>
+                <h2>{task.title}</h2>
+                <span className="task-title-block__number">{task.number}</span>
+              </div>
+              <span className="task-info-icon" aria-hidden="true">ⓘ</span>
+            </header>
 
-            <Section title="Исполнители">
-              {task.assignees?.length ? (
-                <ul className="drawer-list">
-                  {task.assignees.map((assignee) => (
-                    <li key={assignee.id}>
-                      {assignee.first_name || assignee.last_name
-                        ? `${assignee.first_name} ${assignee.last_name}`.trim()
-                        : assignee.username}
+            <div className="task-summary-line" aria-label="Краткая информация">
+              {task.due_date && <span>📅 {formatDate(task.due_date)}</span>}
+              <span>{task.priority || "Без приоритета"}</span>
+              <span>💬 {commentsCount}</span>
+              <span>📎 {filesCount}</span>
+              {Array.isArray(task?.subtasks) && <span>Подзадачи {subtasksTotal}</span>}
+            </div>
+
+            {task.description && <p className="task-description">{task.description}</p>}
+
+            <section className="subtasks-folded">
+              <button type="button" disabled>
+                Подзадачи ({subtasksTotal}/{subtasksTotal}) ▶
+              </button>
+            </section>
+
+            <section className="drawer-timeline-section">
+              <h3>Timeline</h3>
+              {timeline.length ? (
+                <ol className="timeline-list">
+                  {timeline.map((item) => (
+                    <li key={item.id}>
+                      <div className="timeline-meta">
+                        <strong>{item.author}</strong>
+                        <time>{formatDateTime(item.date)}</time>
+                      </div>
+                      <p>{item.text}</p>
                     </li>
                   ))}
-                </ul>
+                </ol>
               ) : (
-                <EmptySection />
+                <p className="drawer-empty">Нет данных</p>
               )}
-            </Section>
-
-            <Section title="Комментарии">
-              {task.comments?.length ? (
-                <ul className="drawer-list drawer-list--stacked">
-                  {task.comments.map((comment) => (
-                    <li key={comment.id}>
-                      <strong>{comment.author}</strong>
-                      <p>{comment.text}</p>
-                      <time>{formatDateTime(comment.created_at)}</time>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <EmptySection />
-              )}
-            </Section>
-
-            <Section title="Файлы">
-              {task.files?.length ? (
-                <ul className="drawer-list">
-                  {task.files.map((file) => (
-                    <li key={file.id}>
-                      <span>{file.original_name}</span>
-                      <time>{formatDateTime(file.uploaded_at)}</time>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <EmptySection />
-              )}
-            </Section>
-
-            <Section title="История">
-              {task.history?.length ? (
-                <ul className="drawer-list drawer-list--stacked">
-                  {task.history.map((event) => (
-                    <li key={event.id}>
-                      <strong>{event.event_type}</strong>
-                      <p>{event.description}</p>
-                      <time>{formatDateTime(event.created_at)}</time>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <EmptySection />
-              )}
-            </Section>
+            </section>
           </>
         )}
       </div>
+
+      <footer className="task-drawer__footer">
+        <form className="comment-composer" onSubmit={(event) => event.preventDefault()}>
+          <textarea placeholder="Новый комментарий" rows="2" disabled={!task} />
+          <div className="comment-composer__actions">
+            <div>
+              <button type="button" disabled>📎 Файл</button>
+              <button type="button" disabled>@ Упомянуть</button>
+            </div>
+            <button type="submit" disabled>Отправить</button>
+          </div>
+        </form>
+        <AssigneesCompact assignees={task?.assignees || []} />
+      </footer>
     </aside>
   );
 }

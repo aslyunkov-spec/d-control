@@ -1,18 +1,21 @@
 export function DepartmentSelector({ departments, selectedDepartmentId, onChange }) {
   return (
-    <label className="department-selector">
-      <span>Отдел</span>
-      <select
-        value={selectedDepartmentId || ""}
-        onChange={(event) => onChange(event.target.value)}
-      >
-        <option value="">Выберите отдел</option>
-        {departments.map((department) => (
-          <option key={department.id} value={department.id}>
+    <nav className="department-tabs" aria-label="Отделы">
+      {departments.map((department) => {
+        const isActive = String(department.id) === selectedDepartmentId;
+
+        return (
+          <button
+            key={department.id}
+            className={`department-tab ${isActive ? "department-tab--active" : ""}`}
+            type="button"
+            aria-pressed={isActive}
+            onClick={() => onChange(String(department.id))}
+          >
             {department.name}
-          </option>
-        ))}
-      </select>
-    </label>
+          </button>
+        );
+      })}
+    </nav>
   );
 }

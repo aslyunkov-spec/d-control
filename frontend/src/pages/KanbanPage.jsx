@@ -32,6 +32,7 @@ export function KanbanPage() {
   const [tasks, setTasks] = useState([]);
   const [selectedDepartmentId, setSelectedDepartmentId] = useState("");
   const [selectedTask, setSelectedTask] = useState(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isDepartmentsLoading, setIsDepartmentsLoading] = useState(true);
   const [isBoardLoading, setIsBoardLoading] = useState(false);
   const [isTaskLoading, setIsTaskLoading] = useState(false);
@@ -113,11 +114,6 @@ export function KanbanPage() {
     };
   }, [selectedDepartmentId]);
 
-  const selectedDepartment = useMemo(
-    () => departments.find((department) => String(department.id) === selectedDepartmentId),
-    [departments, selectedDepartmentId]
-  );
-
   const tasksByColumn = useMemo(() => {
     const groupedTasks = new Map(columns.map((column) => [String(column.id), []]));
     const withoutColumn = [];
@@ -137,6 +133,7 @@ export function KanbanPage() {
   async function handleOpenTask(task) {
     setTaskError("");
     setIsTaskLoading(true);
+    setIsDrawerOpen(true);
 
     try {
       const taskDetails = await getTaskDetails(task.id);
@@ -149,23 +146,16 @@ export function KanbanPage() {
   }
 
   function handleCloseTask() {
-    setSelectedTask(null);
+    setIsDrawerOpen(false);
     setTaskError("");
     setIsTaskLoading(false);
   }
 
   return (
     <main className="kanban-page">
-      <div className="kanban-workspace">
+      <div className={`kanban-workspace ${isDrawerOpen ? "" : "kanban-workspace--drawer-closed"}`}>
         <div className="kanban-main">
-          <header className="page-header">
-            <div>
-              <p className="eyebrow">D-Control</p>
-              <h1>Kanban</h1>
-            </div>
-          </header>
-
-          <section className="toolbar" aria-label="Фильтры доски">
+          <header className="board-topbar">
             {isDepartmentsLoading ? (
               <span className="muted">Загрузка отделов...</span>
             ) : (
@@ -175,19 +165,23 @@ export function KanbanPage() {
                 onChange={setSelectedDepartmentId}
               />
             )}
-          </section>
+            <div className="board-topbar__actions">
+              {isBoardLoading && <span className="muted">Загрузка...</span>}
+              {!isDrawerOpen && (
+                <button
+                  className="drawer-open-button"
+                  type="button"
+                  onClick={() => setIsDrawerOpen(true)}
+                >
+                  Панель
+                </button>
+              )}
+            </div>
+          </header>
 
           {error && <p className="error-message">{error}</p>}
 
           <section className="board-shell" aria-label="Доска отдела">
-            <div className="board-header">
-              <div>
-                <p className="eyebrow">Отдел</p>
-                <h2>{selectedDepartment ? selectedDepartment.name : "Отдел не выбран"}</h2>
-              </div>
-              {isBoardLoading && <span className="muted">Загрузка доски...</span>}
-            </div>
-
             <div className="kanban-board">
               {columns.map((column) => (
                 <KanbanColumn
@@ -209,12 +203,14 @@ export function KanbanPage() {
           </section>
         </div>
 
-        <TaskDetailsDrawer
-          task={selectedTask}
-          isLoading={isTaskLoading}
-          error={taskError}
-          onClose={handleCloseTask}
-        />
+        {isDrawerOpen && (
+          <TaskDetailsDrawer
+            task={selectedTask}
+            isLoading={isTaskLoading}
+            error={taskError}
+            onClose={handleCloseTask}
+          />
+        )}
       </div>
     </main>
   );
