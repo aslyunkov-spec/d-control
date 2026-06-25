@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
-import { createTaskComment } from "../api/kanban";
+import { createTaskComment, uploadTaskFile } from "../api/kanban";
 
 function formatDateTime(value) {
   if (!value) {
@@ -111,10 +111,20 @@ function AssigneesCompact({ assignees = [] }) {
   );
 }
 
-export function TaskDetailsDrawer({ task, isLoading, error, onClose, onCommentCreated }) {
+export function TaskDetailsDrawer({
+  task,
+  isLoading,
+  error,
+  onClose,
+  onCommentCreated,
+  onFileUploaded,
+}) {
+  const fileInputRef = useRef(null);
   const [commentText, setCommentText] = useState("");
   const [commentError, setCommentError] = useState("");
+  const [fileError, setFileError] = useState("");
   const [isCommentSubmitting, setIsCommentSubmitting] = useState(false);
+  const [isFileUploading, setIsFileUploading] = useState(false);
   const timeline = task ? buildTimeline(task) : [];
   const commentsCount = task?.comments?.length || 0;
   const filesCount = task?.files?.length || 0;
@@ -145,6 +155,26 @@ export function TaskDetailsDrawer({ task, isLoading, error, onClose, onCommentCr
       setCommentError("Не удалось отправить комментарий.");
     } finally {
       setIsCommentSubmitting(false);
+    }
+  }
+
+  async function handleFileChange(event) {
+    const file = event.target.files?.[0];
+    if (!file || !task || isFileUploading) {
+      return;
+    }
+
+    setFileError("");
+    setIsFileUploading(true);
+
+    try {
+      const uploadedFile = await uploadTaskFile(task.id, file);
+      onFileUploaded?.(uploadedFile);
+      event.target.value = "";
+    } catch (uploadError) {
+      setFileError("Не удалось загрузить файл.");
+    } finally {
+      setIsFileUploading(false);
     }
   }
 
@@ -232,10 +262,23 @@ export function TaskDetailsDrawer({ task, isLoading, error, onClose, onCommentCr
             disabled={!task || isCommentSubmitting}
             onChange={(event) => setCommentText(event.target.value)}
           />
-          {commentError && <p className="comment-error">{commentError}</p>}
+          {(commentError || fileError) && <p className="comment-error">{commentError || fileError}</p>}
           <div className="comment-composer__actions">
             <div>
-              <button type="button" disabled>📎 Файл</button>
+              <button
+                type="button"
+                disabled={!task || isFileUploading}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {isFileUploading ? "Загрузка..." : "📎 Файл"}
+              </button>
+              <input
+                ref={fileInputRef}
+                className="file-input-hidden"
+                type="file"
+                disabled={!task || isFileUploading}
+                onChange={handleFileChange}
+              />
               <button type="button" disabled>@ Упомянуть</button>
             </div>
             <button type="submit" disabled={!task || isCommentSubmitting}>

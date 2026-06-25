@@ -703,3 +703,6 @@ h1 {
   font-size: 11px;
   line-height: 1.25;
 }
+.file-input-hidden {
+  display: none;
+}

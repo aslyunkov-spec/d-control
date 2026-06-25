@@ -164,6 +164,19 @@ export function KanbanPage() {
     });
   }
 
+  function handleFileUploaded(file) {
+    setSelectedTask((currentTask) => {
+      if (!currentTask) {
+        return currentTask;
+      }
+
+      return {
+        ...currentTask,
+        files: [...(currentTask.files || []), file],
+      };
+    });
+  }
+
   return (
     <main className="kanban-page">
       <div className={`kanban-workspace ${isDrawerOpen ? "" : "kanban-workspace--drawer-closed"}`}>
@@ -223,6 +236,7 @@ export function KanbanPage() {
             error={taskError}
             onClose={handleCloseTask}
             onCommentCreated={handleCommentCreated}
+            onFileUploaded={handleFileUploaded}
           />
         )}
       </div>

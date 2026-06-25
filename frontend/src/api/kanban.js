@@ -22,3 +22,13 @@ export function createTaskComment(taskId, text) {
     body: JSON.stringify({ text }),
   });
 }
+
+export function uploadTaskFile(taskId, file) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return apiRequest(`/api/tasks/${taskId}/files/`, {
+    method: "POST",
+    body: formData,
+  });
+}

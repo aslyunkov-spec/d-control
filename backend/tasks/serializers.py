@@ -50,13 +50,26 @@ class TaskCommentSerializer(serializers.ModelSerializer):
 
 
 class TaskFileSerializer(serializers.ModelSerializer):
+    file_url = serializers.SerializerMethodField()
+
     class Meta:
         model = TaskFile
         fields = (
             "id",
             "original_name",
             "uploaded_at",
+            "file_url",
         )
+
+    def get_file_url(self, obj):
+        if not obj.file:
+            return ""
+
+        request = self.context.get("request")
+        if request is not None:
+            return request.build_absolute_uri(obj.file.url)
+
+        return obj.file.url
 
 
 class TaskHistorySerializer(serializers.ModelSerializer):
