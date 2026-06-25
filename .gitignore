@@ -8,3 +8,20 @@ node_modules/
 dist/
 build/
 .vscode/
+# User uploaded files
+backend/media/
+
+# Python
+backend/venv/
+**/__pycache__/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
