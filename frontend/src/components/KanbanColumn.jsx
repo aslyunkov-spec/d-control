@@ -13,6 +13,17 @@ function getTaskSection(task) {
   return task.status_system_type || "active";
 }
 
+function compareByCreatedAt(left, right) {
+  const leftTime = left.created_at ? new Date(left.created_at).getTime() : 0;
+  const rightTime = right.created_at ? new Date(right.created_at).getTime() : 0;
+
+  if (leftTime !== rightTime) {
+    return leftTime - rightTime;
+  }
+
+  return Number(left.id || 0) - Number(right.id || 0);
+}
+
 export function KanbanColumn({
   column,
   title,
@@ -22,6 +33,7 @@ export function KanbanColumn({
   onCreateTask,
   onCreateSubtask,
   onOpenTask,
+  onRenameTask,
   onToggleSubtask,
   onToggleTaskMenu,
 }) {
@@ -38,6 +50,8 @@ export function KanbanColumn({
     const targetSection = tasksBySection[sectionKey] ? sectionKey : "active";
     tasksBySection[targetSection].push(task);
   });
+
+  Object.values(tasksBySection).forEach((sectionTasks) => sectionTasks.sort(compareByCreatedAt));
 
   async function handleCreateSubmit() {
     const titleValue = newTaskTitle.trim();
@@ -115,6 +129,7 @@ export function KanbanColumn({
             selectedTaskId={selectedTaskId}
             onCreateSubtask={onCreateSubtask}
             onOpenTask={onOpenTask}
+            onRenameTask={onRenameTask}
             onToggleSubtask={onToggleSubtask}
             onToggleTaskMenu={onToggleTaskMenu}
           />

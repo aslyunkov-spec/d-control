@@ -1114,3 +1114,58 @@ h1 {
 .task-card--selected .task-card__body {
   padding-left: 12px;
 }
+.task-rename-inline {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.task-rename-inline input,
+.task-subtask-rename-input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #c7ced9;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #1d2430;
+  padding: 3px 5px;
+  font-size: 12px;
+  line-height: 1.25;
+  outline: none;
+}
+
+.task-rename-inline input:focus,
+.task-subtask-rename-input:focus {
+  border-color: var(--accent-color, #2f6fed);
+  box-shadow: 0 0 0 2px rgb(47 111 237 / 12%);
+}
+
+.task-rename-error {
+  color: #b42318;
+  font-size: 10.5px;
+  line-height: 1.2;
+}
+
+.task-subtask-row {
+  grid-template-columns: 15px minmax(0, 1fr) 18px;
+}
+
+.task-subtask-edit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #98a2b3;
+  padding: 0;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.task-subtask-edit-button:hover {
+  background: #eef2f6;
+  color: #344054;
+}

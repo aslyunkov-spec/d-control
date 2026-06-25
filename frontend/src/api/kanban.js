@@ -36,6 +36,13 @@ export function getTaskDetails(taskId) {
   return apiRequest(`/api/tasks/${taskId}/`);
 }
 
+export function updateTaskTitle(taskId, title) {
+  return apiRequest(`/api/tasks/${taskId}/`, {
+    method: "PATCH",
+    body: JSON.stringify({ title }),
+  });
+}
+
 export function createTaskComment(taskId, text) {
   return apiRequest(`/api/tasks/${taskId}/comments/`, {
     method: "POST",

@@ -63,6 +63,7 @@ class TaskSerializer(serializers.ModelSerializer):
             "column",
             "parent_task",
             "due_date",
+            "created_at",
             "comments_count",
             "files_count",
             "subtasks_total",
@@ -97,6 +98,7 @@ class TaskSerializer(serializers.ModelSerializer):
                 "status_system_type": subtask.status.system_type,
                 "parent_task": obj.id,
                 "due_date": subtask.due_date,
+                "created_at": subtask.created_at,
             }
             for subtask in obj.subtasks.all()
         ]

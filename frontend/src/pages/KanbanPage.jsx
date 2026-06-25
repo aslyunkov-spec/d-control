@@ -8,6 +8,7 @@ import {
   getTaskDetails,
   getTasksByDepartment,
   toggleSubtask,
+  updateTaskTitle,
 } from "../api/kanban";
 import { DepartmentSelector } from "../components/DepartmentSelector";
 import { KanbanColumn } from "../components/KanbanColumn";
@@ -48,6 +49,27 @@ function replaceSubtask(subtasks = [], updatedSubtask) {
   return subtasks.map((subtask) =>
     subtask.id === updatedSubtask.id ? { ...subtask, ...updatedSubtask } : subtask,
   );
+}
+
+function updateTaskEverywhere(task, updatedTask) {
+  if (task.id === updatedTask.id) {
+    return {
+      ...task,
+      ...updatedTask,
+      subtasks: task.subtasks || updatedTask.subtasks || [],
+    };
+  }
+
+  if (!Array.isArray(task.subtasks)) {
+    return task;
+  }
+
+  return {
+    ...task,
+    subtasks: task.subtasks.map((subtask) =>
+      subtask.id === updatedTask.id ? { ...subtask, ...updatedTask } : subtask,
+    ),
+  };
 }
 
 export function KanbanPage() {
@@ -215,6 +237,40 @@ export function KanbanPage() {
     return createdSubtask;
   }
 
+  async function handleRenameTask(task, title) {
+    const updatedTask = await updateTaskTitle(task.id, title);
+
+    setTasks((currentTasks) =>
+      currentTasks.map((currentTask) => updateTaskEverywhere(currentTask, updatedTask)),
+    );
+
+    setSelectedTask((currentTask) => {
+      if (!currentTask) {
+        return currentTask;
+      }
+
+      if (currentTask.id === updatedTask.id) {
+        return {
+          ...currentTask,
+          ...updatedTask,
+        };
+      }
+
+      if (Array.isArray(currentTask.subtasks)) {
+        return {
+          ...currentTask,
+          subtasks: currentTask.subtasks.map((subtask) =>
+            subtask.id === updatedTask.id ? { ...subtask, ...updatedTask } : subtask,
+          ),
+        };
+      }
+
+      return currentTask;
+    });
+
+    return updatedTask;
+  }
+
   async function handleToggleSubtask(parentTask, subtask) {
     const updatedSubtask = await toggleSubtask(parentTask.id, subtask.id);
 
@@ -356,6 +412,7 @@ export function KanbanPage() {
                   onCreateTask={handleCreateTask}
                   onCreateSubtask={handleCreateSubtask}
                   onOpenTask={handleOpenTask}
+                  onRenameTask={handleRenameTask}
                   onToggleSubtask={handleToggleSubtask}
                   onToggleTaskMenu={setOpenTaskMenuId}
                 />
@@ -369,6 +426,7 @@ export function KanbanPage() {
                   selectedTaskId={isDrawerOpen ? selectedTask?.id : null}
                   onCreateSubtask={handleCreateSubtask}
                   onOpenTask={handleOpenTask}
+                  onRenameTask={handleRenameTask}
                   onToggleSubtask={handleToggleSubtask}
                   onToggleTaskMenu={setOpenTaskMenuId}
                 />

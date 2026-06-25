@@ -94,6 +94,7 @@ class TaskListAPIView(ListAPIView):
 
 class TaskDetailAPIView(RetrieveAPIView):
     serializer_class = TaskDetailSerializer
+    authentication_classes = ()
     permission_classes = (AllowAny,)
 
     def get_queryset(self):
@@ -115,6 +116,22 @@ class TaskDetailAPIView(RetrieveAPIView):
         context = super().get_serializer_context()
         context["user"] = get_request_user_or_fallback(self.request)
         return context
+
+    def patch(self, request, pk):
+        task = get_object_or_404(Task, pk=pk)
+        title = str(request.data.get("title", "")).strip()
+
+        if not title:
+            return Response(
+                {"title": ["Название задачи не может быть пустым."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        task.title = title
+        task.save(update_fields=["title", "updated_at"])
+
+        serializer = TaskSerializer(task)
+        return Response(serializer.data)
 
 
 class TaskCommentCreateAPIView(APIView):

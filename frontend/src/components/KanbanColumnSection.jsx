@@ -10,6 +10,7 @@ export function KanbanColumnSection({
   selectedTaskId,
   onCreateSubtask,
   onOpenTask,
+  onRenameTask,
   onToggleSubtask,
   onToggleTaskMenu,
 }) {
@@ -42,6 +43,7 @@ export function KanbanColumnSection({
               onCloseMenu={() => onToggleTaskMenu?.(null)}
               onCreateSubtask={onCreateSubtask}
               onOpen={onOpenTask}
+              onRenameTask={onRenameTask}
               onToggleMenu={() => onToggleTaskMenu?.(openTaskMenuId === task.id ? null : task.id)}
               onToggleSubtask={onToggleSubtask}
             />
