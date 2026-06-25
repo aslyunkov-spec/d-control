@@ -30,6 +30,10 @@ class TaskAssigneeSerializer(serializers.Serializer):
     username = serializers.CharField(source="user.username")
     first_name = serializers.CharField(source="user.first_name")
     last_name = serializers.CharField(source="user.last_name")
+    assignment_id = serializers.IntegerField(source="id")
+    assignment_status = serializers.CharField(source="status")
+    assigned_at = serializers.DateTimeField()
+    completed_at = serializers.DateTimeField(allow_null=True)
 
 
 class TaskCommentSerializer(serializers.ModelSerializer):

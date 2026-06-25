@@ -20,14 +20,39 @@ function formatDate(value) {
   return new Date(value).toLocaleDateString("ru-RU");
 }
 
+const ASSIGNMENT_STATUS_LABELS = {
+  assigned: "assigned",
+  in_progress: "in_progress",
+  done: "done",
+  returned: "returned",
+};
+
 function getAssigneeName(assignee) {
   const fullName = `${assignee.first_name || ""} ${assignee.last_name || ""}`.trim();
   return fullName || assignee.username;
 }
 
+function getAssignmentStatus(assignee) {
+  return String(assignee.assignment_status || assignee.status || "assigned").toLowerCase();
+}
+
+function getAssignmentStatusLabel(assignee) {
+  const status = getAssignmentStatus(assignee);
+  return ASSIGNMENT_STATUS_LABELS[status] || status;
+}
+
 function getAssigneeMark(assignee) {
-  const status = String(assignee.status || "").toLowerCase();
-  return ["returned", "unassigned", "removed"].includes(status) ? "X" : "✓";
+  const status = getAssignmentStatus(assignee);
+
+  if (status === "done") {
+    return "✓";
+  }
+
+  if (status === "returned") {
+    return "X";
+  }
+
+  return "•";
 }
 
 function buildTimeline(task) {
@@ -64,9 +89,14 @@ function AssigneesCompact({ assignees = [] }) {
       {assignees.length ? (
         <ul className="assignee-list">
           {assignees.map((assignee) => (
-            <li key={assignee.id}>
-              <span>{getAssigneeMark(assignee)}</span>
-              {getAssigneeName(assignee)}
+            <li key={assignee.assignment_id || assignee.id}>
+              <span className="assignee-main">
+                <span>{getAssigneeMark(assignee)}</span>
+                {getAssigneeName(assignee)}
+              </span>
+              <span className={`assignee-status assignee-status--${getAssignmentStatus(assignee)}`}>
+                {getAssignmentStatusLabel(assignee)}
+              </span>
             </li>
           ))}
         </ul>
