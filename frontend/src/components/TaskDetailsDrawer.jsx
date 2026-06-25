@@ -1,6 +1,11 @@
 import { useRef, useState } from "react";
 
-import { createTaskComment, uploadTaskFile } from "../api/kanban";
+import {
+  createTaskComment,
+  deleteTaskFile,
+  updateTaskComment,
+  uploadTaskFile,
+} from "../api/kanban";
 
 function formatDateTime(value) {
   if (!value) {
@@ -22,6 +27,37 @@ function formatDate(value) {
   }
 
   return new Date(value).toLocaleDateString("ru-RU");
+}
+
+function getFileExtension(fileName = "") {
+  const parts = fileName.toLowerCase().split(".");
+  return parts.length > 1 ? parts.pop() : "";
+}
+
+function getFileIcon(fileName) {
+  const extension = getFileExtension(fileName);
+
+  if (extension === "pdf") {
+    return "PDF";
+  }
+
+  if (["png", "jpg", "jpeg"].includes(extension)) {
+    return "🖼";
+  }
+
+  if (extension === "txt") {
+    return "📝";
+  }
+
+  if (["doc", "docx"].includes(extension)) {
+    return "W";
+  }
+
+  if (["xls", "xlsx"].includes(extension)) {
+    return "X";
+  }
+
+  return "📎";
 }
 
 const ASSIGNMENT_STATUS_LABELS = {
@@ -62,27 +98,30 @@ function getAssigneeMark(assignee) {
 function buildTimeline(task) {
   const comments = (task.comments || []).map((comment) => ({
     id: `comment-${comment.id}`,
+    type: "comment",
     author: comment.author || "Комментарий",
     date: comment.created_at,
-    text: comment.text,
+    comment,
   }));
 
   const files = (task.files || []).map((file) => ({
     id: `file-${file.id}`,
-    author: "Файл",
+    type: "file",
+    author: file.author || file.uploaded_by_username || "Файл",
     date: file.uploaded_at,
-    text: `Загружен файл: ${file.original_name}`,
+    file,
   }));
 
   const history = (task.history || []).map((event) => ({
     id: `history-${event.id}`,
-    author: event.event_type,
+    type: "history",
+    author: event.user || event.event_type,
     date: event.created_at,
     text: event.description,
   }));
 
   return [...comments, ...files, ...history].sort(
-    (left, right) => new Date(right.date || 0) - new Date(left.date || 0)
+    (left, right) => new Date(left.date || 0) - new Date(right.date || 0),
   );
 }
 
@@ -111,20 +150,91 @@ function AssigneesCompact({ assignees = [] }) {
   );
 }
 
+function TimelineItem({ item, editingCommentId, editText, isSaving, onEditStart, onEditTextChange, onEditSave, onEditCancel, onFileDelete }) {
+  const isEditing = item.type === "comment" && editingCommentId === item.comment.id;
+
+  return (
+    <li>
+      <div className="timeline-meta">
+        <strong>{item.author}</strong>
+        <span>
+          <time>{formatDateTime(item.date)}</time>
+          {item.type === "comment" && item.comment.can_edit && !isEditing && (
+            <button className="timeline-icon-button" type="button" onClick={() => onEditStart(item.comment)}>
+              Изм.
+            </button>
+          )}
+        </span>
+      </div>
+
+      {item.type === "comment" && isEditing && (
+        <div className="comment-edit-form">
+          <textarea
+            autoFocus
+            value={editText}
+            rows="3"
+            disabled={isSaving}
+            onChange={(event) => onEditTextChange(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                event.preventDefault();
+                onEditCancel();
+              }
+
+              if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+                event.preventDefault();
+                onEditSave();
+              }
+            }}
+          />
+          <div className="comment-edit-actions">
+            <button type="button" disabled={isSaving} onClick={onEditSave}>Сохранить</button>
+            <button type="button" disabled={isSaving} onClick={onEditCancel}>Отмена</button>
+          </div>
+        </div>
+      )}
+
+      {item.type === "comment" && !isEditing && <p>{item.comment.text}</p>}
+
+      {item.type === "file" && (
+        <div className="timeline-file-item">
+          <span className="timeline-file-icon">{getFileIcon(item.file.original_name)}</span>
+          <span className="timeline-file-name">{item.file.original_name}</span>
+          {item.file.file_url && (
+            <a href={item.file.file_url} target="_blank" rel="noreferrer">Открыть</a>
+          )}
+          {item.file.can_delete && (
+            <button type="button" onClick={() => onFileDelete(item.file)}>Удалить</button>
+          )}
+        </div>
+      )}
+
+      {item.type === "history" && <p>{item.text}</p>}
+    </li>
+  );
+}
+
 export function TaskDetailsDrawer({
   task,
   isLoading,
   error,
   onClose,
   onCommentCreated,
+  onCommentUpdated,
+  onFileDeleted,
   onFileUploaded,
 }) {
   const fileInputRef = useRef(null);
   const [commentText, setCommentText] = useState("");
   const [commentError, setCommentError] = useState("");
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editCommentText, setEditCommentText] = useState("");
+  const [editCommentError, setEditCommentError] = useState("");
   const [fileError, setFileError] = useState("");
   const [isCommentSubmitting, setIsCommentSubmitting] = useState(false);
+  const [isCommentSaving, setIsCommentSaving] = useState(false);
   const [isFileUploading, setIsFileUploading] = useState(false);
+  const [isFileDeletingId, setIsFileDeletingId] = useState(null);
   const timeline = task ? buildTimeline(task) : [];
   const commentsCount = task?.comments?.length || 0;
   const filesCount = task?.files?.length || 0;
@@ -158,6 +268,43 @@ export function TaskDetailsDrawer({
     }
   }
 
+  function handleEditStart(comment) {
+    setEditingCommentId(comment.id);
+    setEditCommentText(comment.text);
+    setEditCommentError("");
+  }
+
+  function handleEditCancel() {
+    setEditingCommentId(null);
+    setEditCommentText("");
+    setEditCommentError("");
+  }
+
+  async function handleEditSave() {
+    if (!task || !editingCommentId || isCommentSaving) {
+      return;
+    }
+
+    const text = editCommentText.trim();
+    if (!text) {
+      setEditCommentError("Комментарий не может быть пустым.");
+      return;
+    }
+
+    setIsCommentSaving(true);
+    setEditCommentError("");
+
+    try {
+      const updatedComment = await updateTaskComment(task.id, editingCommentId, text);
+      onCommentUpdated?.(updatedComment);
+      handleEditCancel();
+    } catch (saveError) {
+      setEditCommentError("Не удалось сохранить комментарий.");
+    } finally {
+      setIsCommentSaving(false);
+    }
+  }
+
   async function handleFileChange(event) {
     const file = event.target.files?.[0];
     if (!file || !task || isFileUploading) {
@@ -175,6 +322,24 @@ export function TaskDetailsDrawer({
       setFileError("Не удалось загрузить файл.");
     } finally {
       setIsFileUploading(false);
+    }
+  }
+
+  async function handleFileDelete(file) {
+    if (!task || isFileDeletingId) {
+      return;
+    }
+
+    setFileError("");
+    setIsFileDeletingId(file.id);
+
+    try {
+      await deleteTaskFile(task.id, file.id);
+      onFileDeleted?.(file.id);
+    } catch (deleteError) {
+      setFileError("Не удалось удалить файл.");
+    } finally {
+      setIsFileDeletingId(null);
     }
   }
 
@@ -233,16 +398,22 @@ export function TaskDetailsDrawer({
 
             <section className="drawer-timeline-section">
               <h3>Timeline</h3>
+              {editCommentError && <p className="comment-error">{editCommentError}</p>}
               {timeline.length ? (
                 <ol className="timeline-list">
                   {timeline.map((item) => (
-                    <li key={item.id}>
-                      <div className="timeline-meta">
-                        <strong>{item.author}</strong>
-                        <time>{formatDateTime(item.date)}</time>
-                      </div>
-                      <p>{item.text}</p>
-                    </li>
+                    <TimelineItem
+                      key={item.id}
+                      item={item}
+                      editingCommentId={editingCommentId}
+                      editText={editCommentText}
+                      isSaving={isCommentSaving || isFileDeletingId === item.file?.id}
+                      onEditStart={handleEditStart}
+                      onEditTextChange={setEditCommentText}
+                      onEditSave={handleEditSave}
+                      onEditCancel={handleEditCancel}
+                      onFileDelete={handleFileDelete}
+                    />
                   ))}
                 </ol>
               ) : (

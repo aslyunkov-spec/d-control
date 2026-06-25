@@ -2,7 +2,17 @@ import { useState } from "react";
 
 import { TaskCard } from "./TaskCard";
 
-export function KanbanColumnSection({ title, tasks, collapsedByDefault = false, onOpenTask }) {
+export function KanbanColumnSection({
+  title,
+  tasks,
+  collapsedByDefault = false,
+  openTaskMenuId,
+  selectedTaskId,
+  onCreateSubtask,
+  onOpenTask,
+  onToggleSubtask,
+  onToggleTaskMenu,
+}) {
   const [isCollapsed, setIsCollapsed] = useState(collapsedByDefault);
 
   return (
@@ -13,20 +23,29 @@ export function KanbanColumnSection({ title, tasks, collapsedByDefault = false, 
         aria-expanded={!isCollapsed}
         onClick={() => setIsCollapsed((current) => !current)}
       >
-        <span>{title}</span>
-        <span className="kanban-section__meta">
-          {tasks.length}
-          <span aria-hidden="true">{isCollapsed ? "▸" : "▾"}</span>
+        <span>
+          {title} ({tasks.length})
+        </span>
+        <span className="kanban-section__meta" aria-hidden="true">
+          {isCollapsed ? "▸" : "▾"}
         </span>
       </button>
 
-      {!isCollapsed && (
+      {!isCollapsed && tasks.length > 0 && (
         <div className="kanban-section__tasks">
-          {tasks.length > 0 ? (
-            tasks.map((task) => <TaskCard key={task.id} task={task} onOpen={onOpenTask} />)
-          ) : (
-            <p className="column-empty">Нет задач</p>
-          )}
+          {tasks.map((task) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              isMenuOpen={openTaskMenuId === task.id}
+              isSelected={selectedTaskId === task.id}
+              onCloseMenu={() => onToggleTaskMenu?.(null)}
+              onCreateSubtask={onCreateSubtask}
+              onOpen={onOpenTask}
+              onToggleMenu={() => onToggleTaskMenu?.(openTaskMenuId === task.id ? null : task.id)}
+              onToggleSubtask={onToggleSubtask}
+            />
+          ))}
         </div>
       )}
     </section>

@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 
 import {
+  createSubtask,
+  createTask,
   getDepartmentColumns,
   getDepartments,
   getTaskDetails,
   getTasksByDepartment,
+  toggleSubtask,
 } from "../api/kanban";
 import { DepartmentSelector } from "../components/DepartmentSelector";
 import { KanbanColumn } from "../components/KanbanColumn";
@@ -26,12 +29,34 @@ function getTaskColumnId(task) {
   return "";
 }
 
+function isCompletedSubtask(subtask) {
+  return ["completed", "archived"].includes(subtask.status_system_type);
+}
+
+function updateParentSubtasks(parentTask, nextSubtasks) {
+  const subtasksCompleted = nextSubtasks.filter(isCompletedSubtask).length;
+
+  return {
+    ...parentTask,
+    subtasks: nextSubtasks,
+    subtasks_total: nextSubtasks.length,
+    subtasks_completed: subtasksCompleted,
+  };
+}
+
+function replaceSubtask(subtasks = [], updatedSubtask) {
+  return subtasks.map((subtask) =>
+    subtask.id === updatedSubtask.id ? { ...subtask, ...updatedSubtask } : subtask,
+  );
+}
+
 export function KanbanPage() {
   const [departments, setDepartments] = useState([]);
   const [columns, setColumns] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [selectedDepartmentId, setSelectedDepartmentId] = useState("");
   const [selectedTask, setSelectedTask] = useState(null);
+  const [openTaskMenuId, setOpenTaskMenuId] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isDepartmentsLoading, setIsDepartmentsLoading] = useState(true);
   const [isBoardLoading, setIsBoardLoading] = useState(false);
@@ -130,23 +155,106 @@ export function KanbanPage() {
     return { groupedTasks, withoutColumn };
   }, [columns, tasks]);
 
-  async function handleOpenTask(task) {
+  async function loadTaskDetails(taskId, fallbackTask = null) {
     setTaskError("");
     setIsTaskLoading(true);
-    setIsDrawerOpen(true);
 
     try {
-      const taskDetails = await getTaskDetails(task.id);
+      const taskDetails = await getTaskDetails(taskId);
       setSelectedTask(taskDetails);
+      return taskDetails;
     } catch (loadError) {
+      if (fallbackTask) {
+        setSelectedTask(fallbackTask);
+      }
       setTaskError("Не удалось загрузить карточку задачи.");
+      return null;
     } finally {
       setIsTaskLoading(false);
     }
   }
 
+  async function handleOpenTask(task) {
+    setIsDrawerOpen(true);
+    await loadTaskDetails(task.id, task);
+  }
+
+  async function handleCreateTask(columnId, title) {
+    const createdTask = await createTask({
+      title,
+      department: Number(selectedDepartmentId),
+      column: columnId,
+    });
+
+    setTasks((currentTasks) => [createdTask, ...currentTasks]);
+    setIsDrawerOpen(true);
+    await loadTaskDetails(createdTask.id, createdTask);
+  }
+
+  async function handleCreateSubtask(parentTask, title) {
+    const createdSubtask = await createSubtask(parentTask.id, title);
+
+    setTasks((currentTasks) =>
+      currentTasks.map((task) => {
+        if (task.id !== parentTask.id) {
+          return task;
+        }
+
+        const nextSubtasks = [...(task.subtasks || []), createdSubtask];
+        return updateParentSubtasks(task, nextSubtasks);
+      }),
+    );
+
+    if (selectedTask?.id === parentTask.id) {
+      await loadTaskDetails(parentTask.id, {
+        ...selectedTask,
+        subtasks: [...(selectedTask.subtasks || []), createdSubtask],
+      });
+    }
+
+    return createdSubtask;
+  }
+
+  async function handleToggleSubtask(parentTask, subtask) {
+    const updatedSubtask = await toggleSubtask(parentTask.id, subtask.id);
+
+    setTasks((currentTasks) =>
+      currentTasks.map((task) => {
+        if (task.id !== parentTask.id) {
+          return task;
+        }
+
+        const nextSubtasks = replaceSubtask(task.subtasks || [], updatedSubtask);
+        return updateParentSubtasks(task, nextSubtasks);
+      }),
+    );
+
+    setSelectedTask((currentTask) => {
+      if (!currentTask) {
+        return currentTask;
+      }
+
+      if (currentTask.id === parentTask.id) {
+        const nextSubtasks = replaceSubtask(currentTask.subtasks || [], updatedSubtask);
+        return updateParentSubtasks(currentTask, nextSubtasks);
+      }
+
+      if (currentTask.id === updatedSubtask.id) {
+        return {
+          ...currentTask,
+          ...updatedSubtask,
+        };
+      }
+
+      return currentTask;
+    });
+
+    return updatedSubtask;
+  }
+
   function handleCloseTask() {
     setIsDrawerOpen(false);
+    setSelectedTask(null);
     setTaskError("");
     setIsTaskLoading(false);
   }
@@ -164,6 +272,21 @@ export function KanbanPage() {
     });
   }
 
+  function handleCommentUpdated(comment) {
+    setSelectedTask((currentTask) => {
+      if (!currentTask) {
+        return currentTask;
+      }
+
+      return {
+        ...currentTask,
+        comments: (currentTask.comments || []).map((currentComment) =>
+          currentComment.id === comment.id ? comment : currentComment,
+        ),
+      };
+    });
+  }
+
   function handleFileUploaded(file) {
     setSelectedTask((currentTask) => {
       if (!currentTask) {
@@ -173,6 +296,19 @@ export function KanbanPage() {
       return {
         ...currentTask,
         files: [...(currentTask.files || []), file],
+      };
+    });
+  }
+
+  function handleFileDeleted(fileId) {
+    setSelectedTask((currentTask) => {
+      if (!currentTask) {
+        return currentTask;
+      }
+
+      return {
+        ...currentTask,
+        files: (currentTask.files || []).filter((file) => file.id !== fileId),
       };
     });
   }
@@ -212,9 +348,16 @@ export function KanbanPage() {
               {columns.map((column) => (
                 <KanbanColumn
                   key={column.id}
+                  column={column}
                   title={column.name}
                   tasks={tasksByColumn.groupedTasks.get(String(column.id)) || []}
+                  openTaskMenuId={openTaskMenuId}
+                  selectedTaskId={isDrawerOpen ? selectedTask?.id : null}
+                  onCreateTask={handleCreateTask}
+                  onCreateSubtask={handleCreateSubtask}
                   onOpenTask={handleOpenTask}
+                  onToggleSubtask={handleToggleSubtask}
+                  onToggleTaskMenu={setOpenTaskMenuId}
                 />
               ))}
 
@@ -222,7 +365,12 @@ export function KanbanPage() {
                 <KanbanColumn
                   title="Без колонки"
                   tasks={tasksByColumn.withoutColumn}
+                  openTaskMenuId={openTaskMenuId}
+                  selectedTaskId={isDrawerOpen ? selectedTask?.id : null}
+                  onCreateSubtask={handleCreateSubtask}
                   onOpenTask={handleOpenTask}
+                  onToggleSubtask={handleToggleSubtask}
+                  onToggleTaskMenu={setOpenTaskMenuId}
                 />
               )}
             </div>

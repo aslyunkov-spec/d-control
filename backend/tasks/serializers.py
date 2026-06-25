@@ -1,6 +1,39 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from .models import Task, TaskComment, TaskFile, TaskHistory
+
+
+def user_display_name(user):
+    full_name = user.get_full_name()
+    if full_name:
+        return full_name
+    return user.get_username()
+
+
+def user_initials(user):
+    parts = [user.first_name, user.last_name]
+    initials = "".join(part[:1] for part in parts if part).upper()
+    if initials:
+        return initials[:2]
+
+    username = user.get_username()
+    return username[:2].upper()
+
+
+def get_local_dev_user():
+    return get_user_model().objects.order_by("id").first()
+
+
+class TaskListAssigneeSerializer(serializers.Serializer):
+    id = serializers.IntegerField(source="user.id")
+    username = serializers.CharField(source="user.username")
+    first_name = serializers.CharField(source="user.first_name")
+    last_name = serializers.CharField(source="user.last_name")
+    initials = serializers.SerializerMethodField()
+
+    def get_initials(self, obj):
+        return user_initials(obj.user)
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -9,6 +42,13 @@ class TaskSerializer(serializers.ModelSerializer):
     priority = serializers.StringRelatedField()
     department = serializers.StringRelatedField()
     column = serializers.IntegerField(source="column_id", read_only=True)
+    parent_task = serializers.IntegerField(source="parent_task_id", read_only=True)
+    comments_count = serializers.SerializerMethodField()
+    files_count = serializers.SerializerMethodField()
+    subtasks_total = serializers.SerializerMethodField()
+    subtasks_completed = serializers.SerializerMethodField()
+    subtasks = serializers.SerializerMethodField()
+    assignees = TaskListAssigneeSerializer(source="assignments", many=True, read_only=True)
 
     class Meta:
         model = Task
@@ -21,8 +61,55 @@ class TaskSerializer(serializers.ModelSerializer):
             "priority",
             "department",
             "column",
+            "parent_task",
             "due_date",
+            "comments_count",
+            "files_count",
+            "subtasks_total",
+            "subtasks_completed",
+            "subtasks",
+            "assignees",
         )
+
+    def get_comments_count(self, obj):
+        return getattr(obj, "comments_count", obj.comments.count())
+
+    def get_files_count(self, obj):
+        return getattr(obj, "files_count", obj.files.count())
+
+    def get_subtasks_total(self, obj):
+        return getattr(obj, "subtasks_total", obj.subtasks.count())
+
+    def get_subtasks_completed(self, obj):
+        return getattr(
+            obj,
+            "subtasks_completed",
+            obj.subtasks.filter(status__system_type__in=["completed", "archived"]).count(),
+        )
+
+    def get_subtasks(self, obj):
+        return [
+            {
+                "id": subtask.id,
+                "number": subtask.number,
+                "title": subtask.title,
+                "status": str(subtask.status),
+                "status_system_type": subtask.status.system_type,
+                "parent_task": obj.id,
+                "due_date": subtask.due_date,
+            }
+            for subtask in obj.subtasks.all()
+        ]
+
+
+class TaskCreateSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=500, trim_whitespace=True)
+    department = serializers.IntegerField()
+    column = serializers.IntegerField()
+
+
+class TaskSubtaskCreateSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=500, trim_whitespace=True)
 
 
 class TaskAssigneeSerializer(serializers.Serializer):
@@ -30,36 +117,68 @@ class TaskAssigneeSerializer(serializers.Serializer):
     username = serializers.CharField(source="user.username")
     first_name = serializers.CharField(source="user.first_name")
     last_name = serializers.CharField(source="user.last_name")
+    initials = serializers.SerializerMethodField()
     assignment_id = serializers.IntegerField(source="id")
     assignment_status = serializers.CharField(source="status")
     assigned_at = serializers.DateTimeField()
     completed_at = serializers.DateTimeField(allow_null=True)
 
+    def get_initials(self, obj):
+        return user_initials(obj.user)
+
 
 class TaskCommentSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField()
+    author_id = serializers.IntegerField(source="author.id", read_only=True)
+    can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = TaskComment
         fields = (
             "id",
             "author",
+            "author_id",
+            "can_edit",
             "text",
             "created_at",
+            "updated_at",
         )
+
+    def get_can_edit(self, obj):
+        user = self.context.get("user") or get_local_dev_user()
+        return bool(user and obj.author_id == user.id)
 
 
 class TaskFileSerializer(serializers.ModelSerializer):
+    author = serializers.SerializerMethodField()
+    uploaded_by_id = serializers.IntegerField(source="uploaded_by.id", read_only=True)
+    uploaded_by_username = serializers.CharField(source="uploaded_by.username", read_only=True)
+    uploaded_by_first_name = serializers.CharField(source="uploaded_by.first_name", read_only=True)
+    uploaded_by_last_name = serializers.CharField(source="uploaded_by.last_name", read_only=True)
+    can_delete = serializers.SerializerMethodField()
     file_url = serializers.SerializerMethodField()
 
     class Meta:
         model = TaskFile
         fields = (
             "id",
+            "author",
+            "uploaded_by_id",
+            "uploaded_by_username",
+            "uploaded_by_first_name",
+            "uploaded_by_last_name",
+            "can_delete",
             "original_name",
             "uploaded_at",
             "file_url",
         )
+
+    def get_author(self, obj):
+        return user_display_name(obj.uploaded_by)
+
+    def get_can_delete(self, obj):
+        user = self.context.get("user") or get_local_dev_user()
+        return bool(user and obj.uploaded_by_id == user.id)
 
     def get_file_url(self, obj):
         if not obj.file:
@@ -73,10 +192,13 @@ class TaskFileSerializer(serializers.ModelSerializer):
 
 
 class TaskHistorySerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField()
+
     class Meta:
         model = TaskHistory
         fields = (
             "id",
+            "user",
             "event_type",
             "description",
             "created_at",
@@ -88,9 +210,10 @@ class TaskDetailSerializer(serializers.ModelSerializer):
     priority = serializers.StringRelatedField()
     department = serializers.StringRelatedField()
     assignees = TaskAssigneeSerializer(source="assignments", many=True)
-    comments = TaskCommentSerializer(many=True)
-    files = TaskFileSerializer(many=True)
+    comments = serializers.SerializerMethodField()
+    files = serializers.SerializerMethodField()
     history = TaskHistorySerializer(source="history_events", many=True)
+    subtasks = TaskSerializer(many=True, read_only=True)
 
     class Meta:
         model = Task
@@ -108,4 +231,22 @@ class TaskDetailSerializer(serializers.ModelSerializer):
             "comments",
             "files",
             "history",
+            "subtasks",
         )
+
+    def get_comments(self, obj):
+        return TaskCommentSerializer(
+            obj.comments.all(),
+            many=True,
+            context={"user": self.context.get("user")},
+        ).data
+
+    def get_files(self, obj):
+        return TaskFileSerializer(
+            obj.files.all(),
+            many=True,
+            context={
+                "request": self.context.get("request"),
+                "user": self.context.get("user"),
+            },
+        ).data
