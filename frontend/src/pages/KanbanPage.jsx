@@ -151,6 +151,19 @@ export function KanbanPage() {
     setIsTaskLoading(false);
   }
 
+  function handleCommentCreated(comment) {
+    setSelectedTask((currentTask) => {
+      if (!currentTask) {
+        return currentTask;
+      }
+
+      return {
+        ...currentTask,
+        comments: [...(currentTask.comments || []), comment],
+      };
+    });
+  }
+
   return (
     <main className="kanban-page">
       <div className={`kanban-workspace ${isDrawerOpen ? "" : "kanban-workspace--drawer-closed"}`}>
@@ -209,6 +222,7 @@ export function KanbanPage() {
             isLoading={isTaskLoading}
             error={taskError}
             onClose={handleCloseTask}
+            onCommentCreated={handleCommentCreated}
           />
         )}
       </div>

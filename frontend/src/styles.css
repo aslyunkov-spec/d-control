@@ -697,3 +697,9 @@ h1 {
 .assignee-status--in_progress {
   color: #175cd3;
 }
+.comment-error {
+  margin: -2px 0 0;
+  color: #b42318;
+  font-size: 11px;
+  line-height: 1.25;
+}

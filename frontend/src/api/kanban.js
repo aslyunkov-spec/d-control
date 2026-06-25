@@ -15,3 +15,10 @@ export function getTasksByDepartment(departmentId) {
 export function getTaskDetails(taskId) {
   return apiRequest(`/api/tasks/${taskId}/`);
 }
+
+export function createTaskComment(taskId, text) {
+  return apiRequest(`/api/tasks/${taskId}/comments/`, {
+    method: "POST",
+    body: JSON.stringify({ text }),
+  });
+}

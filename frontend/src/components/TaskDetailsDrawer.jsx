@@ -1,3 +1,7 @@
+import { useState } from "react";
+
+import { createTaskComment } from "../api/kanban";
+
 function formatDateTime(value) {
   if (!value) {
     return "";
@@ -107,12 +111,42 @@ function AssigneesCompact({ assignees = [] }) {
   );
 }
 
-export function TaskDetailsDrawer({ task, isLoading, error, onClose }) {
+export function TaskDetailsDrawer({ task, isLoading, error, onClose, onCommentCreated }) {
+  const [commentText, setCommentText] = useState("");
+  const [commentError, setCommentError] = useState("");
+  const [isCommentSubmitting, setIsCommentSubmitting] = useState(false);
   const timeline = task ? buildTimeline(task) : [];
   const commentsCount = task?.comments?.length || 0;
   const filesCount = task?.files?.length || 0;
   const subtasks = Array.isArray(task?.subtasks) ? task.subtasks : [];
   const subtasksTotal = subtasks.length;
+
+  async function handleCommentSubmit(event) {
+    event.preventDefault();
+
+    if (!task || isCommentSubmitting) {
+      return;
+    }
+
+    const text = commentText.trim();
+    if (!text) {
+      setCommentError("Введите комментарий.");
+      return;
+    }
+
+    setCommentError("");
+    setIsCommentSubmitting(true);
+
+    try {
+      const comment = await createTaskComment(task.id, text);
+      onCommentCreated?.(comment);
+      setCommentText("");
+    } catch (submitError) {
+      setCommentError("Не удалось отправить комментарий.");
+    } finally {
+      setIsCommentSubmitting(false);
+    }
+  }
 
   return (
     <aside className="task-drawer" aria-label="Карточка задачи">
@@ -190,14 +224,23 @@ export function TaskDetailsDrawer({ task, isLoading, error, onClose }) {
       </div>
 
       <footer className="task-drawer__footer">
-        <form className="comment-composer" onSubmit={(event) => event.preventDefault()}>
-          <textarea placeholder="Новый комментарий" rows="2" disabled={!task} />
+        <form className="comment-composer" onSubmit={handleCommentSubmit}>
+          <textarea
+            placeholder="Новый комментарий"
+            rows="2"
+            value={commentText}
+            disabled={!task || isCommentSubmitting}
+            onChange={(event) => setCommentText(event.target.value)}
+          />
+          {commentError && <p className="comment-error">{commentError}</p>}
           <div className="comment-composer__actions">
             <div>
               <button type="button" disabled>📎 Файл</button>
               <button type="button" disabled>@ Упомянуть</button>
             </div>
-            <button type="submit" disabled>Отправить</button>
+            <button type="submit" disabled={!task || isCommentSubmitting}>
+              {isCommentSubmitting ? "Отправка..." : "Отправить"}
+            </button>
           </div>
         </form>
         <AssigneesCompact assignees={task?.assignees || []} />
