@@ -91,3 +91,7 @@ export function deleteDepartmentColumn(departmentId, columnId) {
     method: "DELETE",
   });
 }
+
+export function getUsers() {
+  return apiRequest("/api/users/");
+}
