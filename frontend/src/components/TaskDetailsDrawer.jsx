@@ -223,6 +223,7 @@ export function TaskDetailsDrawer({
   error,
   onClose,
   onDrawerWidthChange,
+  onAssigneesChange,
   onCommentCreated,
   onCommentUpdated,
   onFileDeleted,
@@ -239,12 +240,29 @@ export function TaskDetailsDrawer({
   const [isCommentSaving, setIsCommentSaving] = useState(false);
   const [isFileUploading, setIsFileUploading] = useState(false);
   const [isFileDeletingId, setIsFileDeletingId] = useState(null);
-  const [pickedUsers, setPickedUsers] = useState([]);
+  const [assigneeError, setAssigneeError] = useState("");
+  const [isAssigneeUpdating, setIsAssigneeUpdating] = useState(false);
   const timeline = task ? buildTimeline(task) : [];
   const commentsCount = task?.comments?.length || 0;
   const filesCount = task?.files?.length || 0;
   const subtasks = Array.isArray(task?.subtasks) ? task.subtasks : [];
   const subtasksTotal = subtasks.length;
+
+  async function handleAssigneesChange(nextAssignees) {
+    if (!task || isAssigneeUpdating) {
+      return;
+    }
+
+    setAssigneeError("");
+    setIsAssigneeUpdating(true);
+    try {
+      await onAssigneesChange?.(task.id, nextAssignees);
+    } catch {
+      setAssigneeError("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0431\u043d\u043e\u0432\u0438\u0442\u044c \u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u0435\u0439.");
+    } finally {
+      setIsAssigneeUpdating(false);
+    }
+  }
 
   function handleResizeStart(event) {
     event.preventDefault();
@@ -488,9 +506,14 @@ export function TaskDetailsDrawer({
           </div>
         </form>
         <AssigneesCompact assignees={task?.assignees || []} />
-        <section className="drawer-user-picker" aria-label={"\u0422\u0435\u0441\u0442 \u0432\u044b\u0431\u043e\u0440\u0430 \u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u0445"}>
+        <section className="drawer-user-picker" aria-label={"\u0412\u044b\u0431\u043e\u0440 \u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u0445"}>
           <h3>{"\u041e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u0435"}</h3>
-          <UserPicker value={pickedUsers} onChange={setPickedUsers} />
+          <UserPicker
+            value={task?.assignees || []}
+            onChange={handleAssigneesChange}
+            disabled={!task || isAssigneeUpdating}
+          />
+          {assigneeError && <p className="comment-error">{assigneeError}</p>}
         </section>
       </footer>
     </aside>

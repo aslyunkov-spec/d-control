@@ -11,6 +11,7 @@ import {
   getTasksByDepartment,
   toggleSubtask,
   updateDepartmentColumn,
+  updateTaskAssignees,
   updateTaskTitle,
 } from "../api/kanban";
 import { AppearanceSettings } from "../components/AppearanceSettings";
@@ -501,6 +502,41 @@ export function KanbanPage() {
     setIsTaskLoading(false);
   }
 
+  async function handleTaskAssigneesChange(taskId, nextAssignees) {
+    const previousAssignees = selectedTask?.id === taskId ? selectedTask.assignees || [] : [];
+    const optimisticTask = { id: taskId, assignees: nextAssignees };
+
+    setSelectedTask((currentTask) => (
+      currentTask?.id === taskId ? { ...currentTask, assignees: nextAssignees } : currentTask
+    ));
+    setTasks((currentTasks) => (
+      currentTasks.map((currentTask) => updateTaskEverywhere(currentTask, optimisticTask))
+    ));
+
+    try {
+      const updatedTask = await updateTaskAssignees(
+        taskId,
+        nextAssignees.map((assignee) => assignee.id),
+      );
+      setSelectedTask((currentTask) => (
+        currentTask?.id === taskId ? { ...currentTask, ...updatedTask } : currentTask
+      ));
+      setTasks((currentTasks) => (
+        currentTasks.map((currentTask) => updateTaskEverywhere(currentTask, updatedTask))
+      ));
+      return updatedTask;
+    } catch (error) {
+      const rollbackTask = { id: taskId, assignees: previousAssignees };
+      setSelectedTask((currentTask) => (
+        currentTask?.id === taskId ? { ...currentTask, assignees: previousAssignees } : currentTask
+      ));
+      setTasks((currentTasks) => (
+        currentTasks.map((currentTask) => updateTaskEverywhere(currentTask, rollbackTask))
+      ));
+      throw error;
+    }
+  }
+
   function handleCommentCreated(comment) {
     setSelectedTask((currentTask) => {
       if (!currentTask) {
@@ -685,6 +721,7 @@ export function KanbanPage() {
             drawerWidth={drawerWidth}
             onClose={handleCloseTask}
             onDrawerWidthChange={setDrawerWidth}
+            onAssigneesChange={handleTaskAssigneesChange}
             onCommentCreated={handleCommentCreated}
             onFileUploaded={handleFileUploaded}
           />

@@ -32,6 +32,11 @@ function getAssigneeInitials(assignee) {
   return assignee.initials || String(assignee.username || "?").slice(0, 2).toUpperCase();
 }
 
+function getAssigneeTitle(assignee) {
+  const fullName = `${assignee.first_name || ""} ${assignee.last_name || ""}`.trim();
+  return [fullName || assignee.username, assignee.email, assignee.role].filter(Boolean).join("\n");
+}
+
 export function TaskCard({
   task,
   isMenuOpen = false,
@@ -65,7 +70,7 @@ export function TaskCard({
   const filesCount = Number(task.files_count || 0);
   const subtasks = Array.isArray(task.subtasks) ? [...task.subtasks].sort(compareByCreatedAt) : [];
   const assignees = Array.isArray(task.assignees) ? task.assignees : [];
-  const visibleAssignees = assignees.slice(0, 3);
+  const visibleAssignees = assignees.length > 4 ? assignees.slice(0, 3) : assignees;
   const hiddenAssigneesCount = Math.max(assignees.length - visibleAssignees.length, 0);
   const subtasksTotal = Number(task.subtasks_total ?? subtasks.length);
   const subtasksCompleted = Number(
@@ -335,7 +340,7 @@ export function TaskCard({
         {assignees.length > 0 && (
           <span className="task-assignees" aria-label="Ответственные">
             {visibleAssignees.map((assignee) => (
-              <span className="task-assignee-avatar" key={assignee.id} title={assignee.username}>
+              <span className="task-assignee-avatar" key={assignee.id} title={getAssigneeTitle(assignee)}>
                 {getAssigneeInitials(assignee)}
               </span>
             ))}

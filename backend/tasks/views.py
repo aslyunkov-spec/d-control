@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.db.models import Count, Max, Q
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -21,6 +22,49 @@ from .serializers import (
 )
 
 
+MANAGEMENT_ROLE_CODES = {"admin", "administrator", "director"}
+DEPARTMENT_HEAD_ROLE_CODES = {
+    "department_head",
+    "department_lead",
+    "head",
+    "head_of_department",
+    "manager",
+    "department_manager",
+    "supervisor",
+}
+MANAGEMENT_ROLE_NAMES = {"administrator", "director", "администратор", "директор"}
+DEPARTMENT_HEAD_ROLE_NAMES = {
+    "department head",
+    "head of department",
+    "руководитель",
+    "руководитель отдела",
+    "начальник отдела",
+}
+
+
+def can_manage_task_assignees(user, task):
+    if user is None:
+        return False
+
+    if user.is_superuser or user.id == task.created_by_id:
+        return True
+
+    profile = getattr(user, "profile", None)
+    role = getattr(profile, "role", None)
+    if not role:
+        return False
+
+    role_code = (role.code or "").strip().lower()
+    role_name = (role.name or "").strip().lower()
+    if role_code in MANAGEMENT_ROLE_CODES or role_name in MANAGEMENT_ROLE_NAMES:
+        return True
+
+    return (
+        role_code in DEPARTMENT_HEAD_ROLE_CODES
+        or role_name in DEPARTMENT_HEAD_ROLE_NAMES
+    ) and profile.department_id == task.department_id
+
+
 class TaskListAPIView(ListAPIView):
     authentication_classes = ()
     serializer_class = TaskSerializer
@@ -38,6 +82,8 @@ class TaskListAPIView(ListAPIView):
                 "subtasks__status",
                 "subtasks__priority",
                 "subtasks__department",
+                "subtasks__assignments__user",
+                "assignments__user__profile__role",
             )
             .annotate(
                 comments_count=Count("comments", distinct=True),
@@ -103,7 +149,7 @@ class TaskDetailAPIView(RetrieveAPIView):
             "status",
             "priority",
         ).prefetch_related(
-            "assignments__user",
+            "assignments__user__profile__role",
             "comments__author",
             "files__uploaded_by",
             "history_events",
@@ -118,19 +164,75 @@ class TaskDetailAPIView(RetrieveAPIView):
         return context
 
     def patch(self, request, pk):
-        task = get_object_or_404(Task, pk=pk)
-        title = str(request.data.get("title", "")).strip()
+        task = get_object_or_404(self.get_queryset(), pk=pk)
+        has_title = "title" in request.data
+        has_assignees = "assignees" in request.data
 
-        if not title:
+        if not has_title and not has_assignees:
             return Response(
-                {"title": ["Название задачи не может быть пустым."]},
+                {"detail": "Provide title or assignees to update the task."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        task.title = title
-        task.save(update_fields=["title", "updated_at"])
+        if has_title:
+            title = str(request.data.get("title", "")).strip()
+            if not title:
+                return Response(
+                    {"title": ["Task title cannot be empty."]},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            task.title = title
+            task.save(update_fields=["title", "updated_at"])
 
-        serializer = TaskSerializer(task)
+        if has_assignees:
+            user = get_request_user_or_fallback(request)
+            if not can_manage_task_assignees(user, task):
+                return Response(
+                    {"detail": "You do not have permission to change task assignees."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            assignee_ids = request.data.get("assignees")
+            if not isinstance(assignee_ids, list):
+                return Response(
+                    {"assignees": ["Expected a list of user ids."]},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            try:
+                normalized_ids = {int(user_id) for user_id in assignee_ids}
+            except (TypeError, ValueError):
+                return Response(
+                    {"assignees": ["Every assignee must be a valid user id."]},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            users = get_user_model().objects.filter(id__in=normalized_ids, is_active=True)
+            if users.count() != len(normalized_ids):
+                return Response(
+                    {"assignees": ["One or more users do not exist or are inactive."]},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            with transaction.atomic():
+                existing_assignments = {
+                    assignment.user_id: assignment
+                    for assignment in TaskAssignment.objects.filter(task=task)
+                }
+                TaskAssignment.objects.filter(
+                    task=task,
+                    user_id__in=set(existing_assignments) - normalized_ids,
+                ).delete()
+                TaskAssignment.objects.bulk_create(
+                    [
+                        TaskAssignment(task=task, user=assignee)
+                        for assignee in users
+                        if assignee.id not in existing_assignments
+                    ]
+                )
+
+        task = self.get_queryset().get(pk=pk)
+        serializer = TaskDetailSerializer(task, context=self.get_serializer_context())
         return Response(serializer.data)
 
 

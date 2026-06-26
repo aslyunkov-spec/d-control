@@ -21,6 +21,12 @@ def user_initials(user):
     return username[:2].upper()
 
 
+def user_role_name(user):
+    profile = getattr(user, "profile", None)
+    role = getattr(profile, "role", None)
+    return role.name if role else None
+
+
 def get_local_dev_user():
     return get_user_model().objects.order_by("id").first()
 
@@ -30,10 +36,15 @@ class TaskListAssigneeSerializer(serializers.Serializer):
     username = serializers.CharField(source="user.username")
     first_name = serializers.CharField(source="user.first_name")
     last_name = serializers.CharField(source="user.last_name")
+    email = serializers.EmailField(source="user.email")
+    role = serializers.SerializerMethodField()
     initials = serializers.SerializerMethodField()
 
     def get_initials(self, obj):
         return user_initials(obj.user)
+
+    def get_role(self, obj):
+        return user_role_name(obj.user)
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -119,6 +130,8 @@ class TaskAssigneeSerializer(serializers.Serializer):
     username = serializers.CharField(source="user.username")
     first_name = serializers.CharField(source="user.first_name")
     last_name = serializers.CharField(source="user.last_name")
+    email = serializers.EmailField(source="user.email")
+    role = serializers.SerializerMethodField()
     initials = serializers.SerializerMethodField()
     assignment_id = serializers.IntegerField(source="id")
     assignment_status = serializers.CharField(source="status")
@@ -127,6 +140,9 @@ class TaskAssigneeSerializer(serializers.Serializer):
 
     def get_initials(self, obj):
         return user_initials(obj.user)
+
+    def get_role(self, obj):
+        return user_role_name(obj.user)
 
 
 class TaskCommentSerializer(serializers.ModelSerializer):

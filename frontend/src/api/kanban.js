@@ -95,3 +95,10 @@ export function deleteDepartmentColumn(departmentId, columnId) {
 export function getUsers() {
   return apiRequest("/api/users/");
 }
+
+export function updateTaskAssignees(taskId, assigneeIds) {
+  return apiRequest(`/api/tasks/${taskId}/`, {
+    method: "PATCH",
+    body: JSON.stringify({ assignees: assigneeIds }),
+  });
+}
