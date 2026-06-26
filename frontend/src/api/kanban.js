@@ -96,9 +96,17 @@ export function getUsers() {
   return apiRequest("/api/users/");
 }
 
-export function updateTaskAssignees(taskId, assigneeIds) {
+export function updateTaskAssignments(taskId, updates) {
   return apiRequest(`/api/tasks/${taskId}/`, {
     method: "PATCH",
-    body: JSON.stringify({ assignees: assigneeIds }),
+    body: JSON.stringify(updates),
   });
+}
+
+export function updateTaskAssignees(taskId, assigneeIds) {
+  return updateTaskAssignments(taskId, { assignees: assigneeIds });
+}
+
+export function updateTaskWatchers(taskId, watcherIds) {
+  return updateTaskAssignments(taskId, { watchers: watcherIds });
 }

@@ -224,6 +224,7 @@ export function TaskDetailsDrawer({
   onClose,
   onDrawerWidthChange,
   onAssigneesChange,
+  onWatchersChange,
   onCommentCreated,
   onCommentUpdated,
   onFileDeleted,
@@ -242,6 +243,8 @@ export function TaskDetailsDrawer({
   const [isFileDeletingId, setIsFileDeletingId] = useState(null);
   const [assigneeError, setAssigneeError] = useState("");
   const [isAssigneeUpdating, setIsAssigneeUpdating] = useState(false);
+  const [watcherError, setWatcherError] = useState("");
+  const [isWatcherUpdating, setIsWatcherUpdating] = useState(false);
   const timeline = task ? buildTimeline(task) : [];
   const commentsCount = task?.comments?.length || 0;
   const filesCount = task?.files?.length || 0;
@@ -261,6 +264,22 @@ export function TaskDetailsDrawer({
       setAssigneeError("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0431\u043d\u043e\u0432\u0438\u0442\u044c \u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u0435\u0439.");
     } finally {
       setIsAssigneeUpdating(false);
+    }
+  }
+
+  async function handleWatchersChange(nextWatchers) {
+    if (!task || isWatcherUpdating) {
+      return;
+    }
+
+    setWatcherError("");
+    setIsWatcherUpdating(true);
+    try {
+      await onWatchersChange?.(task.id, nextWatchers);
+    } catch {
+      setWatcherError("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0431\u043d\u043e\u0432\u0438\u0442\u044c \u043d\u0430\u0431\u043b\u044e\u0434\u0430\u0442\u0435\u043b\u0435\u0439.");
+    } finally {
+      setIsWatcherUpdating(false);
     }
   }
 
@@ -514,6 +533,15 @@ export function TaskDetailsDrawer({
             disabled={!task || isAssigneeUpdating}
           />
           {assigneeError && <p className="comment-error">{assigneeError}</p>}
+        </section>
+        <section className="drawer-user-picker" aria-label={"\u0412\u044b\u0431\u043e\u0440 \u043d\u0430\u0431\u043b\u044e\u0434\u0430\u0442\u0435\u043b\u0435\u0439"}>
+          <h3>{"\u041d\u0430\u0431\u043b\u044e\u0434\u0430\u0442\u0435\u043b\u0438"}</h3>
+          <UserPicker
+            value={task?.watchers || []}
+            onChange={handleWatchersChange}
+            disabled={!task || isWatcherUpdating}
+          />
+          {watcherError && <p className="comment-error">{watcherError}</p>}
         </section>
       </footer>
     </aside>

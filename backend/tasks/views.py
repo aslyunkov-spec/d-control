@@ -166,11 +166,19 @@ class TaskDetailAPIView(RetrieveAPIView):
     def patch(self, request, pk):
         task = get_object_or_404(self.get_queryset(), pk=pk)
         has_title = "title" in request.data
-        has_assignees = "assignees" in request.data
+        assignment_fields = {
+            "assignees": TaskAssignment.ASSIGNMENT_ASSIGNEE,
+            "watchers": TaskAssignment.ASSIGNMENT_WATCHER,
+        }
+        requested_assignment_fields = [
+            field_name
+            for field_name in assignment_fields
+            if field_name in request.data
+        ]
 
-        if not has_title and not has_assignees:
+        if not has_title and not requested_assignment_fields:
             return Response(
-                {"detail": "Provide title or assignees to update the task."},
+                {"detail": "Provide title, assignees, or watchers to update the task."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -184,54 +192,30 @@ class TaskDetailAPIView(RetrieveAPIView):
             task.title = title
             task.save(update_fields=["title", "updated_at"])
 
-        if has_assignees:
+        if requested_assignment_fields:
             user = get_request_user_or_fallback(request)
             if not can_manage_task_assignees(user, task):
                 return Response(
-                    {"detail": "You do not have permission to change task assignees."},
+                    {"detail": "You do not have permission to change task assignments."},
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
-            assignee_ids = request.data.get("assignees")
-            if not isinstance(assignee_ids, list):
-                return Response(
-                    {"assignees": ["Expected a list of user ids."]},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            try:
-                normalized_ids = {int(user_id) for user_id in assignee_ids}
-            except (TypeError, ValueError):
-                return Response(
-                    {"assignees": ["Every assignee must be a valid user id."]},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            users = get_user_model().objects.filter(id__in=normalized_ids, is_active=True)
-            if users.count() != len(normalized_ids):
-                return Response(
-                    {"assignees": ["One or more users do not exist or are inactive."]},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            assignment_users = {}
+            for field_name in requested_assignment_fields:
+                users, error_response = get_assignment_users(request.data.get(field_name), field_name)
+                if error_response is not None:
+                    return error_response
+                assignment_users[field_name] = users
 
             with transaction.atomic():
-                existing_assignments = {
-                    assignment.user_id: assignment
-                    for assignment in TaskAssignment.objects.filter(task=task)
-                }
-                TaskAssignment.objects.filter(
-                    task=task,
-                    user_id__in=set(existing_assignments) - normalized_ids,
-                ).delete()
-                TaskAssignment.objects.bulk_create(
-                    [
-                        TaskAssignment(task=task, user=assignee)
-                        for assignee in users
-                        if assignee.id not in existing_assignments
-                    ]
-                )
+                for field_name, users in assignment_users.items():
+                    sync_task_assignments(
+                        task,
+                        users,
+                        assignment_fields[field_name],
+                    )
 
-        task = self.get_queryset().get(pk=pk)
+        task = get_object_or_404(self.get_queryset(), pk=pk)
         serializer = TaskDetailSerializer(task, context=self.get_serializer_context())
         return Response(serializer.data)
 
@@ -419,13 +403,16 @@ class TaskSubtaskToggleAPIView(APIView):
         return Response(output_serializer.data)
 
 def inherit_task_assignments(parent_task, subtask):
-    parent_assignments = parent_task.assignments.select_related("user")
+    parent_assignments = parent_task.assignments.filter(
+        assignment_type=TaskAssignment.ASSIGNMENT_ASSIGNEE,
+    ).select_related("user")
     TaskAssignment.objects.bulk_create(
         [
             TaskAssignment(
                 task=subtask,
                 user=assignment.user,
                 status=TaskAssignment.STATUS_ASSIGNED,
+                assignment_type=TaskAssignment.ASSIGNMENT_ASSIGNEE,
             )
             for assignment in parent_assignments
         ],
@@ -433,6 +420,58 @@ def inherit_task_assignments(parent_task, subtask):
     )
 def is_completed_or_archived(status_obj):
     return status_obj.system_type in [TaskStatus.SYSTEM_COMPLETED, TaskStatus.SYSTEM_ARCHIVED]
+
+
+def get_assignment_users(raw_user_ids, field_name):
+    if not isinstance(raw_user_ids, list):
+        return None, Response(
+            {field_name: ["Expected a list of user ids."]},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        normalized_ids = {int(user_id) for user_id in raw_user_ids}
+    except (TypeError, ValueError):
+        return None, Response(
+            {field_name: ["Every entry must be a valid user id."]},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    users = list(get_user_model().objects.filter(id__in=normalized_ids, is_active=True))
+    if len(users) != len(normalized_ids):
+        return None, Response(
+            {field_name: ["One or more users do not exist or are inactive."]},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    return users, None
+
+
+def sync_task_assignments(task, users, assignment_type):
+    target_user_ids = {user.id for user in users}
+    existing_assignments = {
+        assignment.user_id: assignment
+        for assignment in TaskAssignment.objects.filter(
+            task=task,
+            assignment_type=assignment_type,
+        )
+    }
+    TaskAssignment.objects.filter(
+        task=task,
+        assignment_type=assignment_type,
+        user_id__in=set(existing_assignments) - target_user_ids,
+    ).delete()
+    TaskAssignment.objects.bulk_create(
+        [
+            TaskAssignment(
+                task=task,
+                user=user,
+                assignment_type=assignment_type,
+            )
+            for user in users
+            if user.id not in existing_assignments
+        ]
+    )
 
 
 def get_default_active_status():

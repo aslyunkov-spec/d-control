@@ -11,7 +11,7 @@ import {
   getTasksByDepartment,
   toggleSubtask,
   updateDepartmentColumn,
-  updateTaskAssignees,
+  updateTaskAssignments,
   updateTaskTitle,
 } from "../api/kanban";
 import { AppearanceSettings } from "../components/AppearanceSettings";
@@ -502,21 +502,21 @@ export function KanbanPage() {
     setIsTaskLoading(false);
   }
 
-  async function handleTaskAssigneesChange(taskId, nextAssignees) {
-    const previousAssignees = selectedTask?.id === taskId ? selectedTask.assignees || [] : [];
-    const optimisticTask = { id: taskId, assignees: nextAssignees };
+  async function handleTaskUsersChange(taskId, fieldName, nextUsers) {
+    const previousUsers = selectedTask?.id === taskId ? selectedTask[fieldName] || [] : [];
+    const optimisticTask = { id: taskId, [fieldName]: nextUsers };
 
     setSelectedTask((currentTask) => (
-      currentTask?.id === taskId ? { ...currentTask, assignees: nextAssignees } : currentTask
+      currentTask?.id === taskId ? { ...currentTask, [fieldName]: nextUsers } : currentTask
     ));
     setTasks((currentTasks) => (
       currentTasks.map((currentTask) => updateTaskEverywhere(currentTask, optimisticTask))
     ));
 
     try {
-      const updatedTask = await updateTaskAssignees(
+      const updatedTask = await updateTaskAssignments(
         taskId,
-        nextAssignees.map((assignee) => assignee.id),
+        { [fieldName]: nextUsers.map((user) => user.id) },
       );
       setSelectedTask((currentTask) => (
         currentTask?.id === taskId ? { ...currentTask, ...updatedTask } : currentTask
@@ -526,15 +526,23 @@ export function KanbanPage() {
       ));
       return updatedTask;
     } catch (error) {
-      const rollbackTask = { id: taskId, assignees: previousAssignees };
+      const rollbackTask = { id: taskId, [fieldName]: previousUsers };
       setSelectedTask((currentTask) => (
-        currentTask?.id === taskId ? { ...currentTask, assignees: previousAssignees } : currentTask
+        currentTask?.id === taskId ? { ...currentTask, [fieldName]: previousUsers } : currentTask
       ));
       setTasks((currentTasks) => (
         currentTasks.map((currentTask) => updateTaskEverywhere(currentTask, rollbackTask))
       ));
       throw error;
     }
+  }
+
+  function handleTaskAssigneesChange(taskId, nextAssignees) {
+    return handleTaskUsersChange(taskId, "assignees", nextAssignees);
+  }
+
+  function handleTaskWatchersChange(taskId, nextWatchers) {
+    return handleTaskUsersChange(taskId, "watchers", nextWatchers);
   }
 
   function handleCommentCreated(comment) {
@@ -722,6 +730,7 @@ export function KanbanPage() {
             onClose={handleCloseTask}
             onDrawerWidthChange={setDrawerWidth}
             onAssigneesChange={handleTaskAssigneesChange}
+            onWatchersChange={handleTaskWatchersChange}
             onCommentCreated={handleCommentCreated}
             onFileUploaded={handleFileUploaded}
           />

@@ -59,7 +59,8 @@ class TaskSerializer(serializers.ModelSerializer):
     subtasks_total = serializers.SerializerMethodField()
     subtasks_completed = serializers.SerializerMethodField()
     subtasks = serializers.SerializerMethodField()
-    assignees = TaskListAssigneeSerializer(source="assignments", many=True, read_only=True)
+    assignees = serializers.SerializerMethodField()
+    watchers = serializers.SerializerMethodField()
 
     class Meta:
         model = Task
@@ -81,7 +82,28 @@ class TaskSerializer(serializers.ModelSerializer):
             "subtasks_completed",
             "subtasks",
             "assignees",
+            "watchers",
         )
+
+    def get_assignees(self, obj):
+        return TaskListAssigneeSerializer(
+            [
+                assignment
+                for assignment in obj.assignments.all()
+                if assignment.assignment_type == assignment.ASSIGNMENT_ASSIGNEE
+            ],
+            many=True,
+        ).data
+
+    def get_watchers(self, obj):
+        return TaskListAssigneeSerializer(
+            [
+                assignment
+                for assignment in obj.assignments.all()
+                if assignment.assignment_type == assignment.ASSIGNMENT_WATCHER
+            ],
+            many=True,
+        ).data
 
     def get_comments_count(self, obj):
         return getattr(obj, "comments_count", obj.comments.count())
@@ -227,7 +249,8 @@ class TaskDetailSerializer(serializers.ModelSerializer):
     status = serializers.StringRelatedField()
     priority = serializers.StringRelatedField()
     department = serializers.StringRelatedField()
-    assignees = TaskAssigneeSerializer(source="assignments", many=True)
+    assignees = serializers.SerializerMethodField()
+    watchers = serializers.SerializerMethodField()
     comments = serializers.SerializerMethodField()
     files = serializers.SerializerMethodField()
     history = TaskHistorySerializer(source="history_events", many=True)
@@ -246,11 +269,32 @@ class TaskDetailSerializer(serializers.ModelSerializer):
             "due_date",
             "created_at",
             "assignees",
+            "watchers",
             "comments",
             "files",
             "history",
             "subtasks",
         )
+
+    def get_assignees(self, obj):
+        return TaskAssigneeSerializer(
+            [
+                assignment
+                for assignment in obj.assignments.all()
+                if assignment.assignment_type == assignment.ASSIGNMENT_ASSIGNEE
+            ],
+            many=True,
+        ).data
+
+    def get_watchers(self, obj):
+        return TaskAssigneeSerializer(
+            [
+                assignment
+                for assignment in obj.assignments.all()
+                if assignment.assignment_type == assignment.ASSIGNMENT_WATCHER
+            ],
+            many=True,
+        ).data
 
     def get_comments(self, obj):
         return TaskCommentSerializer(

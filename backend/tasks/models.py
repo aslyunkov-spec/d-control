@@ -200,6 +200,20 @@ class TaskAssignment(models.Model):
         (STATUS_RETURNED, "Возвращена"),
     ]
 
+    ASSIGNMENT_ASSIGNEE = "assignee"
+    ASSIGNMENT_WATCHER = "watcher"
+    ASSIGNMENT_TYPE_CHOICES = [
+        (ASSIGNMENT_ASSIGNEE, "Assignee"),
+        (ASSIGNMENT_WATCHER, "Watcher"),
+    ]
+
+    assignment_type = models.CharField(
+        "Assignment type",
+        max_length=20,
+        choices=ASSIGNMENT_TYPE_CHOICES,
+        default=ASSIGNMENT_ASSIGNEE,
+    )
+
     task = models.ForeignKey(
         Task,
         on_delete=models.CASCADE,
@@ -226,7 +240,7 @@ class TaskAssignment(models.Model):
     class Meta:
         verbose_name = "Исполнитель задачи"
         verbose_name_plural = "Исполнители задач"
-        unique_together = ("task", "user")
+        unique_together = ("task", "user", "assignment_type")
 
     def __str__(self):
         return f"{self.task} → {self.user}"
@@ -235,7 +249,7 @@ class TaskAssignment(models.Model):
         is_new = self.pk is None
         super().save(*args, **kwargs)
 
-        if is_new:
+        if is_new and self.assignment_type == self.ASSIGNMENT_ASSIGNEE:
             TaskHistory.objects.create(
                 task=self.task,
                 user=self.task.created_by,
@@ -250,9 +264,10 @@ class TaskAssignment(models.Model):
 
         super().delete(*args, **kwargs)
 
-        TaskHistory.objects.create(
-            task=task,
-            user=history_user,
+        if self.assignment_type == self.ASSIGNMENT_ASSIGNEE:
+            TaskHistory.objects.create(
+                task=task,
+                user=history_user,
             event_type=TaskHistory.EVENT_UNASSIGNED,
             description=f"Снят исполнитель: {assigned_user_name}.",
         )
