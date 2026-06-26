@@ -5,6 +5,7 @@ import {
   createSubtask,
   createTask,
   deleteDepartmentColumn,
+  deleteSubtask,
   getDepartmentColumns,
   getDepartments,
   getTaskDetails,
@@ -356,6 +357,35 @@ export function KanbanPage() {
     }
 
     return createdSubtask;
+  }
+
+  async function handleDeleteSubtask(parentTask, subtask) {
+    await deleteSubtask(parentTask.id, subtask.id);
+
+    setTasks((currentTasks) =>
+      currentTasks.map((task) => {
+        if (task.id !== parentTask.id) {
+          return task;
+        }
+        return updateParentSubtasks(
+          task,
+          (task.subtasks || []).filter((currentSubtask) => currentSubtask.id !== subtask.id),
+        );
+      }),
+    );
+
+    setSelectedTask((currentTask) => {
+      if (!currentTask) {
+        return currentTask;
+      }
+      if (currentTask.id === parentTask.id) {
+        return updateParentSubtasks(
+          currentTask,
+          (currentTask.subtasks || []).filter((currentSubtask) => currentSubtask.id !== subtask.id),
+        );
+      }
+      return currentTask;
+    });
   }
 
   async function handleRenameTask(task, title) {
@@ -731,6 +761,10 @@ export function KanbanPage() {
             onDrawerWidthChange={setDrawerWidth}
             onAssigneesChange={handleTaskAssigneesChange}
             onWatchersChange={handleTaskWatchersChange}
+            onCreateSubtask={handleCreateSubtask}
+            onDeleteSubtask={handleDeleteSubtask}
+            onRenameTask={handleRenameTask}
+            onToggleSubtask={handleToggleSubtask}
             onCommentCreated={handleCommentCreated}
             onFileUploaded={handleFileUploaded}
           />

@@ -21,6 +21,12 @@ def user_initials(user):
     return username[:2].upper()
 
 
+def user_avatar(user):
+    profile = getattr(user, "profile", None)
+    avatar = getattr(profile, "avatar", None)
+    return avatar.url if avatar else ""
+
+
 def user_role_name(user):
     profile = getattr(user, "profile", None)
     role = getattr(profile, "role", None)
@@ -37,8 +43,12 @@ class TaskListAssigneeSerializer(serializers.Serializer):
     first_name = serializers.CharField(source="user.first_name")
     last_name = serializers.CharField(source="user.last_name")
     email = serializers.EmailField(source="user.email")
+    avatar = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField()
     initials = serializers.SerializerMethodField()
+
+    def get_avatar(self, obj):
+        return user_avatar(obj.user)
 
     def get_initials(self, obj):
         return user_initials(obj.user)
@@ -153,12 +163,16 @@ class TaskAssigneeSerializer(serializers.Serializer):
     first_name = serializers.CharField(source="user.first_name")
     last_name = serializers.CharField(source="user.last_name")
     email = serializers.EmailField(source="user.email")
+    avatar = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField()
     initials = serializers.SerializerMethodField()
     assignment_id = serializers.IntegerField(source="id")
     assignment_status = serializers.CharField(source="status")
     assigned_at = serializers.DateTimeField()
     completed_at = serializers.DateTimeField(allow_null=True)
+
+    def get_avatar(self, obj):
+        return user_avatar(obj.user)
 
     def get_initials(self, obj):
         return user_initials(obj.user)
@@ -167,9 +181,32 @@ class TaskAssigneeSerializer(serializers.Serializer):
         return user_role_name(obj.user)
 
 
+class TaskTimelineUserSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
+    initials = serializers.SerializerMethodField()
+
+    class Meta:
+        model = get_user_model()
+        fields = (
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "avatar",
+            "initials",
+        )
+
+    def get_avatar(self, obj):
+        return user_avatar(obj)
+
+    def get_initials(self, obj):
+        return user_initials(obj)
+
+
 class TaskCommentSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField()
     author_id = serializers.IntegerField(source="author.id", read_only=True)
+    author_details = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
 
     class Meta:
@@ -178,11 +215,15 @@ class TaskCommentSerializer(serializers.ModelSerializer):
             "id",
             "author",
             "author_id",
+            "author_details",
             "can_edit",
             "text",
             "created_at",
             "updated_at",
         )
+
+    def get_author_details(self, obj):
+        return TaskTimelineUserSerializer(obj.author).data
 
     def get_can_edit(self, obj):
         user = self.context.get("user") or get_local_dev_user()
@@ -191,6 +232,7 @@ class TaskCommentSerializer(serializers.ModelSerializer):
 
 class TaskFileSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
+    uploaded_by_details = serializers.SerializerMethodField()
     uploaded_by_id = serializers.IntegerField(source="uploaded_by.id", read_only=True)
     uploaded_by_username = serializers.CharField(source="uploaded_by.username", read_only=True)
     uploaded_by_first_name = serializers.CharField(source="uploaded_by.first_name", read_only=True)
@@ -203,6 +245,7 @@ class TaskFileSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "author",
+            "uploaded_by_details",
             "uploaded_by_id",
             "uploaded_by_username",
             "uploaded_by_first_name",
@@ -215,6 +258,9 @@ class TaskFileSerializer(serializers.ModelSerializer):
 
     def get_author(self, obj):
         return user_display_name(obj.uploaded_by)
+
+    def get_uploaded_by_details(self, obj):
+        return TaskTimelineUserSerializer(obj.uploaded_by).data
 
     def get_can_delete(self, obj):
         user = self.context.get("user") or get_local_dev_user()
@@ -233,16 +279,23 @@ class TaskFileSerializer(serializers.ModelSerializer):
 
 class TaskHistorySerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()
+    user_details = serializers.SerializerMethodField()
 
     class Meta:
         model = TaskHistory
         fields = (
             "id",
             "user",
+            "user_details",
             "event_type",
             "description",
             "created_at",
         )
+
+    def get_user_details(self, obj):
+        if not obj.user_id:
+            return None
+        return TaskTimelineUserSerializer(obj.user).data
 
 
 class TaskDetailSerializer(serializers.ModelSerializer):

@@ -110,3 +110,9 @@ export function updateTaskAssignees(taskId, assigneeIds) {
 export function updateTaskWatchers(taskId, watcherIds) {
   return updateTaskAssignments(taskId, { watchers: watcherIds });
 }
+
+export function deleteSubtask(parentTaskId, subtaskId) {
+  return apiRequest(`/api/tasks/${parentTaskId}/subtasks/${subtaskId}/`, {
+    method: "DELETE",
+  });
+}

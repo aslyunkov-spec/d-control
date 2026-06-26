@@ -150,9 +150,9 @@ class TaskDetailAPIView(RetrieveAPIView):
             "priority",
         ).prefetch_related(
             "assignments__user__profile__role",
-            "comments__author",
-            "files__uploaded_by",
-            "history_events",
+            "comments__author__profile",
+            "files__uploaded_by__profile",
+            "history_events__user__profile",
             "subtasks__status",
             "subtasks__priority",
             "subtasks__department",
@@ -401,6 +401,17 @@ class TaskSubtaskToggleAPIView(APIView):
 
         output_serializer = TaskSerializer(subtask)
         return Response(output_serializer.data)
+
+
+class TaskSubtaskDeleteAPIView(APIView):
+    authentication_classes = ()
+    permission_classes = (AllowAny,)
+
+    def delete(self, request, pk, subtask_pk):
+        parent_task = get_object_or_404(Task, pk=pk)
+        subtask = get_object_or_404(Task, pk=subtask_pk, parent_task=parent_task)
+        subtask.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 def inherit_task_assignments(parent_task, subtask):
     parent_assignments = parent_task.assignments.filter(

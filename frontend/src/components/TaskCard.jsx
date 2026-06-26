@@ -338,7 +338,7 @@ export function TaskCard({
         )}
 
         {assignees.length > 0 && (
-          <span className="task-assignees" aria-label="Ответственные">
+          <span className="task-assignees" aria-label="Исполнители">
             {visibleAssignees.map((assignee) => (
               <span className="task-assignee-avatar" key={assignee.id} title={getAssigneeTitle(assignee)}>
                 {getAssigneeInitials(assignee)}

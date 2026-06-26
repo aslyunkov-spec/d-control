@@ -559,11 +559,6 @@ h1 {
   font-weight: 500;
 }
 
-.drawer-assignees {
-  display: grid;
-  gap: 5px;
-}
-
 .drawer-assignees h3 {
   margin-bottom: 0;
   color: #344054;
@@ -2524,11 +2519,6 @@ h1 {
 
 
 /* Reusable compact multi-user picker. */
-.drawer-user-picker {
-  display: grid;
-  gap: 5px;
-}
-
 .drawer-user-picker h3 {
   margin: 0;
   color: #344054;
@@ -2685,5 +2675,621 @@ h1 {
 
 .user-picker__error {
   margin: 3px 0 0;
+  color: #b42318;
+}
+
+
+/* Unified assignees and watchers controls in the task panel. */
+.task-people-sections {
+  display: grid;
+  gap: 8px;
+}
+
+.task-people-section {
+  position: relative;
+  display: grid;
+  gap: 5px;
+  border-top: 1px solid #eef2f6;
+  padding-top: 7px;
+}
+
+.task-people-section__header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.task-people-section__header h3 {
+  margin: 0;
+  color: #344054;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.task-people-section__add {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--card-radius);
+  background: transparent;
+  color: #2f6fa8;
+  padding: 0;
+  font-size: 17px;
+  line-height: 1;
+}
+
+.task-people-section__add:hover {
+  background: #eef4f9;
+}
+
+.task-people-section__users {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.task-person {
+  position: relative;
+  display: inline-flex;
+  width: 25px;
+  height: 25px;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  border-radius: 999px;
+  background: #dce8f1;
+  color: #315f88;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.task-person > span,
+.task-person img {
+  width: 25px;
+  height: 25px;
+  border-radius: 999px;
+}
+
+.task-person > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.task-person img {
+  display: block;
+  object-fit: cover;
+}
+
+.task-person button {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: inline-flex;
+  width: 13px;
+  height: 13px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: #667085;
+  color: #ffffff;
+  padding: 0;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.task-person button:hover {
+  background: #344054;
+}
+
+.task-people-section__picker {
+  position: relative;
+  z-index: 4;
+}
+
+.task-people-section__picker .user-picker__control {
+  min-height: 28px;
+}
+
+
+/* Compact task drawer tabs, timeline, actions, and participants. */
+.task-drawer__topbar {
+  padding: 6px 12px 4px;
+}
+
+.task-actions {
+  grid-template-columns: repeat(5, minmax(54px, 1fr));
+  gap: 6px;
+  padding: 7px 12px;
+  background: #f2f6fa;
+}
+
+.task-actions button {
+  width: auto;
+  height: 46px;
+  border-color: #b9c9d8;
+  background: #ffffff;
+  color: #315f88;
+  font-weight: 600;
+}
+
+.task-drawer__content {
+  gap: 6px;
+  padding: 8px 12px;
+}
+
+.task-title-block h2 {
+  margin-bottom: 0;
+}
+
+.task-summary-line {
+  gap: 4px;
+}
+
+.task-summary-line span {
+  min-height: 19px;
+  padding: 1px 6px;
+}
+
+.task-status-badge {
+  background: #dce8f1 !important;
+  color: #315f88;
+}
+
+.task-drawer-tabs {
+  display: flex;
+  gap: 3px;
+  border-bottom: 1px solid #e4e8ef;
+}
+
+.task-drawer-tab {
+  min-height: 28px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #667085;
+  padding: 4px 7px;
+  font-size: 12px;
+}
+
+.task-drawer-tab--active {
+  border-bottom-color: #2f6fa8;
+  color: #1d588f;
+  font-weight: 600;
+}
+
+.drawer-timeline-section {
+  gap: 4px;
+  border-top: 0;
+  padding-top: 2px;
+}
+
+.timeline-list {
+  gap: 2px;
+}
+
+.timeline-list li {
+  border: 0;
+  border-bottom: 1px solid #edf1f5;
+  border-radius: 0;
+  background: transparent;
+  padding: 5px 2px;
+}
+
+.timeline-list li:hover {
+  background: #f8fafc;
+}
+
+.task-drawer__footer {
+  gap: 6px;
+  padding: 7px 12px 8px;
+}
+
+.task-drawer__participants {
+  display: grid;
+  gap: 6px;
+  border-top: 1px solid #e4e8ef;
+  padding-top: 6px;
+}
+
+.task-drawer__participants .task-people-section {
+  gap: 3px;
+  border-top: 0;
+  padding-top: 0;
+}
+
+.drawer-subtasks {
+  display: grid;
+  gap: 6px;
+}
+
+.drawer-subtasks__create {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px;
+  gap: 5px;
+}
+
+.drawer-subtasks__create input,
+.drawer-subtask-row input[type="text"] {
+  min-width: 0;
+  border: 1px solid #d7dde5;
+  border-radius: var(--card-radius);
+  background: #ffffff;
+  color: #1d2430;
+  padding: 4px 6px;
+  font-size: 12px;
+}
+
+.drawer-subtasks__create button,
+.drawer-subtask-row__delete {
+  border: 0;
+  border-radius: var(--card-radius);
+  background: #eef4f9;
+  color: #315f88;
+  font-size: 15px;
+}
+
+.drawer-subtasks__list {
+  display: grid;
+  gap: 2px;
+}
+
+.drawer-subtask-row {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 5px;
+  min-height: 26px;
+}
+
+.drawer-subtask-row input[type="checkbox"] {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+}
+
+.drawer-subtask-row__title {
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: #344054;
+  padding: 2px 0;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.drawer-subtask-row__title:hover {
+  color: #1d588f;
+  text-decoration: underline;
+}
+
+/* Task drawer refinements: compact actions, timeline and participant popovers. */
+.task-actions {
+  grid-template-columns: repeat(5, minmax(56px, 1fr));
+  gap: 5px;
+  padding: 6px 12px;
+  background: #e8f2fa;
+}
+
+.task-actions button {
+  display: grid;
+  grid-template-rows: 22px minmax(12px, auto);
+  place-items: center;
+  width: auto;
+  height: 50px;
+  border: 1px solid #a9c3d8;
+  border-radius: var(--card-radius);
+  background: #fafdff;
+  color: #1d588f;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.task-actions button:disabled {
+  cursor: default;
+  opacity: 0.82;
+}
+
+.task-actions__icon {
+  display: block;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.drawer-timeline-section {
+  gap: 5px;
+  border: 0;
+  border-radius: var(--card-radius);
+  background: #eaf4fb;
+  padding: 7px;
+}
+
+.drawer-timeline-section h3 {
+  color: #315f88;
+}
+
+.timeline-list {
+  gap: 4px;
+}
+
+.timeline-list li {
+  border: 0;
+  border-radius: var(--card-radius);
+  background: #ffffff;
+  padding: 6px 7px;
+  box-shadow: 0 1px 1px rgb(28 74 110 / 6%);
+}
+
+.timeline-list li:hover {
+  background: #ffffff;
+}
+
+.timeline-list .timeline-file-item {
+  margin-top: 3px;
+}
+
+.drawer-subtasks {
+  gap: 5px;
+}
+
+.drawer-subtasks__list {
+  gap: 2px;
+}
+
+.drawer-subtasks__add {
+  width: 100%;
+  min-height: 28px;
+  border: 1px dashed #b9c9d8;
+  border-radius: var(--card-radius);
+  background: #f7fbfe;
+  color: #315f88;
+  padding: 4px 7px;
+  text-align: left;
+  font-size: 12px;
+}
+
+.drawer-subtasks__add:hover {
+  border-color: #2f6fa8;
+  background: #eef6fb;
+}
+
+.task-drawer__footer {
+  position: relative;
+  gap: 0;
+  padding: 6px 12px 8px;
+}
+
+.task-drawer__participants {
+  gap: 5px;
+  padding-top: 5px;
+}
+
+.task-people-section {
+  position: relative;
+}
+
+.task-people-section__popover {
+  position: absolute;
+  z-index: 40;
+  right: 0;
+  bottom: calc(100% + 6px);
+  width: min(290px, calc(100vw - 28px));
+  border: 1px solid #b9c9d8;
+  border-radius: var(--card-radius);
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgb(28 74 110 / 18%);
+  padding: 6px;
+}
+
+.task-people-section__popover .user-picker__control {
+  min-height: 30px;
+  border-radius: calc(var(--card-radius) * 0.75);
+}
+
+.task-people-section__popover .user-picker__menu {
+  top: auto;
+  right: 0;
+  bottom: calc(100% + 4px);
+  width: 100%;
+  max-height: min(220px, calc(100vh - 180px));
+  overflow-y: auto;
+  border-radius: var(--card-radius);
+}
+
+.task-people-section__popover .user-picker__error {
+  margin-bottom: 0;
+}
+
+/* Full-width task-panel tabs and compact subtask composer. */
+.drawer-timeline-section,
+.drawer-subtasks {
+  width: calc(100% + 24px);
+  margin-inline: -12px;
+  border-radius: 0;
+  padding: 8px 12px;
+}
+
+.drawer-timeline-section {
+  background: #dcecf8;
+}
+
+.drawer-subtasks {
+  background: #e3f0fa;
+}
+
+.drawer-subtasks__add {
+  min-height: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #2f6fa8;
+  padding: 3px 0;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.drawer-subtasks__add:hover,
+.drawer-subtasks__add:focus-visible {
+  border: 0;
+  background: transparent;
+  color: #1d588f;
+  text-decoration: underline;
+}
+
+.drawer-subtasks__create {
+  margin-top: 1px;
+}
+
+.comment-composer--timeline {
+  gap: 5px;
+  margin-top: 3px;
+  border-top: 1px solid rgb(47 111 168 / 22%);
+  padding-top: 6px;
+}
+
+.comment-composer--timeline textarea {
+  min-height: 48px;
+  border-color: #b9cfe0;
+  border-radius: var(--card-radius);
+  background: #ffffff;
+}
+
+.comment-composer--timeline button {
+  border-radius: var(--card-radius);
+}
+
+.timeline-file-item {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 2px 0;
+}
+
+.timeline-file-icon {
+  min-width: 30px;
+  height: 24px;
+  border: 1px solid #b5c9d9;
+  border-radius: 4px;
+  background: #f8fbfe;
+  font-size: 9px;
+  letter-spacing: 0;
+}
+
+.timeline-file-icon--pdf {
+  border-color: #e6abab;
+  background: #fff4f4;
+  color: #b42318;
+}
+
+.timeline-file-icon--word {
+  border-color: #a7c5e8;
+  background: #f1f7ff;
+  color: #185abd;
+}
+
+.timeline-file-icon--excel {
+  border-color: #a8d1bb;
+  background: #f1fbf4;
+  color: #107c41;
+}
+
+.timeline-file-icon--image {
+  border-color: #c7b7e6;
+  background: #f8f3ff;
+  color: #6e46a6;
+}
+
+.timeline-file-icon--archive {
+  border-color: #e2c383;
+  background: #fffaeb;
+  color: #9a6700;
+}
+
+/* Stretch the selected panel tab while keeping participants in the footer. */
+.task-drawer__content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 0;
+}
+
+.drawer-timeline-section {
+  flex: 1 0 auto;
+}
+
+.timeline-list {
+  gap: 5px;
+}
+
+.timeline-list li.timeline-item {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: start;
+  gap: 6px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.timeline-item__avatar {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid #b5c9d9;
+  border-radius: 50%;
+  background: #f5f9fc;
+  color: #315f88;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.timeline-item__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.timeline-item__body {
+  min-width: 0;
+  border-radius: var(--card-radius);
+  background: #ffffff;
+  box-shadow: 0 1px 1px rgb(28 74 110 / 6%);
+  padding: 6px 7px;
+}
+
+.timeline-item--history .timeline-item__avatar {
+  border-color: #c9d4df;
+  background: #f7f9fb;
+  color: #667085;
+}
+
+/* Keep the new-subtask input visually aligned with the subtask tab. */
+.drawer-subtasks__create input {
+  background: #e3f0fa;
+}
+
+.drawer-subtask-row__delete,
+.drawer-subtask-row__delete:hover {
+  background: transparent;
+}
+
+.drawer-subtask-row__delete:hover {
   color: #b42318;
 }

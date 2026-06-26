@@ -17,7 +17,7 @@ function getInitials(user) {
 }
 
 function getUserTitle(user) {
-  return [getDisplayName(user), user.email].filter(Boolean).join("\n");
+  return [getDisplayName(user), user.email, user.role].filter(Boolean).join("\n");
 }
 
 export function UserPicker({
@@ -26,6 +26,10 @@ export function UserPicker({
   placeholder = "\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f",
   disabled = false,
   readOnly = false,
+  searchOnly = false,
+  autoFocus = false,
+  onClose,
+  onSelection,
 }) {
   const [users, setUsers] = useState([]);
   const [query, setQuery] = useState("");
@@ -83,7 +87,10 @@ export function UserPicker({
 
     onChange?.([...value, user]);
     setQuery("");
-    setIsOpen(true);
+    onSelection?.(user);
+    if (!onSelection) {
+      setIsOpen(true);
+    }
   }
 
   function removeUser(userId) {
@@ -97,7 +104,8 @@ export function UserPicker({
   return (
     <div className={`user-picker ${disabled ? "user-picker--disabled" : ""} ${readOnly ? "user-picker--readonly" : ""}`}>
       <div className="user-picker__control">
-        <div className="user-picker__selected-users">
+        {!searchOnly && (
+          <div className="user-picker__selected-users">
           {value.map((user) => (
             <span className="user-picker__avatar" key={user.id} title={getUserTitle(user)}>
               {getInitials(user)}
@@ -112,9 +120,11 @@ export function UserPicker({
               )}
             </span>
           ))}
-        </div>
+          </div>
+        )}
         {!readOnly && (
           <input
+            autoFocus={autoFocus}
             type="search"
             value={query}
             disabled={disabled}
@@ -124,7 +134,10 @@ export function UserPicker({
               setQuery(event.target.value);
               setIsOpen(true);
             }}
-            onBlur={() => window.setTimeout(() => setIsOpen(false), 120)}
+            onBlur={() => window.setTimeout(() => {
+              setIsOpen(false);
+              onClose?.();
+            }, 120)}
           />
         )}
       </div>

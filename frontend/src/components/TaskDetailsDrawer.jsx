@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { UserPicker } from "./UserPicker";
 
@@ -40,26 +40,26 @@ function getFileIcon(fileName) {
   const extension = getFileExtension(fileName);
 
   if (extension === "pdf") {
-    return "PDF";
+    return { label: "PDF", type: "pdf" };
   }
 
-  if (["png", "jpg", "jpeg"].includes(extension)) {
-    return "🖼";
+  if (["doc", "docx", "odt"].includes(extension)) {
+    return { label: "W", type: "word" };
   }
 
-  if (extension === "txt") {
-    return "📝";
+  if (["xls", "xlsx", "ods", "csv"].includes(extension)) {
+    return { label: "X", type: "excel" };
   }
 
-  if (["doc", "docx"].includes(extension)) {
-    return "W";
+  if (["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(extension)) {
+    return { label: "IMG", type: "image" };
   }
 
-  if (["xls", "xlsx"].includes(extension)) {
-    return "X";
+  if (["zip", "rar", "7z", "tar", "gz"].includes(extension)) {
+    return { label: "ZIP", type: "archive" };
   }
 
-  return "📎";
+  return { label: "FILE", type: "file" };
 }
 
 const ASSIGNMENT_STATUS_LABELS = {
@@ -101,7 +101,8 @@ function buildTimeline(task) {
   const comments = (task.comments || []).map((comment) => ({
     id: `comment-${comment.id}`,
     type: "comment",
-    author: comment.author || "Комментарий",
+    author: comment.author || "\u041a\u043e\u043c\u043c\u0435\u043d\u0442\u0430\u0440\u0438\u0439",
+    actor: comment.author_details || null,
     date: comment.created_at,
     comment,
   }));
@@ -109,7 +110,8 @@ function buildTimeline(task) {
   const files = (task.files || []).map((file) => ({
     id: `file-${file.id}`,
     type: "file",
-    author: file.author || file.uploaded_by_username || "Файл",
+    author: file.author || file.uploaded_by_username || "\u0424\u0430\u0439\u043b",
+    actor: file.uploaded_by_details || null,
     date: file.uploaded_at,
     file,
   }));
@@ -118,6 +120,7 @@ function buildTimeline(task) {
     id: `history-${event.id}`,
     type: "history",
     author: event.user || event.event_type,
+    actor: event.user_details || null,
     date: event.created_at,
     text: event.description,
   }));
@@ -127,91 +130,191 @@ function buildTimeline(task) {
   );
 }
 
-function AssigneesCompact({ assignees = [] }) {
+function sortSubtasks(subtasks) {
+  return [...subtasks].sort((left, right) => {
+    const leftCreatedAt = Date.parse(left.created_at || "");
+    const rightCreatedAt = Date.parse(right.created_at || "");
+
+    if (Number.isFinite(leftCreatedAt) && Number.isFinite(rightCreatedAt) && leftCreatedAt !== rightCreatedAt) {
+      return leftCreatedAt - rightCreatedAt;
+    }
+
+    return Number(left.id || 0) - Number(right.id || 0);
+  });
+}
+
+function getUserInitials(user) {
+  if (user.initials) {
+    return user.initials;
+  }
+
+  const names = [user.first_name, user.last_name].filter(Boolean);
+  return names.length
+    ? names.map((name) => name.slice(0, 1)).join("").toUpperCase()
+    : String(user.username || user.email || "?").slice(0, 2).toUpperCase();
+}
+
+function getUserTitle(user) {
+  const fullName = `${user.first_name || ""} ${user.last_name || ""}`.trim();
+  return [fullName || user.username, user.email, user.role].filter(Boolean).join("\n");
+}
+
+function TaskPeopleSection({ title, users, onChange, isUpdating, error }) {
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    if (!isPickerOpen) {
+      return undefined;
+    }
+
+    function closeOnOutsideClick(event) {
+      if (!sectionRef.current?.contains(event.target)) {
+        setIsPickerOpen(false);
+      }
+    }
+
+    function closeOnEscape(event) {
+      if (event.key === "Escape") {
+        setIsPickerOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isPickerOpen]);
+
+  function removeUser(userId) {
+    onChange?.(users.filter((user) => String(user.id) !== String(userId)));
+  }
+
   return (
-    <section className="drawer-assignees" aria-label="Исполнители">
-      <h3>Исполнители</h3>
-      {assignees.length ? (
-        <ul className="assignee-list">
-          {assignees.map((assignee) => (
-            <li key={assignee.assignment_id || assignee.id}>
-              <span className="assignee-main">
-                <span>{getAssigneeMark(assignee)}</span>
-                {getAssigneeName(assignee)}
-              </span>
-              <span className={`assignee-status assignee-status--${getAssignmentStatus(assignee)}`}>
-                {getAssignmentStatusLabel(assignee)}
-              </span>
-            </li>
+    <section className="task-people-section" ref={sectionRef}>
+      <header className="task-people-section__header">
+        <h3>{title}</h3>
+        <button
+          className="task-people-section__add"
+          type="button"
+          disabled={isUpdating}
+          aria-label={"\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f"}
+          aria-expanded={isPickerOpen}
+          onClick={() => setIsPickerOpen((current) => !current)}
+        >
+          +
+        </button>
+      </header>
+      {users.length > 0 && (
+        <div className="task-people-section__users">
+          {users.map((user) => (
+            <span className="task-person" key={user.id} title={getUserTitle(user)}>
+              {user.avatar ? (
+                <img src={user.avatar} alt="" />
+              ) : (
+                <span>{getUserInitials(user)}</span>
+              )}
+              <button
+                type="button"
+                disabled={isUpdating}
+                aria-label={"\u0423\u0431\u0440\u0430\u0442\u044c " + getAssigneeName(user)}
+                onClick={() => removeUser(user.id)}
+              >
+                {"\u00d7"}
+              </button>
+            </span>
           ))}
-        </ul>
-      ) : (
-        <p>Исполнители не назначены</p>
+        </div>
       )}
+      {isPickerOpen && (
+        <div className="task-people-section__popover">
+          <UserPicker
+            value={users}
+            onChange={onChange}
+            disabled={isUpdating}
+            searchOnly
+            autoFocus
+            onSelection={() => setIsPickerOpen(false)}
+            onClose={() => setIsPickerOpen(false)}
+          />
+        </div>
+      )}
+      {error && <p className="comment-error">{error}</p>}
     </section>
   );
 }
 
 function TimelineItem({ item, editingCommentId, editText, isSaving, onEditStart, onEditTextChange, onEditSave, onEditCancel, onFileDelete }) {
   const isEditing = item.type === "comment" && editingCommentId === item.comment.id;
+  const fileIcon = item.type === "file" ? getFileIcon(item.file.original_name) : null;
+  const actor = item.actor;
+  const actorName = actor ? getUserTitle(actor) : item.author || "\u0421\u0438\u0441\u0442\u0435\u043c\u0430";
+  const actorInitials = actor ? getUserInitials(actor) : "?";
 
   return (
-    <li>
-      <div className="timeline-meta">
-        <strong>{item.author}</strong>
-        <span>
-          <time>{formatDateTime(item.date)}</time>
-          {item.type === "comment" && item.comment.can_edit && !isEditing && (
-            <button className="timeline-icon-button" type="button" onClick={() => onEditStart(item.comment)}>
-              Изм.
-            </button>
-          )}
-        </span>
-      </div>
+    <li className={`timeline-item timeline-item--${item.type}`}>
+      <span className="timeline-item__avatar" title={actorName}>
+        {actor?.avatar ? <img src={actor.avatar} alt="" /> : <span>{actorInitials}</span>}
+      </span>
+      <div className="timeline-item__body">
+        <div className="timeline-meta">
+          <strong>{item.author}</strong>
+          <span>
+            <time>{formatDateTime(item.date)}</time>
+            {item.type === "comment" && item.comment.can_edit && !isEditing && (
+              <button className="timeline-icon-button" type="button" onClick={() => onEditStart(item.comment)}>
+                {"\u0418\u0437\u043c."}
+              </button>
+            )}
+          </span>
+        </div>
 
-      {item.type === "comment" && isEditing && (
-        <div className="comment-edit-form">
-          <textarea
-            autoFocus
-            value={editText}
-            rows="3"
-            disabled={isSaving}
-            onChange={(event) => onEditTextChange(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Escape") {
-                event.preventDefault();
-                onEditCancel();
-              }
+        {item.type === "comment" && isEditing && (
+          <div className="comment-edit-form">
+            <textarea
+              autoFocus
+              value={editText}
+              rows="3"
+              disabled={isSaving}
+              onChange={(event) => onEditTextChange(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  event.preventDefault();
+                  onEditCancel();
+                }
 
-              if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
-                event.preventDefault();
-                onEditSave();
-              }
-            }}
-          />
-          <div className="comment-edit-actions">
-            <button type="button" disabled={isSaving} onClick={onEditSave}>Сохранить</button>
-            <button type="button" disabled={isSaving} onClick={onEditCancel}>Отмена</button>
+                if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+                  event.preventDefault();
+                  onEditSave();
+                }
+              }}
+            />
+            <div className="comment-edit-actions">
+              <button type="button" disabled={isSaving} onClick={onEditSave}>{"\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c"}</button>
+              <button type="button" disabled={isSaving} onClick={onEditCancel}>{"\u041e\u0442\u043c\u0435\u043d\u0430"}</button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {item.type === "comment" && !isEditing && <p>{item.comment.text}</p>}
+        {item.type === "comment" && !isEditing && <p>{item.comment.text}</p>}
 
-      {item.type === "file" && (
-        <div className="timeline-file-item">
-          <span className="timeline-file-icon">{getFileIcon(item.file.original_name)}</span>
-          <span className="timeline-file-name">{item.file.original_name}</span>
-          {item.file.file_url && (
-            <a href={item.file.file_url} target="_blank" rel="noreferrer">Открыть</a>
-          )}
-          {item.file.can_delete && (
-            <button type="button" onClick={() => onFileDelete(item.file)}>Удалить</button>
-          )}
-        </div>
-      )}
+        {item.type === "file" && (
+          <div className="timeline-file-item">
+            <span className={`timeline-file-icon timeline-file-icon--${fileIcon.type}`}>{fileIcon.label}</span>
+            <span className="timeline-file-name">{item.file.original_name}</span>
+            {item.file.file_url && (
+              <a href={item.file.file_url} target="_blank" rel="noreferrer">{"\u041e\u0442\u043a\u0440\u044b\u0442\u044c"}</a>
+            )}
+            {item.file.can_delete && (
+              <button type="button" onClick={() => onFileDelete(item.file)}>{"\u0423\u0434\u0430\u043b\u0438\u0442\u044c"}</button>
+            )}
+          </div>
+        )}
 
-      {item.type === "history" && <p>{item.text}</p>}
+        {item.type === "history" && <p>{item.text}</p>}
+      </div>
     </li>
   );
 }
@@ -225,6 +328,10 @@ export function TaskDetailsDrawer({
   onDrawerWidthChange,
   onAssigneesChange,
   onWatchersChange,
+  onCreateSubtask,
+  onDeleteSubtask,
+  onRenameTask,
+  onToggleSubtask,
   onCommentCreated,
   onCommentUpdated,
   onFileDeleted,
@@ -241,6 +348,12 @@ export function TaskDetailsDrawer({
   const [isCommentSaving, setIsCommentSaving] = useState(false);
   const [isFileUploading, setIsFileUploading] = useState(false);
   const [isFileDeletingId, setIsFileDeletingId] = useState(null);
+  const [activeTab, setActiveTab] = useState("timeline");
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
+  const [isSubtaskFormOpen, setIsSubtaskFormOpen] = useState(false);
+  const [editingSubtaskId, setEditingSubtaskId] = useState(null);
+  const [editingSubtaskTitle, setEditingSubtaskTitle] = useState("");
+  const [subtaskError, setSubtaskError] = useState("");
   const [assigneeError, setAssigneeError] = useState("");
   const [isAssigneeUpdating, setIsAssigneeUpdating] = useState(false);
   const [watcherError, setWatcherError] = useState("");
@@ -248,8 +361,20 @@ export function TaskDetailsDrawer({
   const timeline = task ? buildTimeline(task) : [];
   const commentsCount = task?.comments?.length || 0;
   const filesCount = task?.files?.length || 0;
-  const subtasks = Array.isArray(task?.subtasks) ? task.subtasks : [];
+  const subtasks = sortSubtasks(Array.isArray(task?.subtasks) ? task.subtasks : []);
   const subtasksTotal = subtasks.length;
+  const subtasksCompleted = subtasks.filter((subtask) => (
+    ["completed", "archived"].includes(subtask.status_system_type)
+  )).length;
+
+  useEffect(() => {
+    setActiveTab("timeline");
+    setNewSubtaskTitle("");
+    setIsSubtaskFormOpen(false);
+    setEditingSubtaskId(null);
+    setSubtaskError("");
+  }, [task?.id]);
+
 
   async function handleAssigneesChange(nextAssignees) {
     if (!task || isAssigneeUpdating) {
@@ -280,6 +405,61 @@ export function TaskDetailsDrawer({
       setWatcherError("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0431\u043d\u043e\u0432\u0438\u0442\u044c \u043d\u0430\u0431\u043b\u044e\u0434\u0430\u0442\u0435\u043b\u0435\u0439.");
     } finally {
       setIsWatcherUpdating(false);
+    }
+  }
+
+  async function handleSubtaskCreate(event) {
+    event.preventDefault();
+    const title = newSubtaskTitle.trim();
+    if (!task || !title) {
+      return;
+    }
+
+    setSubtaskError("");
+    try {
+      await onCreateSubtask?.(task, title);
+      setNewSubtaskTitle("");
+      setIsSubtaskFormOpen(false);
+    } catch {
+      setSubtaskError("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0441\u043e\u0437\u0434\u0430\u0442\u044c \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0443.");
+    }
+  }
+
+  async function handleSubtaskToggle(subtask) {
+    if (!task) {
+      return;
+    }
+    setSubtaskError("");
+    try {
+      await onToggleSubtask?.(task, subtask);
+    } catch {
+      setSubtaskError("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0438\u0437\u043c\u0435\u043d\u0438\u0442\u044c \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0443.");
+    }
+  }
+
+  async function handleSubtaskRename(subtask) {
+    const title = editingSubtaskTitle.trim();
+    if (!title) {
+      return;
+    }
+    setSubtaskError("");
+    try {
+      await onRenameTask?.(subtask, title);
+      setEditingSubtaskId(null);
+    } catch {
+      setSubtaskError("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u0435\u0440\u0435\u0438\u043c\u0435\u043d\u043e\u0432\u0430\u0442\u044c \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0443.");
+    }
+  }
+
+  async function handleSubtaskDelete(subtask) {
+    if (!task || !window.confirm("\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0443?")) {
+      return;
+    }
+    setSubtaskError("");
+    try {
+      await onDeleteSubtask?.(task, subtask);
+    } catch {
+      setSubtaskError("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0443\u0434\u0430\u043b\u0438\u0442\u044c \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0443.");
     }
   }
 
@@ -418,12 +598,12 @@ export function TaskDetailsDrawer({
         </button>
       </div>
 
-      <div className="task-actions" aria-label="Действия с задачей">
-        <button type="button" disabled>Готово</button>
-        <button type="button" disabled>Дораб.</button>
-        <button type="button" disabled>Закрыть</button>
-        <button type="button" disabled>Архив</button>
-        <button type="button" disabled>Удалить</button>
+      <div className="task-actions" aria-label={"\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u044f \u0441 \u0437\u0430\u0434\u0430\u0447\u0435\u0439"}>
+        <button type="button" disabled><span className="task-actions__icon">{"\u2713"}</span><span>{"\u0413\u043e\u0442\u043e\u0432\u043e"}</span></button>
+        <button type="button" disabled><span className="task-actions__icon">{"\u21ba"}</span><span>{"\u0414\u043e\u0440\u0430\u0431."}</span></button>
+        <button type="button" disabled><span className="task-actions__icon">{"\u2713\u2713"}</span><span>{"\u0417\u0430\u043a\u0440\u044b\u0442\u044c"}</span></button>
+        <button type="button" disabled><span className="task-actions__icon">{"\u25a3"}</span><span>{"\u0410\u0440\u0445\u0438\u0432"}</span></button>
+        <button type="button" disabled><span className="task-actions__icon">{"\u00d7"}</span><span>{"\u0423\u0434\u0430\u043b\u0438\u0442\u044c"}</span></button>
       </div>
 
       <div className="task-drawer__content">
@@ -442,107 +622,188 @@ export function TaskDetailsDrawer({
             <header className="task-title-block">
               <div>
                 <h2>{task.title}</h2>
-                <span className="task-title-block__number">{task.number}</span>
               </div>
               <span className="task-info-icon" aria-hidden="true">ⓘ</span>
             </header>
 
-            <div className="task-summary-line" aria-label="Краткая информация">
-              {task.due_date && <span>📅 {formatDate(task.due_date)}</span>}
-              <span>{task.priority || "Без приоритета"}</span>
-              <span>💬 {commentsCount}</span>
-              <span>📎 {filesCount}</span>
-              {Array.isArray(task?.subtasks) && <span>Подзадачи {subtasksTotal}</span>}
+            <div className="task-summary-line" aria-label={"\u041a\u0440\u0430\u0442\u043a\u0430\u044f \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u044f"}>
+              <span className="task-status-badge">{task.status || "\u0411\u0435\u0437 \u0441\u0442\u0430\u0442\u0443\u0441\u0430"}</span>
+              <span>{"\uD83D\uDCAC"} {commentsCount}</span>
+              <span>{"\uD83D\uDCCE"} {filesCount}</span>
             </div>
 
             {task.description && <p className="task-description">{task.description}</p>}
 
-            <section className="subtasks-folded">
-              <button type="button" disabled>
-                Подзадачи ({subtasksTotal}/{subtasksTotal}) ▶
+            <nav className="task-drawer-tabs" aria-label={"\u0420\u0430\u0437\u0434\u0435\u043b\u044b \u0437\u0430\u0434\u0430\u0447\u0438"}>
+              <button
+                className={activeTab === "timeline" ? "task-drawer-tab task-drawer-tab--active" : "task-drawer-tab"}
+                type="button"
+                onClick={() => setActiveTab("timeline")}
+              >
+                {"\u0422\u0430\u0439\u043c\u043b\u0430\u0439\u043d"}
               </button>
-            </section>
+              <button
+                className={activeTab === "subtasks" ? "task-drawer-tab task-drawer-tab--active" : "task-drawer-tab"}
+                type="button"
+                onClick={() => setActiveTab("subtasks")}
+              >
+                {"\u041f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0438"} ({subtasksCompleted}/{subtasksTotal})
+              </button>
+            </nav>
 
-            <section className="drawer-timeline-section">
-              <h3>Timeline</h3>
-              {editCommentError && <p className="comment-error">{editCommentError}</p>}
-              {timeline.length ? (
-                <ol className="timeline-list">
-                  {timeline.map((item) => (
-                    <TimelineItem
-                      key={item.id}
-                      item={item}
-                      editingCommentId={editingCommentId}
-                      editText={editCommentText}
-                      isSaving={isCommentSaving || isFileDeletingId === item.file?.id}
-                      onEditStart={handleEditStart}
-                      onEditTextChange={setEditCommentText}
-                      onEditSave={handleEditSave}
-                      onEditCancel={handleEditCancel}
-                      onFileDelete={handleFileDelete}
+            {activeTab === "subtasks" && (
+              <section className="drawer-subtasks">
+                <div className="drawer-subtasks__list">
+                  {subtasks.map((subtask) => {
+                    const isDone = ["completed", "archived"].includes(subtask.status_system_type);
+                    const isEditing = editingSubtaskId === subtask.id;
+                    return (
+                      <div className="drawer-subtask-row" key={subtask.id}>
+                        <input
+                          type="checkbox"
+                          checked={isDone}
+                          aria-label={"\u041e\u0442\u043c\u0435\u0442\u0438\u0442\u044c \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0443"}
+                          onChange={() => handleSubtaskToggle(subtask)}
+                        />
+                        {isEditing ? (
+                          <input
+                            autoFocus
+                            value={editingSubtaskTitle}
+                            onChange={(event) => setEditingSubtaskTitle(event.target.value)}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter") {
+                                event.preventDefault();
+                                handleSubtaskRename(subtask);
+                              }
+                              if (event.key === "Escape") {
+                                setEditingSubtaskId(null);
+                              }
+                            }}
+                            onBlur={() => setEditingSubtaskId(null)}
+                          />
+                        ) : (
+                          <button className="drawer-subtask-row__title" type="button" onClick={() => {
+                            setEditingSubtaskId(subtask.id);
+                            setEditingSubtaskTitle(subtask.title || "");
+                          }}>
+                            {subtask.title}
+                          </button>
+                        )}
+                        <button className="drawer-subtask-row__delete" type="button" aria-label={"\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0443"} onClick={() => handleSubtaskDelete(subtask)}>{"\uD83D\uDDD1"}</button>
+                      </div>
+                    );
+                  })}
+                  {!subtasks.length && <p className="drawer-empty">{"\u041f\u043e\u0434\u0437\u0430\u0434\u0430\u0447 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442"}</p>}
+                </div>
+                {subtaskError && <p className="comment-error">{subtaskError}</p>}
+                {isSubtaskFormOpen ? (
+                  <form className="drawer-subtasks__create" onSubmit={handleSubtaskCreate}>
+                    <input
+                      autoFocus
+                      type="text"
+                      value={newSubtaskTitle}
+                      placeholder={"\u041d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0438"}
+                      onChange={(event) => setNewSubtaskTitle(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Escape") {
+                          event.preventDefault();
+                          setNewSubtaskTitle("");
+                          setIsSubtaskFormOpen(false);
+                        }
+                      }}
                     />
-                  ))}
-                </ol>
-              ) : (
-                <p className="drawer-empty">Нет данных</p>
-              )}
-            </section>
+                    <button type="submit" aria-label={"\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0443"}>+</button>
+                  </form>
+                ) : (
+                  <button
+                    className="drawer-subtasks__add"
+                    type="button"
+                    onClick={() => setIsSubtaskFormOpen(true)}
+                  >
+                    {"\u002b \u041d\u043e\u0432\u0430\u044f \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0430"}
+                  </button>
+                )}
+              </section>
+            )}
+
+            {activeTab === "timeline" && (
+              <section className="drawer-timeline-section">
+                {editCommentError && <p className="comment-error">{editCommentError}</p>}
+                {timeline.length ? (
+                  <ol className="timeline-list">
+                    {timeline.map((item) => (
+                      <TimelineItem
+                        key={item.id}
+                        item={item}
+                        editingCommentId={editingCommentId}
+                        editText={editCommentText}
+                        isSaving={isCommentSaving || isFileDeletingId === item.file?.id}
+                        onEditStart={handleEditStart}
+                        onEditTextChange={setEditCommentText}
+                        onEditSave={handleEditSave}
+                        onEditCancel={handleEditCancel}
+                        onFileDelete={handleFileDelete}
+                      />
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="drawer-empty">{"\u041d\u0435\u0442 \u0441\u043e\u0431\u044b\u0442\u0438\u0439"}</p>
+                )}
+                <form className="comment-composer comment-composer--timeline" onSubmit={handleCommentSubmit}>
+                  <textarea
+                    placeholder={"\u041d\u043e\u0432\u044b\u0439 \u043a\u043e\u043c\u043c\u0435\u043d\u0442\u0430\u0440\u0438\u0439"}
+                    rows="2"
+                    value={commentText}
+                    disabled={!task || isCommentSubmitting}
+                    onChange={(event) => setCommentText(event.target.value)}
+                  />
+                  {(commentError || fileError) && <p className="comment-error">{commentError || fileError}</p>}
+                  <div className="comment-composer__actions">
+                    <div>
+                      <button
+                        type="button"
+                        disabled={!task || isFileUploading}
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        {isFileUploading ? "\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430..." : "\uD83D\uDCCE \u0424\u0430\u0439\u043b"}
+                      </button>
+                      <input
+                        ref={fileInputRef}
+                        className="file-input-hidden"
+                        type="file"
+                        disabled={!task || isFileUploading}
+                        onChange={handleFileChange}
+                      />
+                      <button type="button" disabled>{"@ \u0423\u043f\u043e\u043c\u044f\u043d\u0443\u0442\u044c"}</button>
+                    </div>
+                    <button type="submit" disabled={!task || isCommentSubmitting}>
+                      {isCommentSubmitting ? "\u041e\u0442\u043f\u0440\u0430\u0432\u043a\u0430..." : "\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c"}
+                    </button>
+                  </div>
+                </form>
+              </section>
+            )}
           </>
         )}
       </div>
 
       <footer className="task-drawer__footer">
-        <form className="comment-composer" onSubmit={handleCommentSubmit}>
-          <textarea
-            placeholder="Новый комментарий"
-            rows="2"
-            value={commentText}
-            disabled={!task || isCommentSubmitting}
-            onChange={(event) => setCommentText(event.target.value)}
-          />
-          {(commentError || fileError) && <p className="comment-error">{commentError || fileError}</p>}
-          <div className="comment-composer__actions">
-            <div>
-              <button
-                type="button"
-                disabled={!task || isFileUploading}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {isFileUploading ? "Загрузка..." : "📎 Файл"}
-              </button>
-              <input
-                ref={fileInputRef}
-                className="file-input-hidden"
-                type="file"
-                disabled={!task || isFileUploading}
-                onChange={handleFileChange}
-              />
-              <button type="button" disabled>@ Упомянуть</button>
-            </div>
-            <button type="submit" disabled={!task || isCommentSubmitting}>
-              {isCommentSubmitting ? "Отправка..." : "Отправить"}
-            </button>
-          </div>
-        </form>
-        <AssigneesCompact assignees={task?.assignees || []} />
-        <section className="drawer-user-picker" aria-label={"\u0412\u044b\u0431\u043e\u0440 \u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u0445"}>
-          <h3>{"\u041e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u0435"}</h3>
-          <UserPicker
-            value={task?.assignees || []}
+        <div className="task-drawer__participants">
+          <TaskPeopleSection
+            title={"\u0418\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u0438"}
+            users={task?.assignees || []}
             onChange={handleAssigneesChange}
-            disabled={!task || isAssigneeUpdating}
+            isUpdating={isAssigneeUpdating}
+            error={assigneeError}
           />
-          {assigneeError && <p className="comment-error">{assigneeError}</p>}
-        </section>
-        <section className="drawer-user-picker" aria-label={"\u0412\u044b\u0431\u043e\u0440 \u043d\u0430\u0431\u043b\u044e\u0434\u0430\u0442\u0435\u043b\u0435\u0439"}>
-          <h3>{"\u041d\u0430\u0431\u043b\u044e\u0434\u0430\u0442\u0435\u043b\u0438"}</h3>
-          <UserPicker
-            value={task?.watchers || []}
+          <TaskPeopleSection
+            title={"\u0413\u043e\u0441\u0442\u0438"}
+            users={task?.watchers || []}
             onChange={handleWatchersChange}
-            disabled={!task || isWatcherUpdating}
+            isUpdating={isWatcherUpdating}
+            error={watcherError}
           />
-          {watcherError && <p className="comment-error">{watcherError}</p>}
-        </section>
+        </div>
       </footer>
     </aside>
   );

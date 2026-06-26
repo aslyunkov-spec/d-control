@@ -8,6 +8,7 @@ from .views import (
     TaskFileDeleteAPIView,
     TaskListAPIView,
     TaskSubtaskCreateAPIView,
+    TaskSubtaskDeleteAPIView,
     TaskSubtaskToggleAPIView,
 )
 
@@ -33,5 +34,10 @@ urlpatterns = [
         "tasks/<int:pk>/subtasks/<int:subtask_pk>/toggle/",
         TaskSubtaskToggleAPIView.as_view(),
         name="task-subtask-toggle",
+    ),
+    path(
+        "tasks/<int:pk>/subtasks/<int:subtask_pk>/",
+        TaskSubtaskDeleteAPIView.as_view(),
+        name="task-subtask-delete",
     ),
 ]
