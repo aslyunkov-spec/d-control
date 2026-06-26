@@ -6,6 +6,7 @@ export function KanbanColumnSection({
   title,
   tasks,
   collapsedByDefault = false,
+  createTaskControl,
   openTaskMenuId,
   selectedTaskId,
   onCreateSubtask,
@@ -31,6 +32,8 @@ export function KanbanColumnSection({
           {isCollapsed ? "▸" : "▾"}
         </span>
       </button>
+
+      {!isCollapsed && createTaskControl}
 
       {!isCollapsed && tasks.length > 0 && (
         <div className="kanban-section__tasks">

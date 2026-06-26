@@ -72,3 +72,22 @@ export function deleteTaskFile(taskId, fileId) {
     method: "DELETE",
   });
 }
+export function createDepartmentColumn(departmentId, { name, afterColumnId }) {
+  return apiRequest(`/api/departments/${departmentId}/columns/`, {
+    method: "POST",
+    body: JSON.stringify({ name, after_column_id: afterColumnId }),
+  });
+}
+
+export function updateDepartmentColumn(departmentId, columnId, name) {
+  return apiRequest(`/api/departments/${departmentId}/columns/${columnId}/`, {
+    method: "PATCH",
+    body: JSON.stringify({ name }),
+  });
+}
+
+export function deleteDepartmentColumn(departmentId, columnId) {
+  return apiRequest(`/api/departments/${departmentId}/columns/${columnId}/`, {
+    method: "DELETE",
+  });
+}

@@ -216,9 +216,11 @@ function TimelineItem({ item, editingCommentId, editText, isSaving, onEditStart,
 
 export function TaskDetailsDrawer({
   task,
+  drawerWidth,
   isLoading,
   error,
   onClose,
+  onDrawerWidthChange,
   onCommentCreated,
   onCommentUpdated,
   onFileDeleted,
@@ -240,6 +242,25 @@ export function TaskDetailsDrawer({
   const filesCount = task?.files?.length || 0;
   const subtasks = Array.isArray(task?.subtasks) ? task.subtasks : [];
   const subtasksTotal = subtasks.length;
+
+  function handleResizeStart(event) {
+    event.preventDefault();
+    const startX = event.clientX;
+    const startWidth = drawerWidth;
+
+    function handleResizeMove(moveEvent) {
+      const nextWidth = Math.min(Math.max(startWidth + startX - moveEvent.clientX, 320), 720);
+      onDrawerWidthChange?.(nextWidth);
+    }
+
+    function handleResizeEnd() {
+      window.removeEventListener("mousemove", handleResizeMove);
+      window.removeEventListener("mouseup", handleResizeEnd);
+    }
+
+    window.addEventListener("mousemove", handleResizeMove);
+    window.addEventListener("mouseup", handleResizeEnd);
+  }
 
   async function handleCommentSubmit(event) {
     event.preventDefault();
@@ -345,6 +366,12 @@ export function TaskDetailsDrawer({
 
   return (
     <aside className="task-drawer" aria-label="Карточка задачи">
+      <button
+        className="task-drawer__resize-handle"
+        type="button"
+        aria-label={"\u0418\u0437\u043c\u0435\u043d\u0438\u0442\u044c \u0448\u0438\u0440\u0438\u043d\u0443 \u043f\u0430\u043d\u0435\u043b\u0438"}
+        onMouseDown={handleResizeStart}
+      />
       <div className="task-drawer__topbar">
         <button className="drawer-back" type="button" onClick={onClose}>
           <span aria-hidden="true">‹</span> Закрыть панель

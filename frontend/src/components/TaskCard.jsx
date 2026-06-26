@@ -304,7 +304,7 @@ export function TaskCard({
   }
 
   return (
-    <article className={`task-card ${isSelected ? "task-card--selected" : ""}`} ref={cardRef}>
+    <article className={`task-card ${!hasSubtasks ? "task-card--without-subtasks" : ""} ${isSelected ? "task-card--selected" : ""}`} ref={cardRef}>
       <div className="task-card__body" role="button" tabIndex={0} onClick={() => !isRenaming && onOpen(task)}>
         {isRenaming ? (
           <span className="task-rename-inline" onClick={(event) => event.stopPropagation()}>

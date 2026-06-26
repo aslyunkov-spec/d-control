@@ -1,15 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 
 import {
+  createDepartmentColumn,
   createSubtask,
   createTask,
+  deleteDepartmentColumn,
   getDepartmentColumns,
   getDepartments,
   getTaskDetails,
   getTasksByDepartment,
   toggleSubtask,
+  updateDepartmentColumn,
   updateTaskTitle,
 } from "../api/kanban";
+import { AppearanceSettings } from "../components/AppearanceSettings";
+import { BoardSidebar } from "../components/BoardSidebar";
 import { DepartmentSelector } from "../components/DepartmentSelector";
 import { KanbanColumn } from "../components/KanbanColumn";
 import { TaskDetailsDrawer } from "../components/TaskDetailsDrawer";
@@ -72,6 +77,90 @@ function updateTaskEverywhere(task, updatedTask) {
   };
 }
 
+const APPEARANCE_STORAGE_KEY = "d-control.appearance";
+const COLLAPSED_COLUMNS_STORAGE_KEY = "d-control.collapsed-columns";
+const DRAWER_WIDTH_STORAGE_KEY = "d-control.drawer-width";
+const DRAWER_MIN_WIDTH = 320;
+const DRAWER_MAX_WIDTH = 720;
+const DRAWER_DEFAULT_WIDTH = 450;
+const DEFAULT_APPEARANCE = {
+  background: "default",
+  backgroundColor: "#f4f6f8",
+  gradientStart: "#dbeafe",
+  gradientEnd: "#bfdbfe",
+  backgroundImageUrl: "",
+  fontSize: "default",
+  density: "default",
+  columnOpacity: "default",
+  cardRadius: "strong",
+};
+
+// TODO: replace the local development user with the authenticated user profile.
+const LOCAL_CURRENT_USER = {
+  name: "Администратор",
+  role: "Администратор",
+};
+
+function getStoredAppearance() {
+  try {
+    const storedSettings = window.localStorage.getItem(APPEARANCE_STORAGE_KEY);
+    if (!storedSettings) {
+      return DEFAULT_APPEARANCE;
+    }
+
+    const settings = { ...DEFAULT_APPEARANCE, ...JSON.parse(storedSettings) };
+    if (!["default", "color", "gradient", "image"].includes(settings.background)) {
+      settings.background = "default";
+    }
+
+    return settings;
+  } catch {
+    return DEFAULT_APPEARANCE;
+  }
+}
+
+function getStoredDrawerWidth() {
+  try {
+    const storedWidth = Number(window.localStorage.getItem(DRAWER_WIDTH_STORAGE_KEY));
+    if (Number.isFinite(storedWidth)) {
+      return Math.min(Math.max(storedWidth, DRAWER_MIN_WIDTH), DRAWER_MAX_WIDTH);
+    }
+  } catch {
+    return DRAWER_DEFAULT_WIDTH;
+  }
+
+  return DRAWER_DEFAULT_WIDTH;
+}
+
+function getStoredCollapsedColumnIds() {
+  try {
+    const storedColumnIds = JSON.parse(window.localStorage.getItem(COLLAPSED_COLUMNS_STORAGE_KEY) || "[]");
+    return Array.isArray(storedColumnIds) ? storedColumnIds.map(String) : [];
+  } catch {
+    return [];
+  }
+}
+
+function getBoardBackground(settings) {
+  if (settings.background === "color") {
+    return settings.backgroundColor || DEFAULT_APPEARANCE.backgroundColor;
+  }
+
+  if (settings.background === "gradient") {
+    return `linear-gradient(135deg, ${settings.gradientStart}, ${settings.gradientEnd})`;
+  }
+
+  if (settings.background === "image" && settings.backgroundImageUrl.trim()) {
+    const safeUrl = settings.backgroundImageUrl.trim().replace(/["\\]/g, "");
+    return `url("${safeUrl}") center / cover fixed no-repeat`;
+  }
+
+  return DEFAULT_APPEARANCE.backgroundColor;
+}
+function isManagementRole(role) {
+  return ["Администратор", "Директор"].includes(role);
+}
+
 export function KanbanPage() {
   const [departments, setDepartments] = useState([]);
   const [columns, setColumns] = useState([]);
@@ -79,12 +168,31 @@ export function KanbanPage() {
   const [selectedDepartmentId, setSelectedDepartmentId] = useState("");
   const [selectedTask, setSelectedTask] = useState(null);
   const [openTaskMenuId, setOpenTaskMenuId] = useState(null);
+  const [openColumnMenuId, setOpenColumnMenuId] = useState(null);
+  const [collapsedColumnIds, setCollapsedColumnIds] = useState(getStoredCollapsedColumnIds);
+  const [drawerWidth, setDrawerWidth] = useState(getStoredDrawerWidth);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isDepartmentsLoading, setIsDepartmentsLoading] = useState(true);
   const [isBoardLoading, setIsBoardLoading] = useState(false);
   const [isTaskLoading, setIsTaskLoading] = useState(false);
   const [error, setError] = useState("");
   const [taskError, setTaskError] = useState("");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isAppearanceOpen, setIsAppearanceOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [appearance, setAppearance] = useState(getStoredAppearance);
+
+  useEffect(() => {
+    window.localStorage.setItem(APPEARANCE_STORAGE_KEY, JSON.stringify(appearance));
+  }, [appearance]);
+
+  useEffect(() => {
+    window.localStorage.setItem(COLLAPSED_COLUMNS_STORAGE_KEY, JSON.stringify(collapsedColumnIds));
+  }, [collapsedColumnIds]);
+
+  useEffect(() => {
+    window.localStorage.setItem(DRAWER_WIDTH_STORAGE_KEY, String(drawerWidth));
+  }, [drawerWidth]);
 
   useEffect(() => {
     let isMounted = true;
@@ -161,11 +269,23 @@ export function KanbanPage() {
     };
   }, [selectedDepartmentId]);
 
+  const selectedDepartment = useMemo(
+    () => departments.find((department) => String(department.id) === selectedDepartmentId),
+    [departments, selectedDepartmentId],
+  );
+  const canManageDepartments = isManagementRole(LOCAL_CURRENT_USER.role);
+  const canManageColumns = canManageDepartments;
+
   const tasksByColumn = useMemo(() => {
     const groupedTasks = new Map(columns.map((column) => [String(column.id), []]));
     const withoutColumn = [];
 
-    tasks.forEach((task) => {
+    const normalizedQuery = searchQuery.trim().toLocaleLowerCase("ru-RU");
+    const visibleTasks = normalizedQuery
+      ? tasks.filter((task) => String(task.title || "").toLocaleLowerCase("ru-RU").includes(normalizedQuery))
+      : tasks;
+
+    visibleTasks.forEach((task) => {
       const columnId = getTaskColumnId(task);
       if (columnId && groupedTasks.has(columnId)) {
         groupedTasks.get(columnId).push(task);
@@ -175,7 +295,7 @@ export function KanbanPage() {
     });
 
     return { groupedTasks, withoutColumn };
-  }, [columns, tasks]);
+  }, [columns, searchQuery, tasks]);
 
   async function loadTaskDetails(taskId, fallbackTask = null) {
     setTaskError("");
@@ -308,6 +428,72 @@ export function KanbanPage() {
     return updatedSubtask;
   }
 
+  async function handleRenameColumn(column) {
+    setOpenColumnMenuId(null);
+    const name = window.prompt("\u041d\u043e\u0432\u043e\u0435 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u043a\u043e\u043b\u043e\u043d\u043a\u0438", column.name);
+    if (!name?.trim()) {
+      return;
+    }
+
+    try {
+      const updatedColumn = await updateDepartmentColumn(selectedDepartmentId, column.id, name.trim());
+      setColumns((currentColumns) =>
+        currentColumns.map((currentColumn) =>
+          currentColumn.id === updatedColumn.id ? updatedColumn : currentColumn,
+        ),
+      );
+    } catch {
+      setError("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u0435\u0440\u0435\u0438\u043c\u0435\u043d\u043e\u0432\u0430\u0442\u044c \u043a\u043e\u043b\u043e\u043d\u043a\u0443.");
+    }
+  }
+
+  async function handleCreateColumn() {
+    setOpenColumnMenuId(null);
+    const name = window.prompt("\u041d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u043d\u043e\u0432\u043e\u0439 \u043a\u043e\u043b\u043e\u043d\u043a\u0438");
+    if (!name?.trim()) {
+      return;
+    }
+
+    try {
+      const createdColumn = await createDepartmentColumn(selectedDepartmentId, {
+        name: name.trim(),
+      });
+      setColumns((currentColumns) => [...currentColumns, createdColumn]);
+    } catch {
+      setError("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0441\u043e\u0437\u0434\u0430\u0442\u044c \u043a\u043e\u043b\u043e\u043d\u043a\u0443.");
+    }
+  }
+
+  async function handleDeleteColumn(column, taskCount) {
+    setOpenColumnMenuId(null);
+    if (taskCount > 0) {
+      window.alert("\u041d\u0435\u043b\u044c\u0437\u044f \u0443\u0434\u0430\u043b\u0438\u0442\u044c \u043a\u043e\u043b\u043e\u043d\u043a\u0443, \u0432 \u043a\u043e\u0442\u043e\u0440\u043e\u0439 \u0435\u0441\u0442\u044c \u0437\u0430\u0434\u0430\u0447\u0438");
+      return;
+    }
+
+    if (!window.confirm("\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043f\u0443\u0441\u0442\u0443\u044e \u043a\u043e\u043b\u043e\u043d\u043a\u0443?")) {
+      return;
+    }
+
+    try {
+      await deleteDepartmentColumn(selectedDepartmentId, column.id);
+      setColumns((currentColumns) => currentColumns.filter((currentColumn) => currentColumn.id !== column.id));
+      setCollapsedColumnIds((currentIds) => currentIds.filter((columnId) => columnId !== String(column.id)));
+    } catch {
+      setError("\u041d\u0435\u043b\u044c\u0437\u044f \u0443\u0434\u0430\u043b\u0438\u0442\u044c \u043a\u043e\u043b\u043e\u043d\u043a\u0443, \u0432 \u043a\u043e\u0442\u043e\u0440\u043e\u0439 \u0435\u0441\u0442\u044c \u0437\u0430\u0434\u0430\u0447\u0438.");
+    }
+  }
+
+  function handleToggleColumnCollapse(columnId) {
+    setOpenColumnMenuId(null);
+    setCollapsedColumnIds((currentIds) => {
+      const normalizedColumnId = String(columnId);
+      return currentIds.includes(normalizedColumnId)
+        ? currentIds.filter((currentId) => currentId !== normalizedColumnId)
+        : [...currentIds, normalizedColumnId];
+    });
+  }
+
   function handleCloseTask() {
     setIsDrawerOpen(false);
     setSelectedTask(null);
@@ -370,12 +556,28 @@ export function KanbanPage() {
   }
 
   return (
-    <main className="kanban-page">
-      <div className={`kanban-workspace ${isDrawerOpen ? "" : "kanban-workspace--drawer-closed"}`}>
-        <div className="kanban-main">
-          <header className="board-topbar">
+    <main
+      className={`kanban-page appearance appearance--font-${appearance.fontSize} appearance--density-${appearance.density} appearance--column-opacity-${appearance.columnOpacity} appearance--radius-${appearance.cardRadius}`}
+      style={{
+        "--app-background": getBoardBackground(appearance),
+        "--task-panel-width": isDrawerOpen ? `${drawerWidth}px` : "0px",
+      }}
+    >
+      <header className="board-topbar">
+        <div className="board-topbar__primary">
+          <button
+            className="topbar-menu-button"
+            type="button"
+            aria-label="Открыть меню"
+            aria-expanded={isSidebarOpen}
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            ≡
+          </button>
+
+          <div className="board-topbar__tabs">
             {isDepartmentsLoading ? (
-              <span className="muted">Загрузка отделов...</span>
+              <span className="board-topbar__status">Загрузка отделов...</span>
             ) : (
               <DepartmentSelector
                 departments={departments}
@@ -383,19 +585,40 @@ export function KanbanPage() {
                 onChange={setSelectedDepartmentId}
               />
             )}
-            <div className="board-topbar__actions">
-              {isBoardLoading && <span className="muted">Загрузка...</span>}
-              {!isDrawerOpen && (
-                <button
-                  className="drawer-open-button"
-                  type="button"
-                  onClick={() => setIsDrawerOpen(true)}
-                >
-                  Панель
-                </button>
-              )}
-            </div>
-          </header>
+            {canManageDepartments && (
+              <button className="department-add-button" type="button" aria-label="Добавить отдел">
+                +
+              </button>
+            )}
+          </div>
+
+          {isBoardLoading && <span className="board-topbar__status">Загрузка...</span>}
+          <div className="board-topbar__spacer" />
+          <label className="board-search">
+            <span className="board-search__icon" aria-hidden="true" />
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Поиск"
+              aria-label="Поиск задач"
+            />
+          </label>
+          {!isDrawerOpen && (
+            <button
+              className="topbar-drawer-button"
+              type="button"
+              aria-label={"\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u043f\u0430\u043d\u0435\u043b\u044c \u0437\u0430\u0434\u0430\u0447\u0438"}
+              onClick={() => setIsDrawerOpen(true)}
+            >
+              {"\u041f\u0430\u043d\u0435\u043b\u044c \u25B6"}
+            </button>
+          )}
+        </div>
+      </header>
+      <div className={`kanban-workspace ${isDrawerOpen ? "" : "kanban-workspace--drawer-closed"}`}>
+        <div className="kanban-main">
+
 
           {error && <p className="error-message">{error}</p>}
 
@@ -407,6 +630,13 @@ export function KanbanPage() {
                   column={column}
                   title={column.name}
                   tasks={tasksByColumn.groupedTasks.get(String(column.id)) || []}
+                  canManageColumns={canManageColumns}
+                  isCollapsed={collapsedColumnIds.includes(String(column.id))}
+                  isColumnMenuOpen={openColumnMenuId === column.id}
+                  onDeleteColumn={handleDeleteColumn}
+                  onRenameColumn={handleRenameColumn}
+                  onToggleCollapse={handleToggleColumnCollapse}
+                  onToggleColumnMenu={setOpenColumnMenuId}
                   openTaskMenuId={openTaskMenuId}
                   selectedTaskId={isDrawerOpen ? selectedTask?.id : null}
                   onCreateTask={handleCreateTask}
@@ -431,6 +661,18 @@ export function KanbanPage() {
                   onToggleTaskMenu={setOpenTaskMenuId}
                 />
               )}
+
+              {canManageColumns && (
+                <button
+                  className="kanban-column-add-button"
+                  type="button"
+                  aria-label={"\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043a\u043e\u043b\u043e\u043d\u043a\u0443"}
+                  onClick={handleCreateColumn}
+                >
+                  +
+                </button>
+              )}
+
             </div>
           </section>
         </div>
@@ -440,12 +682,30 @@ export function KanbanPage() {
             task={selectedTask}
             isLoading={isTaskLoading}
             error={taskError}
+            drawerWidth={drawerWidth}
             onClose={handleCloseTask}
+            onDrawerWidthChange={setDrawerWidth}
             onCommentCreated={handleCommentCreated}
             onFileUploaded={handleFileUploaded}
           />
         )}
       </div>
+      <BoardSidebar
+        isOpen={isSidebarOpen}
+        user={LOCAL_CURRENT_USER}
+        onClose={() => setIsSidebarOpen(false)}
+        onOpenAppearance={() => {
+          setIsSidebarOpen(false);
+          setIsAppearanceOpen(true);
+        }}
+      />
+      {isAppearanceOpen && (
+        <AppearanceSettings
+          settings={appearance}
+          onChange={(nextSettings) => setAppearance((current) => ({ ...current, ...nextSettings }))}
+          onClose={() => setIsAppearanceOpen(false)}
+        />
+      )}
     </main>
   );
 }
