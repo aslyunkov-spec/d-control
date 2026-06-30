@@ -1,3 +1,4 @@
+import { Bell, Menu, PanelRightOpen, Star } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -640,13 +641,16 @@ export function KanbanPage() {
       <header className="board-topbar">
         <div className="board-topbar__primary">
           <button
-            className="topbar-menu-button"
+            className="board-topbar__brand-button"
             type="button"
             aria-label="Открыть боковое меню"
             aria-expanded={isSidebarOpen}
             onClick={() => setIsSidebarOpen(true)}
           >
-            ≡
+            <span className="topbar-menu-button" aria-hidden="true">
+              <Menu size={20} strokeWidth={2} />
+            </span>
+            <span className="board-topbar__brand">D-Control</span>
           </button>
 
           <div className="board-topbar__tabs">
@@ -668,17 +672,16 @@ export function KanbanPage() {
 
           {isBoardLoading && <span className="board-topbar__status">Загрузка...</span>}
 
+          <div className="board-topbar__spacer" />
           <div className="board-topbar__tools" aria-label="Инструменты Workspace">
             <button className="topbar-icon-button" type="button" aria-label="Избранное">
-              <span aria-hidden="true">⭐</span>
+              <Star aria-hidden="true" size={17} strokeWidth={2} />
             </button>
             <button className="topbar-icon-button topbar-activity-button" type="button" aria-label="Центр активности">
-              <span aria-hidden="true">🔔</span>
+              <Bell aria-hidden="true" size={17} strokeWidth={2} />
               <span className="topbar-activity-badge" aria-label="Новые элементы">3</span>
             </button>
           </div>
-
-          <div className="board-topbar__spacer" />
           <label className="board-search">
             <span className="board-search__icon" aria-hidden="true" />
             <input
@@ -696,7 +699,7 @@ export function KanbanPage() {
               aria-label="Открыть панель задачи"
               onClick={() => setIsDrawerOpen(true)}
             >
-              Панель ▶
+              <PanelRightOpen aria-hidden="true" size={17} strokeWidth={2} />
             </button>
           )}
         </div>

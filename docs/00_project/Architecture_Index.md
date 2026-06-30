@@ -7,6 +7,7 @@
 `docs/01_ui/`
 
 - `D-Control_UI_UX_Guidelines.md`
+- `D-Control_Design_System.md`
 - `Workspace_Specification.md`
 - `Task_Card_Specification.md`
 - `Task_Panel_Specification.md`
