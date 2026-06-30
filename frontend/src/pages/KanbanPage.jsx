@@ -642,7 +642,7 @@ export function KanbanPage() {
           <button
             className="topbar-menu-button"
             type="button"
-            aria-label="Открыть меню"
+            aria-label="Открыть боковое меню"
             aria-expanded={isSidebarOpen}
             onClick={() => setIsSidebarOpen(true)}
           >
@@ -667,6 +667,17 @@ export function KanbanPage() {
           </div>
 
           {isBoardLoading && <span className="board-topbar__status">Загрузка...</span>}
+
+          <div className="board-topbar__tools" aria-label="Инструменты Workspace">
+            <button className="topbar-icon-button" type="button" aria-label="Избранное">
+              <span aria-hidden="true">⭐</span>
+            </button>
+            <button className="topbar-icon-button topbar-activity-button" type="button" aria-label="Центр активности">
+              <span aria-hidden="true">🔔</span>
+              <span className="topbar-activity-badge" aria-label="Новые элементы">3</span>
+            </button>
+          </div>
+
           <div className="board-topbar__spacer" />
           <label className="board-search">
             <span className="board-search__icon" aria-hidden="true" />
@@ -682,10 +693,10 @@ export function KanbanPage() {
             <button
               className="topbar-drawer-button"
               type="button"
-              aria-label={"\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u043f\u0430\u043d\u0435\u043b\u044c \u0437\u0430\u0434\u0430\u0447\u0438"}
+              aria-label="Открыть панель задачи"
               onClick={() => setIsDrawerOpen(true)}
             >
-              {"\u041f\u0430\u043d\u0435\u043b\u044c \u25B6"}
+              Панель ▶
             </button>
           )}
         </div>
