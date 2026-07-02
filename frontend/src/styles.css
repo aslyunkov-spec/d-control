@@ -3992,3 +3992,584 @@ h1 {
   width: 18px;
   height: 18px;
 }
+
+/* Sprint 2.1 Workspace Sidebar. */
+.board-sidebar-layer {
+  position: fixed;
+  z-index: 70;
+  display: flex;
+  align-items: stretch;
+  inset: 0;
+  background: rgb(15 23 42 / 16%);
+  animation: board-sidebar-overlay-in 200ms ease-out;
+}
+
+.board-sidebar {
+  display: flex;
+  flex-direction: column;
+  width: min(320px, calc(100vw - 32px));
+  height: 100vh;
+  background: #ffffff;
+  box-shadow: 16px 0 32px rgb(15 23 42 / 18%);
+  animation: board-sidebar-panel-in 200ms cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+.board-sidebar__profile {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 28px;
+  align-items: center;
+  min-height: 84px;
+  gap: 10px;
+  background: #1d588f;
+  color: #ffffff;
+  padding: 14px 14px 13px;
+}
+
+.board-sidebar__profile .board-sidebar__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgb(255 255 255 / 42%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 16%);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1;
+}
+
+.board-sidebar__profile .board-sidebar__profile-text {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.board-sidebar__profile .board-sidebar__profile-text strong {
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board-sidebar__profile .board-sidebar__profile-text span {
+  overflow: hidden;
+  color: rgb(255 255 255 / 76%);
+  font-size: 11px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board-sidebar__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: var(--card-radius);
+  background: transparent;
+  color: rgb(255 255 255 / 86%);
+  padding: 0;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.board-sidebar__close:hover {
+  background: rgb(255 255 255 / 14%);
+  color: #ffffff;
+}
+
+.board-sidebar__content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  padding: 10px 10px 12px;
+}
+
+.board-sidebar__nav {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  padding: 0;
+}
+
+.board-sidebar__item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  width: 100%;
+  min-height: 36px;
+  gap: 8px;
+  border: 0;
+  border-radius: var(--card-radius);
+  background: transparent;
+  color: #344054;
+  padding: 7px 9px 7px 10px;
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.2;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.board-sidebar__item:hover {
+  background: #eef4fb;
+  color: #1d588f;
+}
+
+.board-sidebar__item svg {
+  color: currentColor;
+}
+
+.board-sidebar__item-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board-sidebar__item-count {
+  min-width: 22px;
+  border-radius: 999px;
+  background: #e7f0fa;
+  color: #1d588f;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.board-sidebar__item--active {
+  background: #edf6ff;
+  color: #1d588f;
+  font-weight: 600;
+}
+
+.board-sidebar__item--active::before {
+  position: absolute;
+  top: 7px;
+  bottom: 7px;
+  left: 0;
+  width: 3px;
+  border-radius: 999px;
+  background: #1d588f;
+  content: "";
+}
+
+.board-sidebar__item--danger {
+  color: #b42318;
+}
+
+.board-sidebar__item--danger:hover {
+  background: #fff1f0;
+  color: #b42318;
+}
+
+.board-sidebar__divider {
+  display: block;
+  height: 1px;
+  margin: 10px 2px;
+  background: #e4e8ef;
+}
+
+.board-sidebar__footer {
+  display: grid;
+  gap: 2px;
+  margin-top: auto;
+  border-top: 0;
+  padding: 0;
+}
+
+@keyframes board-sidebar-overlay-in {
+  from {
+    background: rgb(15 23 42 / 0%);
+  }
+
+  to {
+    background: rgb(15 23 42 / 16%);
+  }
+}
+
+@keyframes board-sidebar-panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Sprint 2.1 Sidebar specificity fixes. */
+.board-sidebar__profile .board-sidebar__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: var(--card-radius);
+  background: transparent;
+  color: rgb(255 255 255 / 86%);
+  padding: 0;
+  font-size: inherit;
+  line-height: 1;
+}
+
+.board-sidebar__profile .board-sidebar__close:hover {
+  background: rgb(255 255 255 / 14%);
+  color: #ffffff;
+}
+
+.board-sidebar__nav .board-sidebar__item,
+.board-sidebar__footer .board-sidebar__item {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  width: 100%;
+  min-height: 36px;
+  gap: 8px;
+  border: 0;
+  border-radius: var(--card-radius);
+  background: transparent;
+  color: #344054;
+  padding: 7px 9px 7px 10px;
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.board-sidebar__nav .board-sidebar__item:hover,
+.board-sidebar__footer .board-sidebar__item:hover {
+  background: #eef4fb;
+  color: #1d588f;
+}
+
+.board-sidebar__nav .board-sidebar__item--active,
+.board-sidebar__footer .board-sidebar__item--active {
+  background: #edf6ff;
+  color: #1d588f;
+}
+
+.board-sidebar__footer .board-sidebar__item--danger {
+  color: #b42318;
+}
+
+.board-sidebar__footer .board-sidebar__item--danger:hover {
+  background: #fff1f0;
+  color: #b42318;
+}
+
+/* Sprint 2.2 Compact Sidebar. */
+.board-sidebar__profile {
+  min-height: 68px;
+  grid-template-columns: 38px minmax(0, 1fr) 26px;
+  gap: 9px;
+  background: #27669e;
+  padding: 10px 12px;
+}
+
+.board-sidebar__profile .board-sidebar__avatar {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgb(255 255 255 / 34%);
+  background: rgb(255 255 255 / 14%);
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.board-sidebar__profile .board-sidebar__avatar:hover {
+  border-color: rgb(255 255 255 / 56%);
+  background: rgb(255 255 255 / 22%);
+  transform: translateY(-1px);
+}
+
+.board-sidebar__profile .board-sidebar__profile-text strong {
+  font-size: 13px;
+  line-height: 1.15;
+}
+
+.board-sidebar__profile .board-sidebar__profile-text span {
+  font-size: 10.5px;
+  line-height: 1.2;
+}
+
+.board-sidebar__profile .board-sidebar__close {
+  width: 26px;
+  height: 26px;
+}
+
+.board-sidebar__content {
+  padding: 8px 10px 10px;
+}
+
+.board-sidebar__nav,
+.board-sidebar__footer,
+.board-sidebar__admin-items {
+  gap: 1px;
+}
+
+.board-sidebar__nav .board-sidebar__item,
+.board-sidebar__footer .board-sidebar__item {
+  min-height: 32px;
+  padding: 6px 9px 6px 10px;
+  font-size: 12.5px;
+}
+
+.board-sidebar__item-count {
+  min-width: auto;
+  border-radius: 0;
+  background: transparent;
+  color: #98a2b3;
+  padding: 0 1px 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.board-sidebar__item:hover .board-sidebar__item-count,
+.board-sidebar__item--active .board-sidebar__item-count {
+  color: #667085;
+}
+
+.board-sidebar__nav .board-sidebar__item--active,
+.board-sidebar__footer .board-sidebar__item--active {
+  width: calc(100% + 20px);
+  margin-right: -10px;
+  margin-left: -10px;
+  border-radius: 0;
+  background: #edf6ff;
+  padding-left: 20px;
+}
+
+.board-sidebar__item--active::before {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 4px;
+  border-radius: 0;
+}
+
+.board-sidebar__divider {
+  height: 1px;
+  margin: 7px 4px;
+  background: rgb(16 24 40 / 7%);
+}
+
+.board-sidebar__footer {
+  gap: 1px;
+}
+
+.board-sidebar__admin {
+  display: grid;
+  gap: 1px;
+}
+
+.board-sidebar__admin-toggle {
+  font-weight: 600;
+}
+
+.board-sidebar__admin-items {
+  display: grid;
+  padding: 1px 0 3px;
+}
+
+.board-sidebar__nav .board-sidebar__item--nested,
+.board-sidebar__footer .board-sidebar__item--nested {
+  min-height: 30px;
+  padding-left: 18px;
+  color: #475467;
+  font-size: 12px;
+}
+
+.board-sidebar__item--nested svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Sprint 2.3 Sidebar final polish. */
+.board-sidebar__footer {
+  margin-top: auto;
+}
+
+.board-sidebar__admin {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+}
+
+.board-sidebar__admin-items {
+  display: grid;
+  gap: 1px;
+  padding: 2px 0 4px;
+}
+
+.board-sidebar__nav .board-sidebar__item,
+.board-sidebar__footer .board-sidebar__item {
+  position: relative;
+}
+
+.board-sidebar__nav .board-sidebar__item:hover,
+.board-sidebar__footer .board-sidebar__item:hover {
+  background: #f3f7fb;
+  color: #1d588f;
+}
+
+.board-sidebar__nav .board-sidebar__item--active,
+.board-sidebar__footer .board-sidebar__item--active,
+.board-sidebar__nav .board-sidebar__item--active:hover,
+.board-sidebar__footer .board-sidebar__item--active:hover {
+  width: calc(100% + 20px);
+  margin-right: -10px;
+  margin-left: -10px;
+  border-radius: 0;
+  background: #dcecff;
+  color: #1d588f;
+  padding-left: 22px;
+}
+
+.board-sidebar__nav .board-sidebar__item--active::before,
+.board-sidebar__footer .board-sidebar__item--active::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 6px;
+  width: 4px;
+  border-radius: 0;
+  background: #1d588f;
+  content: "";
+}
+
+.board-sidebar__nav .board-sidebar__item:not(.board-sidebar__item--active)::before,
+.board-sidebar__footer .board-sidebar__item:not(.board-sidebar__item--active)::before {
+  content: none;
+}
+
+.board-sidebar__nav .board-sidebar__item--nested,
+.board-sidebar__footer .board-sidebar__item--nested {
+  width: 100%;
+  margin-right: 0;
+  margin-left: 0;
+  padding-left: 28px;
+}
+
+.board-sidebar__admin-toggle:hover {
+  background: #f3f7fb;
+}
+
+.board-sidebar__item-count {
+  background: transparent;
+  color: #98a2b3;
+}
+
+.board-sidebar__profile .board-sidebar__avatar {
+  cursor: pointer;
+  transform: none;
+}
+
+.board-sidebar__profile .board-sidebar__avatar:hover {
+  border-color: rgb(255 255 255 / 56%);
+  background: rgb(255 255 255 / 22%);
+  transform: none;
+}
+
+/* Sprint 2.4 Sidebar hover and active states polish. */
+.board-sidebar__nav .board-sidebar__item,
+.board-sidebar__footer .board-sidebar__item,
+.board-sidebar__nav .board-sidebar__item--nested,
+.board-sidebar__footer .board-sidebar__item--nested {
+  width: calc(100% + 20px);
+  margin-right: -10px;
+  margin-left: -10px;
+  border-radius: 0;
+  background: transparent;
+  padding-right: 19px;
+  padding-left: 20px;
+}
+
+.board-sidebar__nav .board-sidebar__item:hover,
+.board-sidebar__footer .board-sidebar__item:hover,
+.board-sidebar__nav .board-sidebar__item--nested:hover,
+.board-sidebar__footer .board-sidebar__item--nested:hover,
+.board-sidebar__admin-toggle:hover {
+  background: #f3f7fb;
+  color: #1d588f;
+}
+
+.board-sidebar__nav .board-sidebar__item--active,
+.board-sidebar__footer .board-sidebar__item--active,
+.board-sidebar__nav .board-sidebar__item--active:hover,
+.board-sidebar__footer .board-sidebar__item--active:hover {
+  width: calc(100% + 20px);
+  margin-right: -10px;
+  margin-left: -10px;
+  border-radius: 0;
+  background: #dcecff;
+  color: #1d588f;
+  font-weight: 600;
+  padding-left: 22px;
+}
+
+.board-sidebar__nav .board-sidebar__item--active::before,
+.board-sidebar__footer .board-sidebar__item--active::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 6px;
+  width: 4px;
+  border-radius: 0;
+  background: #1d588f;
+  content: "";
+}
+
+.board-sidebar__nav .board-sidebar__item:not(.board-sidebar__item--active)::before,
+.board-sidebar__footer .board-sidebar__item:not(.board-sidebar__item--active)::before,
+.board-sidebar__admin-toggle::before {
+  content: none;
+}
+
+.board-sidebar__nav .board-sidebar__item--nested,
+.board-sidebar__footer .board-sidebar__item--nested {
+  padding-left: 38px;
+}
+
+.board-sidebar__item-count {
+  min-width: auto;
+  border: 0;
+  background: transparent;
+  color: #98a2b3;
+  padding: 0 0 0 8px;
+  font-weight: 600;
+}
+
+.board-sidebar__item:hover .board-sidebar__item-count {
+  color: #667085;
+}
+
+.board-sidebar__item--active .board-sidebar__item-count,
+.board-sidebar__item--active:hover .board-sidebar__item-count {
+  color: #475467;
+}
+
+/* Sprint 2.5 Sidebar hover color. */
+.board-sidebar__nav .board-sidebar__item:hover,
+.board-sidebar__footer .board-sidebar__item:hover,
+.board-sidebar__nav .board-sidebar__item--nested:hover,
+.board-sidebar__footer .board-sidebar__item--nested:hover,
+.board-sidebar__admin-toggle:hover {
+  background: #eaf3fc;
+}
+
+.board-sidebar__nav .board-sidebar__item--active,
+.board-sidebar__footer .board-sidebar__item--active,
+.board-sidebar__nav .board-sidebar__item--active:hover,
+.board-sidebar__footer .board-sidebar__item--active:hover {
+  background: #dcecff;
+}
