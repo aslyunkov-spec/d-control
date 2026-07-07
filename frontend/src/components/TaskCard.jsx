@@ -1,3 +1,5 @@
+import { Calendar, Ellipsis, Flame, ListChecks, ListPlus, MessageCircle, Paperclip, Plus, UserPlus } from "lucide-react";
+import { Tooltip } from "./Tooltip";
 import { useEffect, useRef, useState } from "react";
 
 function formatDueDate(value) {
@@ -65,6 +67,7 @@ export function TaskCard({
   const [isCreatingSubtask, setIsCreatingSubtask] = useState(false);
   const [isTogglingSubtaskId, setIsTogglingSubtaskId] = useState(null);
   const [subtaskError, setSubtaskError] = useState("");
+  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const dueDate = formatDueDate(task.due_date);
   const commentsCount = Number(task.comments_count || 0);
   const filesCount = Number(task.files_count || 0);
@@ -76,7 +79,6 @@ export function TaskCard({
   const subtasksCompleted = Number(
     task.subtasks_completed ?? subtasks.filter(isCompletedSubtask).length,
   );
-  const hasMeta = task.priority || commentsCount > 0 || filesCount > 0 || dueDate;
   const hasSubtasks = subtasksTotal > 0;
   const shouldShowSubtaskPanel = isSubtasksExpanded || isSubtaskFormOpen;
   const areAllSubtasksCompleted = hasSubtasks && subtasksCompleted === subtasksTotal;
@@ -115,6 +117,40 @@ export function TaskCard({
   }, [isMenuOpen, onCloseMenu]);
 
   useEffect(() => {
+    if (!isQuickActionsOpen) {
+      return undefined;
+    }
+
+    function handlePointerDown(event) {
+      if (cardRef.current && !cardRef.current.contains(event.target)) {
+        setIsQuickActionsOpen(false);
+      }
+    }
+
+    function handleFocusIn(event) {
+      if (cardRef.current && !cardRef.current.contains(event.target)) {
+        setIsQuickActionsOpen(false);
+      }
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === "Escape") {
+        setIsQuickActionsOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("focusin", handleFocusIn);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("focusin", handleFocusIn);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isQuickActionsOpen]);
+
+  useEffect(() => {
     if (isRenaming) {
       window.setTimeout(() => renameInputRef.current?.focus(), 0);
     }
@@ -134,14 +170,35 @@ export function TaskCard({
 
   function handleMenuClick(event) {
     event.stopPropagation();
+    setIsQuickActionsOpen(false);
     onToggleMenu?.();
   }
 
+  function handleQuickTriggerClick(event) {
+    event.stopPropagation();
+    setIsQuickActionsOpen((current) => !current);
+  }
+
+  function handleQuickAction(event, action) {
+    event.stopPropagation();
+
+    if (action === "subtask") {
+      setIsQuickActionsOpen(false);
+      handleAddSubtask();
+      return;
+    }
+
+    setIsQuickActionsOpen(false);
+    handleStubMenuAction();
+  }
+
   function handleStubMenuAction() {
+    setIsQuickActionsOpen(false);
     onCloseMenu?.();
   }
 
   function handleRenameMenuAction() {
+    setIsQuickActionsOpen(false);
     onCloseMenu?.();
     setRenameTitle(task.title || "");
     setRenameError("");
@@ -192,6 +249,7 @@ export function TaskCard({
 
   function handleAddSubtask() {
     onCloseMenu?.();
+    setIsQuickActionsOpen(false);
     setIsSubtasksExpanded(true);
     setSubtaskError("");
     setIsSubtaskFormOpen(true);
@@ -309,7 +367,7 @@ export function TaskCard({
   }
 
   return (
-    <article className={`task-card ${!hasSubtasks ? "task-card--without-subtasks" : ""} ${isSelected ? "task-card--selected" : ""}`} ref={cardRef}>
+    <article className={`task-card ${!hasSubtasks ? "task-card--without-subtasks" : ""} ${isSelected ? "task-card--selected" : ""} ${isMenuOpen ? "task-card--menu-open" : ""} ${isQuickActionsOpen ? "task-card--quick-open" : ""}`} ref={cardRef}>
       <div className="task-card__body" role="button" tabIndex={0} onClick={() => !isRenaming && onOpen(task)}>
         {isRenaming ? (
           <span className="task-rename-inline" onClick={(event) => event.stopPropagation()}>
@@ -328,15 +386,6 @@ export function TaskCard({
           <span className="task-card__title">{task.title}</span>
         )}
 
-        {hasMeta && (
-          <span className="task-card__compact-line">
-            {task.priority && <span className={priorityClassName}>{task.priority}</span>}
-            {commentsCount > 0 && <span>💬{commentsCount}</span>}
-            {filesCount > 0 && <span>📎{filesCount}</span>}
-            {dueDate && <time dateTime={task.due_date}>{dueDate}</time>}
-          </span>
-        )}
-
         {assignees.length > 0 && (
           <span className="task-assignees" aria-label="Исполнители">
             {visibleAssignees.map((assignee) => (
@@ -353,29 +402,125 @@ export function TaskCard({
         )}
       </div>
 
-      {hasSubtasks && (
-        <button
-          className={`task-subtasks-toggle ${areAllSubtasksCompleted ? "task-subtasks-toggle--done" : ""}`}
-          type="button"
-          aria-expanded={isSubtasksExpanded}
-          onClick={(event) => {
-            event.stopPropagation();
-            setIsSubtasksExpanded((current) => !current);
-          }}
-        >
-          ☑ {subtasksCompleted}/{subtasksTotal} {isSubtasksExpanded ? "▲" : "▼"}
-        </button>
-      )}
+      <div className="task-card__footer" onClick={(event) => event.stopPropagation()}>
+        <div className="task-card__footer-left">
+          <div className={`task-card__quick-actions ${isQuickActionsOpen ? "task-card__quick-actions--open" : ""}`}>
+            <Tooltip
+              as="button"
+              label="Добавить"
+              className="task-card__quick-trigger"
+              type="button"
+              aria-label="Быстрые действия"
+              aria-expanded={isQuickActionsOpen}
+              onClick={handleQuickTriggerClick}
+            >
+              <Plus aria-hidden="true" size={15} strokeWidth={2.2} />
+            </Tooltip>
+            <div className="task-card__quick-panel" role="menu" aria-label="Быстрые действия задачи">
+              <Tooltip
+                as="button"
+                label="Добавить исполнителя"
+                className="task-card__quick-action"
+                type="button"
+                role="menuitem"
+                aria-label="Добавить исполнителя"
+                onClick={(event) => handleQuickAction(event, "assignee")}
+              >
+                <UserPlus aria-hidden="true" size={15} strokeWidth={2} />
+              </Tooltip>
+              <Tooltip
+                as="button"
+                label="Установить срок"
+                className="task-card__quick-action"
+                type="button"
+                role="menuitem"
+                aria-label="Установить срок"
+                onClick={(event) => handleQuickAction(event, "dueDate")}
+              >
+                <Calendar aria-hidden="true" size={15} strokeWidth={2} />
+              </Tooltip>
+              <Tooltip
+                as="button"
+                label="Изменить приоритет"
+                className="task-card__quick-action"
+                type="button"
+                role="menuitem"
+                aria-label="Изменить приоритет"
+                onClick={(event) => handleQuickAction(event, "priority")}
+              >
+                <Flame aria-hidden="true" size={15} strokeWidth={2} />
+              </Tooltip>
+              <Tooltip
+                as="button"
+                label="Добавить подзадачу"
+                className="task-card__quick-action"
+                type="button"
+                role="menuitem"
+                aria-label="Добавить подзадачу"
+                onClick={(event) => handleQuickAction(event, "subtask")}
+              >
+                <ListPlus aria-hidden="true" size={15} strokeWidth={2} />
+              </Tooltip>
+            </div>
+          </div>
+          {task.priority && (
+            <Tooltip label="Приоритет" className={priorityClassName}>
+              {isHighPriority(task.priority) && <Flame aria-hidden="true" size={12} strokeWidth={2} />}
+              {task.priority}
+            </Tooltip>
+          )}
+        </div>
 
-      <button
+        <div className="task-card__footer-right">
+          {dueDate && (
+            <time className="task-card__footer-metric" dateTime={task.due_date} title="Срок">
+              <Calendar aria-hidden="true" size={13} strokeWidth={2} />
+              <span>{dueDate}</span>
+            </time>
+          )}
+          {commentsCount > 0 && (
+            <Tooltip label="Комментарии" className="task-card__footer-metric" aria-label="Комментарии">
+              <MessageCircle aria-hidden="true" size={13} strokeWidth={2} />
+              <span>{commentsCount}</span>
+            </Tooltip>
+          )}
+          {filesCount > 0 && (
+            <Tooltip label="Вложения" className="task-card__footer-metric" aria-label="Вложения">
+              <Paperclip aria-hidden="true" size={13} strokeWidth={2} />
+              <span>{filesCount}</span>
+            </Tooltip>
+          )}
+          {hasSubtasks && (
+            <Tooltip
+              as="button"
+              label="Подзадачи"
+              className={`task-card__footer-metric task-card__footer-subtasks ${areAllSubtasksCompleted ? "task-card__footer-subtasks--done" : ""}`}
+              type="button"
+              aria-label="Подзадачи"
+              aria-expanded={isSubtasksExpanded}
+              onClick={(event) => {
+                event.stopPropagation();
+                setIsSubtasksExpanded((current) => !current);
+              }}
+            >
+              <ListChecks aria-hidden="true" size={13} strokeWidth={2} />
+              <span>{subtasksCompleted}/{subtasksTotal}</span>
+            </Tooltip>
+          )}
+        </div>
+      </div>
+
+      <Tooltip
+        as="button"
+        label="Еще"
         className="task-card__menu-button"
         type="button"
         aria-label="Меню задачи"
         aria-expanded={isMenuOpen}
         onClick={handleMenuClick}
       >
-        ≡
-      </button>
+        <Ellipsis aria-hidden="true" size={16} strokeWidth={2} />
+      </Tooltip>
 
       {isMenuOpen && (
         <div className="task-card-menu" role="menu" onClick={(event) => event.stopPropagation()}>
