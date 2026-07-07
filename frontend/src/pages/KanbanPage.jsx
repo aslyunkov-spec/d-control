@@ -21,6 +21,7 @@ import { BoardSidebar } from "../components/BoardSidebar";
 import { DepartmentSelector } from "../components/DepartmentSelector";
 import { KanbanColumn } from "../components/KanbanColumn";
 import { TaskDetailsDrawer } from "../components/TaskDetailsDrawer";
+import { Tooltip } from "../components/Tooltip";
 
 function getTaskColumnId(task) {
   if (task.column_id) {
@@ -709,9 +710,9 @@ export function KanbanPage() {
               />
             )}
             {canManageDepartments && (
-              <button className="department-add-button" type="button" aria-label="Добавить отдел">
+              <Tooltip as="button" label="Добавить отдел" className="department-add-button" type="button" aria-label="Добавить отдел">
                 +
-              </button>
+              </Tooltip>
             )}
           </div>
 
@@ -719,13 +720,19 @@ export function KanbanPage() {
 
           <div className="board-topbar__spacer" />
           <div className="board-topbar__tools" aria-label="Инструменты Workspace">
-            <button className="topbar-icon-button" type="button" aria-label="Избранное">
+            <Tooltip as="button" label="Избранное" className="topbar-icon-button" type="button" aria-label="Избранное">
               <Star aria-hidden="true" size={17} strokeWidth={2} />
-            </button>
-            <button className="topbar-icon-button topbar-activity-button" type="button" aria-label="Центр активности">
+            </Tooltip>
+            <Tooltip
+              as="button"
+              label="Центр активности"
+              className="topbar-icon-button topbar-activity-button"
+              type="button"
+              aria-label="Центр активности"
+            >
               <Bell aria-hidden="true" size={17} strokeWidth={2} />
               <span className="topbar-activity-badge" aria-label="Новые элементы">3</span>
-            </button>
+            </Tooltip>
           </div>
           <label className="board-search">
             <span className="board-search__icon" aria-hidden="true" />
@@ -738,14 +745,16 @@ export function KanbanPage() {
             />
           </label>
           {!isDrawerOpen && (
-            <button
+            <Tooltip
+              as="button"
+              label="Открыть панель"
               className="topbar-drawer-button"
               type="button"
               aria-label="Открыть панель задачи"
               onClick={() => setIsDrawerOpen(true)}
             >
               <PanelRightOpen aria-hidden="true" size={17} strokeWidth={2} />
-            </button>
+            </Tooltip>
           )}
         </div>
       </header>
@@ -796,14 +805,16 @@ export function KanbanPage() {
               )}
 
               {canManageColumns && (
-                <button
+                <Tooltip
+                  as="button"
+                  label="Добавить колонку"
                   className="kanban-column-add-button"
                   type="button"
-                  aria-label={"\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043a\u043e\u043b\u043e\u043d\u043a\u0443"}
+                  aria-label="Добавить колонку"
                   onClick={handleCreateColumn}
                 >
                   +
-                </button>
+                </Tooltip>
               )}
 
             </div>

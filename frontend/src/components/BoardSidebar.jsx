@@ -16,6 +16,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { Tooltip } from "./Tooltip";
 
 // TODO: replace demo counts with backend unread/new counters.
 const PRIMARY_ITEMS = [
@@ -108,22 +109,31 @@ export function BoardSidebar({ isOpen, user, onClose, onOpenAppearance }) {
     <div className="board-sidebar-layer" role="presentation" onMouseDown={handleLayerMouseDown}>
       <aside className="board-sidebar" aria-label="\u041d\u0430\u0432\u0438\u0433\u0430\u0446\u0438\u044f Workspace">
         <header className="board-sidebar__profile">
-          <button
+          <Tooltip
+            as="button"
+            label="Профиль"
             className="board-sidebar__avatar"
             type="button"
-            aria-label="\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438 \u043f\u0440\u043e\u0444\u0438\u043b\u044f"
+            aria-label="Настройки профиля"
             // TODO: open user settings when profile settings are connected.
             onClick={() => {}}
           >
             {displayUser.name.slice(0, 1).toUpperCase()}
-          </button>
+          </Tooltip>
           <div className="board-sidebar__profile-text">
             <strong>{displayUser.name}</strong>
             <span>{displayUser.role}</span>
           </div>
-          <button className="board-sidebar__close" type="button" onClick={onClose} aria-label="\u0417\u0430\u043a\u0440\u044b\u0442\u044c \u043c\u0435\u043d\u044e">
+          <Tooltip
+            as="button"
+            label="Закрыть"
+            className="board-sidebar__close"
+            type="button"
+            onClick={onClose}
+            aria-label="Закрыть меню"
+          >
             <X aria-hidden="true" size={18} strokeWidth={2} />
-          </button>
+          </Tooltip>
         </header>
 
         <div className="board-sidebar__content">

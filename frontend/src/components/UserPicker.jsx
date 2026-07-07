@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { getUsers } from "../api/kanban";
+import { Tooltip } from "./Tooltip";
 
 function getDisplayName(user) {
   const fullName = `${user.first_name || ""} ${user.last_name || ""}`.trim();
@@ -110,13 +111,15 @@ export function UserPicker({
             <span className="user-picker__avatar" key={user.id} title={getUserTitle(user)}>
               {getInitials(user)}
               {isInteractive && (
-                <button
+                <Tooltip
+                  as="button"
+                  label={"\u0423\u0431\u0440\u0430\u0442\u044c"}
                   type="button"
                   aria-label={"\u0423\u0431\u0440\u0430\u0442\u044c " + getDisplayName(user)}
                   onClick={() => removeUser(user.id)}
                 >
                   \u00d7
-                </button>
+                </Tooltip>
               )}
             </span>
           ))}

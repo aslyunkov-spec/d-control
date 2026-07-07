@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { KanbanColumnSection } from "./KanbanColumnSection";
+import { Tooltip } from "./Tooltip";
 
 const SECTION_CONFIG = [
   { key: "active", title: "Активные" },
@@ -131,17 +132,21 @@ export function KanbanColumn({
         <h2>{title}</h2>
         <div className="kanban-column__actions">
           {column && isCollapsed && (
-            <button
+            <Tooltip
+              as="button"
+              label={"\u0420\u0430\u0437\u0432\u0435\u0440\u043d\u0443\u0442\u044c \u043a\u043e\u043b\u043e\u043d\u043a\u0443"}
               className="kanban-column__expand-button"
               type="button"
               aria-label={"\u0420\u0430\u0437\u0432\u0435\u0440\u043d\u0443\u0442\u044c \u043a\u043e\u043b\u043e\u043d\u043a\u0443"}
               onClick={() => onToggleCollapse?.(column.id)}
             >
               {"\u25B6"}
-            </button>
+            </Tooltip>
           )}
           {column && canManageColumns && !isCollapsed && (
-            <button
+            <Tooltip
+              as="button"
+              label={"\u041c\u0435\u043d\u044e \u043a\u043e\u043b\u043e\u043d\u043a\u0438"}
               ref={columnMenuButtonRef}
               className="kanban-column__menu-button"
               type="button"
@@ -150,7 +155,7 @@ export function KanbanColumn({
               onClick={() => onToggleColumnMenu?.(isColumnMenuOpen ? null : column.id)}
             >
               {"\u2261"}
-            </button>
+            </Tooltip>
           )}
         </div>
         {column && canManageColumns && isColumnMenuOpen && (

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { UserPicker } from "./UserPicker";
+import { Tooltip } from "./Tooltip";
 
 import {
   createTaskComment,
@@ -196,7 +197,9 @@ function TaskPeopleSection({ title, users, onChange, isUpdating, error }) {
     <section className="task-people-section" ref={sectionRef}>
       <header className="task-people-section__header">
         <h3>{title}</h3>
-        <button
+        <Tooltip
+          as="button"
+          label={"\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f"}
           className="task-people-section__add"
           type="button"
           disabled={isUpdating}
@@ -205,7 +208,7 @@ function TaskPeopleSection({ title, users, onChange, isUpdating, error }) {
           onClick={() => setIsPickerOpen((current) => !current)}
         >
           +
-        </button>
+        </Tooltip>
       </header>
       {users.length > 0 && (
         <div className="task-people-section__users">
@@ -216,14 +219,16 @@ function TaskPeopleSection({ title, users, onChange, isUpdating, error }) {
               ) : (
                 <span>{getUserInitials(user)}</span>
               )}
-              <button
+              <Tooltip
+                as="button"
+                label={"\u0423\u0431\u0440\u0430\u0442\u044c"}
                 type="button"
                 disabled={isUpdating}
                 aria-label={"\u0423\u0431\u0440\u0430\u0442\u044c " + getAssigneeName(user)}
                 onClick={() => removeUser(user.id)}
               >
                 {"\u00d7"}
-              </button>
+              </Tooltip>
             </span>
           ))}
         </div>
@@ -586,7 +591,9 @@ export function TaskDetailsDrawer({
 
   return (
     <aside className="task-drawer" aria-label="Карточка задачи">
-      <button
+      <Tooltip
+        as="button"
+        label={"\u0418\u0437\u043c\u0435\u043d\u0438\u0442\u044c \u0448\u0438\u0440\u0438\u043d\u0443"}
         className="task-drawer__resize-handle"
         type="button"
         aria-label={"\u0418\u0437\u043c\u0435\u043d\u0438\u0442\u044c \u0448\u0438\u0440\u0438\u043d\u0443 \u043f\u0430\u043d\u0435\u043b\u0438"}
@@ -689,7 +696,7 @@ export function TaskDetailsDrawer({
                             {subtask.title}
                           </button>
                         )}
-                        <button className="drawer-subtask-row__delete" type="button" aria-label={"\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0443"} onClick={() => handleSubtaskDelete(subtask)}>{"\uD83D\uDDD1"}</button>
+                        <Tooltip as="button" label={"\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0443"} className="drawer-subtask-row__delete" type="button" aria-label={"\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0443"} onClick={() => handleSubtaskDelete(subtask)}>{"\uD83D\uDDD1"}</Tooltip>
                       </div>
                     );
                   })}
@@ -712,7 +719,7 @@ export function TaskDetailsDrawer({
                         }
                       }}
                     />
-                    <button type="submit" aria-label={"\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0443"}>+</button>
+                    <Tooltip as="button" label={"\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0443"} type="submit" aria-label={"\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0443"}>+</Tooltip>
                   </form>
                 ) : (
                   <button

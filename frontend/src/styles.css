@@ -5334,3 +5334,54 @@ h1 {
 .appearance-settings__choice--selected small {
   color: #1d588f;
 }
+
+/* Tooltip portal layer: prevents clipping inside cards, columns, header and sidebars. */
+.ui-tooltip::before,
+.ui-tooltip::after {
+  display: none !important;
+  content: none !important;
+}
+
+.ui-tooltip-layer {
+  position: fixed;
+  z-index: 10000;
+  max-width: min(240px, calc(100vw - 16px));
+  border-radius: 4px;
+  background: #1f2937;
+  color: #ffffff;
+  font-family: var(--app-font-family, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-size: 10.5px;
+  line-height: 1.2;
+  padding: 4px 7px;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: ui-tooltip-layer-in 120ms ease both;
+}
+
+.ui-tooltip-layer__arrow {
+  position: absolute;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background: #1f2937;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.ui-tooltip-layer--top .ui-tooltip-layer__arrow {
+  bottom: -3px;
+}
+
+.ui-tooltip-layer--bottom .ui-tooltip-layer__arrow {
+  top: -3px;
+}
+
+@keyframes ui-tooltip-layer-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

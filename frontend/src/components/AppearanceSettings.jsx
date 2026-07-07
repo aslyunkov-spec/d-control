@@ -1,3 +1,5 @@
+import { Tooltip } from "./Tooltip";
+
 const BACKGROUND_OPTIONS = [
   { value: "default", label: "По умолчанию" },
   { value: "color", label: "Однотонный цвет" },
@@ -114,9 +116,16 @@ export function AppearanceSettings({ settings, onChange, onClose }) {
             <h2 id="appearance-settings-title">Внешний вид</h2>
             <p>Настройки сохраняются только в этом браузере.</p>
           </div>
-          <button type="button" className="appearance-settings__close" onClick={onClose} aria-label="Закрыть">
+          <Tooltip
+            as="button"
+            label="Закрыть"
+            type="button"
+            className="appearance-settings__close"
+            onClick={onClose}
+            aria-label="Закрыть"
+          >
             x
-          </button>
+          </Tooltip>
         </header>
 
         <div className="appearance-settings__content">
