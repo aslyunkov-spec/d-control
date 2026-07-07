@@ -1,3 +1,59 @@
+@font-face {
+  font-family: "D-Control Inter";
+  src: url("./assets/fonts/inter-cyrillic-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "D-Control Roboto";
+  src: url("./assets/fonts/roboto-cyrillic-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "D-Control IBM Plex Sans";
+  src: url("./assets/fonts/ibm-plex-sans-cyrillic-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "D-Control Noto Sans";
+  src: url("./assets/fonts/noto-sans-cyrillic-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "D-Control Source Sans 3";
+  src: url("./assets/fonts/source-sans-3-cyrillic-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "D-Control Manrope";
+  src: url("./assets/fonts/manrope-cyrillic-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "D-Control PT Sans";
+  src: url("./assets/fonts/pt-sans-cyrillic-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --accent-color: #2f6fed;
   color: #1d2430;
@@ -5208,4 +5264,73 @@ h1 {
 .task-card__footer-right,
 .task-card__footer-subtasks {
   overflow: visible;
+}
+
+/* Appearance Settings: interface font and text-size choice groups. */
+.appearance {
+  font-family: var(--app-font-family, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-size: var(--app-font-size, var(--board-font-size, 11pt));
+}
+
+.appearance-settings__choice-field {
+  display: grid;
+  gap: 6px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.appearance-settings__choice-field legend {
+  color: #344054;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 0;
+}
+
+.appearance-settings__choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.appearance-settings__choice {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 30px;
+  gap: 6px;
+  border: 1px solid #d7dde5;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #344054;
+  padding: 5px 7px;
+  text-align: left;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.appearance-settings__choice:hover {
+  border-color: #b8c5d6;
+  background: #f4f8fc;
+}
+
+.appearance-settings__choice--selected,
+.appearance-settings__choice--selected:hover {
+  border-color: #2f6fa8;
+  background: #eaf3fc;
+  color: #1d588f;
+}
+
+.appearance-settings__choice small {
+  flex: 0 0 auto;
+  color: #667085;
+  font-size: 10px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.appearance-settings__choice--selected small {
+  color: #1d588f;
 }

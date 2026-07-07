@@ -86,17 +86,70 @@ const DRAWER_WIDTH_STORAGE_KEY = "d-control.drawer-width";
 const DRAWER_MIN_WIDTH = 320;
 const DRAWER_MAX_WIDTH = 720;
 const DRAWER_DEFAULT_WIDTH = 450;
+const FONT_FAMILY_STACKS = {
+  system: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  inter: '"D-Control Inter", system-ui, sans-serif',
+  roboto: '"D-Control Roboto", system-ui, sans-serif',
+  "ibm-plex-sans": '"D-Control IBM Plex Sans", system-ui, sans-serif',
+  "noto-sans": '"D-Control Noto Sans", system-ui, sans-serif',
+  "source-sans-3": '"D-Control Source Sans 3", system-ui, sans-serif',
+  manrope: '"D-Control Manrope", system-ui, sans-serif',
+  "pt-sans": '"D-Control PT Sans", system-ui, sans-serif',
+};
+const FONT_SIZE_OPTIONS = ["9", "10", "11", "12", "13", "14"];
+const LEGACY_FONT_SIZE_MAP = {
+  compact: "10",
+  default: "11",
+  comfortable: "12",
+  large: "12",
+};
 const DEFAULT_APPEARANCE = {
   background: "default",
   backgroundColor: "#f4f6f8",
   gradientStart: "#dbeafe",
   gradientEnd: "#bfdbfe",
   backgroundImageUrl: "",
-  fontSize: "default",
+  fontFamily: "system",
+  fontSize: "11",
   density: "default",
   columnOpacity: "default",
   cardRadius: "strong",
 };
+
+function normalizeAppearance(settings) {
+  const nextSettings = { ...settings };
+
+  if (!Object.prototype.hasOwnProperty.call(FONT_FAMILY_STACKS, nextSettings.fontFamily)) {
+    nextSettings.fontFamily = "system";
+  }
+
+  nextSettings.fontSize = LEGACY_FONT_SIZE_MAP[nextSettings.fontSize] || String(nextSettings.fontSize || "11");
+  if (!FONT_SIZE_OPTIONS.includes(nextSettings.fontSize)) {
+    nextSettings.fontSize = "11";
+  }
+
+  if (!["default", "color", "gradient", "image"].includes(nextSettings.background)) {
+    nextSettings.background = "default";
+  }
+
+  return nextSettings;
+}
+
+function getAppearanceStyle(appearance, isDrawerOpen, drawerWidth) {
+  const fontSize = Number(appearance.fontSize || 11);
+  const safeFontSize = Number.isFinite(fontSize) ? fontSize : 11;
+
+  return {
+    "--app-background": getBoardBackground(appearance),
+    "--app-font-family": FONT_FAMILY_STACKS[appearance.fontFamily] || FONT_FAMILY_STACKS.system,
+    "--app-font-size": `${safeFontSize}pt`,
+    "--board-font-size": `${safeFontSize}pt`,
+    "--workspace-text-size": `${safeFontSize}pt`,
+    "--workspace-title-size": `${safeFontSize + 1}pt`,
+    "--workspace-small-size": `${Math.max(8, safeFontSize - 1)}pt`,
+    "--task-panel-width": isDrawerOpen ? `${drawerWidth}px` : "0px",
+  };
+}
 
 // TODO: replace the local development user with the authenticated user profile.
 const LOCAL_CURRENT_USER = {
@@ -108,17 +161,12 @@ function getStoredAppearance() {
   try {
     const storedSettings = window.localStorage.getItem(APPEARANCE_STORAGE_KEY);
     if (!storedSettings) {
-      return DEFAULT_APPEARANCE;
+      return normalizeAppearance(DEFAULT_APPEARANCE);
     }
 
-    const settings = { ...DEFAULT_APPEARANCE, ...JSON.parse(storedSettings) };
-    if (!["default", "color", "gradient", "image"].includes(settings.background)) {
-      settings.background = "default";
-    }
-
-    return settings;
+    return normalizeAppearance({ ...DEFAULT_APPEARANCE, ...JSON.parse(storedSettings) });
   } catch {
-    return DEFAULT_APPEARANCE;
+    return normalizeAppearance(DEFAULT_APPEARANCE);
   }
 }
 
@@ -633,10 +681,7 @@ export function KanbanPage() {
   return (
     <main
       className={`kanban-page appearance appearance--font-${appearance.fontSize} appearance--density-${appearance.density} appearance--column-opacity-${appearance.columnOpacity} appearance--radius-${appearance.cardRadius}`}
-      style={{
-        "--app-background": getBoardBackground(appearance),
-        "--task-panel-width": isDrawerOpen ? `${drawerWidth}px` : "0px",
-      }}
+      style={getAppearanceStyle(appearance, isDrawerOpen, drawerWidth)}
     >
       <header className="board-topbar">
         <div className="board-topbar__primary">
