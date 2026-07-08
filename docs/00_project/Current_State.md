@@ -95,3 +95,10 @@ Known issues to finish:
 - Subtask rows must be lightweight, without card backgrounds.
 - Subtask delete action must be inside `⋯`.
 - Chat and Events date/time must be close to author name/event text.
+
+## Stable Components
+
+The following UI components are considered stable and should not be redesigned without an architecture decision:
+
+- Tooltip
+- TaskMetaBar

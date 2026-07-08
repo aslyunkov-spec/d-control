@@ -112,3 +112,62 @@ Buttons are inside input.
 ### Header
 
 Workspace Header shrinks by Task Panel width while panel is open.
+
+## TaskMetaBar v2 (Approved)
+
+TaskMetaBar is a shared UI component.
+
+### Variants
+
+- card
+- panel
+
+### Card
+
+Two-row layout.
+
+Row 1:
+
+- Priority (left)
+- Due date (right)
+
+Row 2:
+
+- Quick actions "+" (left)
+- Comments, Attachments, Subtasks (right)
+
+Rules:
+
+- smaller font than task title;
+- "+" keeps current size;
+- due date truncates if needed;
+- subtasks use only the list icon;
+- format: "≡ 1/4";
+- all icon-only elements have Tooltip.
+
+### Panel
+
+Single-row layout.
+
+Left:
+
+- Priority.
+
+Right:
+
+- Due date.
+
+Comments, attachments and subtasks are displayed in Task Panel tabs instead of TaskMetaBar.
+
+### Quick Actions
+
+Quick Actions remain a horizontal expanding toolbar.
+
+Rules:
+
+- icon-only;
+- Tooltip for every icon;
+- floating background;
+- rounded corners;
+- subtle shadow;
+- does not change Task Card height.

@@ -84,8 +84,8 @@ function updateTaskEverywhere(task, updatedTask) {
 const APPEARANCE_STORAGE_KEY = "d-control.appearance";
 const COLLAPSED_COLUMNS_STORAGE_KEY = "d-control.collapsed-columns";
 const DRAWER_WIDTH_STORAGE_KEY = "d-control.drawer-width";
-const DRAWER_MIN_WIDTH = 320;
-const DRAWER_MAX_WIDTH = 720;
+const DRAWER_MIN_WIDTH = 350;
+const DRAWER_MAX_WIDTH = 900;
 const DRAWER_DEFAULT_WIDTH = 450;
 const FONT_FAMILY_STACKS = {
   system: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -836,6 +836,8 @@ export function KanbanPage() {
             onRenameTask={handleRenameTask}
             onToggleSubtask={handleToggleSubtask}
             onCommentCreated={handleCommentCreated}
+            onCommentUpdated={handleCommentUpdated}
+            onFileDeleted={handleFileDeleted}
             onFileUploaded={handleFileUploaded}
           />
         )}

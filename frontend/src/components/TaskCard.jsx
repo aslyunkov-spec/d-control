@@ -1,19 +1,7 @@
-import { Calendar, Ellipsis, Flame, ListChecks, ListPlus, MessageCircle, Paperclip, Plus, UserPlus } from "lucide-react";
+import { Calendar, Ellipsis, Flame, ListPlus, Plus, UserPlus } from "lucide-react";
+import { TaskMetaBar } from "./TaskMetaBar";
 import { Tooltip } from "./Tooltip";
 import { useEffect, useRef, useState } from "react";
-
-function formatDueDate(value) {
-  if (!value) {
-    return "";
-  }
-
-  return new Date(value).toLocaleDateString("ru-RU");
-}
-
-function isHighPriority(priority) {
-  const normalizedPriority = String(priority || "").toLowerCase();
-  return normalizedPriority.includes("high") || normalizedPriority.includes("высок");
-}
 
 function isCompletedSubtask(subtask) {
   return ["completed", "archived"].includes(subtask.status_system_type);
@@ -68,7 +56,6 @@ export function TaskCard({
   const [isTogglingSubtaskId, setIsTogglingSubtaskId] = useState(null);
   const [subtaskError, setSubtaskError] = useState("");
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
-  const dueDate = formatDueDate(task.due_date);
   const commentsCount = Number(task.comments_count || 0);
   const filesCount = Number(task.files_count || 0);
   const subtasks = Array.isArray(task.subtasks) ? [...task.subtasks].sort(compareByCreatedAt) : [];
@@ -81,10 +68,6 @@ export function TaskCard({
   );
   const hasSubtasks = subtasksTotal > 0;
   const shouldShowSubtaskPanel = isSubtasksExpanded || isSubtaskFormOpen;
-  const areAllSubtasksCompleted = hasSubtasks && subtasksCompleted === subtasksTotal;
-  const priorityClassName = isHighPriority(task.priority)
-    ? "task-priority task-priority--high"
-    : "task-priority task-priority--muted";
 
   useEffect(() => {
     setRenameTitle(task.title || "");
@@ -402,113 +385,80 @@ export function TaskCard({
         )}
       </div>
 
-      <div className="task-card__footer" onClick={(event) => event.stopPropagation()}>
-        <div className="task-card__footer-left">
+      <TaskMetaBar
+        task={task}
+        variant="card"
+        commentsCount={commentsCount}
+        filesCount={filesCount}
+        subtasksCompleted={subtasksCompleted}
+        subtasksTotal={subtasksTotal}
+        isSubtasksExpanded={isSubtasksExpanded}
+        onToggleSubtasks={(event) => {
+          event.stopPropagation();
+          setIsSubtasksExpanded((current) => !current);
+        }}
+        leading={(
           <div className={`task-card__quick-actions ${isQuickActionsOpen ? "task-card__quick-actions--open" : ""}`}>
             <Tooltip
               as="button"
-              label="Добавить"
+              label={"\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c"}
               className="task-card__quick-trigger"
               type="button"
-              aria-label="Быстрые действия"
+              aria-label={"\u0411\u044b\u0441\u0442\u0440\u044b\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044f"}
               aria-expanded={isQuickActionsOpen}
               onClick={handleQuickTriggerClick}
             >
               <Plus aria-hidden="true" size={15} strokeWidth={2.2} />
             </Tooltip>
-            <div className="task-card__quick-panel" role="menu" aria-label="Быстрые действия задачи">
+            <div className="task-card__quick-panel" role="menu" aria-label={"\u0411\u044b\u0441\u0442\u0440\u044b\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044f \u0437\u0430\u0434\u0430\u0447\u0438"}>
               <Tooltip
                 as="button"
-                label="Добавить исполнителя"
+                label={"\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044f"}
                 className="task-card__quick-action"
                 type="button"
                 role="menuitem"
-                aria-label="Добавить исполнителя"
+                aria-label={"\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044f"}
                 onClick={(event) => handleQuickAction(event, "assignee")}
               >
                 <UserPlus aria-hidden="true" size={15} strokeWidth={2} />
               </Tooltip>
               <Tooltip
                 as="button"
-                label="Установить срок"
+                label={"\u0423\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u044c \u0441\u0440\u043e\u043a"}
                 className="task-card__quick-action"
                 type="button"
                 role="menuitem"
-                aria-label="Установить срок"
+                aria-label={"\u0423\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u044c \u0441\u0440\u043e\u043a"}
                 onClick={(event) => handleQuickAction(event, "dueDate")}
               >
                 <Calendar aria-hidden="true" size={15} strokeWidth={2} />
               </Tooltip>
               <Tooltip
                 as="button"
-                label="Изменить приоритет"
+                label={"\u0418\u0437\u043c\u0435\u043d\u0438\u0442\u044c \u043f\u0440\u0438\u043e\u0440\u0438\u0442\u0435\u0442"}
                 className="task-card__quick-action"
                 type="button"
                 role="menuitem"
-                aria-label="Изменить приоритет"
+                aria-label={"\u0418\u0437\u043c\u0435\u043d\u0438\u0442\u044c \u043f\u0440\u0438\u043e\u0440\u0438\u0442\u0435\u0442"}
                 onClick={(event) => handleQuickAction(event, "priority")}
               >
                 <Flame aria-hidden="true" size={15} strokeWidth={2} />
               </Tooltip>
               <Tooltip
                 as="button"
-                label="Добавить подзадачу"
+                label={"\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0443"}
                 className="task-card__quick-action"
                 type="button"
                 role="menuitem"
-                aria-label="Добавить подзадачу"
+                aria-label={"\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0443"}
                 onClick={(event) => handleQuickAction(event, "subtask")}
               >
                 <ListPlus aria-hidden="true" size={15} strokeWidth={2} />
               </Tooltip>
             </div>
           </div>
-          {task.priority && (
-            <Tooltip label="Приоритет" className={priorityClassName}>
-              {isHighPriority(task.priority) && <Flame aria-hidden="true" size={12} strokeWidth={2} />}
-              {task.priority}
-            </Tooltip>
-          )}
-        </div>
-
-        <div className="task-card__footer-right">
-          {dueDate && (
-            <time className="task-card__footer-metric" dateTime={task.due_date} title="Срок">
-              <Calendar aria-hidden="true" size={13} strokeWidth={2} />
-              <span>{dueDate}</span>
-            </time>
-          )}
-          {commentsCount > 0 && (
-            <Tooltip label="Комментарии" className="task-card__footer-metric" aria-label="Комментарии">
-              <MessageCircle aria-hidden="true" size={13} strokeWidth={2} />
-              <span>{commentsCount}</span>
-            </Tooltip>
-          )}
-          {filesCount > 0 && (
-            <Tooltip label="Вложения" className="task-card__footer-metric" aria-label="Вложения">
-              <Paperclip aria-hidden="true" size={13} strokeWidth={2} />
-              <span>{filesCount}</span>
-            </Tooltip>
-          )}
-          {hasSubtasks && (
-            <Tooltip
-              as="button"
-              label="Подзадачи"
-              className={`task-card__footer-metric task-card__footer-subtasks ${areAllSubtasksCompleted ? "task-card__footer-subtasks--done" : ""}`}
-              type="button"
-              aria-label="Подзадачи"
-              aria-expanded={isSubtasksExpanded}
-              onClick={(event) => {
-                event.stopPropagation();
-                setIsSubtasksExpanded((current) => !current);
-              }}
-            >
-              <ListChecks aria-hidden="true" size={13} strokeWidth={2} />
-              <span>{subtasksCompleted}/{subtasksTotal}</span>
-            </Tooltip>
-          )}
-        </div>
-      </div>
+        )}
+      />
 
       <Tooltip
         as="button"
