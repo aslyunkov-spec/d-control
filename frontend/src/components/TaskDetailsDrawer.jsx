@@ -176,11 +176,16 @@ function isLongDescription(description) {
 }
 
 function TaskDescriptionBlock({ description }) {
+  const sectionRef = useRef(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [draftDescription, setDraftDescription] = useState(description || '');
-  const hasDescription = Boolean(String(description || '').trim());
-  const canCollapse = isLongDescription(description);
+  const descriptionText = String(description || '').trim();
+  const hasDescription = Boolean(descriptionText);
+  const canCollapse = isLongDescription(descriptionText);
+  const descriptionClassName = !isExpanded && canCollapse
+    ? 'task-panel-description__text task-panel-description__text--clamped'
+    : 'task-panel-description__text';
 
   useEffect(() => {
     setIsExpanded(false);
@@ -188,26 +193,51 @@ function TaskDescriptionBlock({ description }) {
     setDraftDescription(description || '');
   }, [description]);
 
+  useEffect(() => {
+    if (!isEditing) {
+      return undefined;
+    }
+
+    function closeUnchangedEditor(event) {
+      if (sectionRef.current?.contains(event.target)) {
+        return;
+      }
+
+      if (draftDescription === (description || '')) {
+        setIsEditing(false);
+      }
+    }
+
+    document.addEventListener('pointerdown', closeUnchangedEditor);
+    return () => document.removeEventListener('pointerdown', closeUnchangedEditor);
+  }, [description, draftDescription, isEditing]);
+
   return (
-    <section className='task-panel-description' aria-label={'\u041e\u043f\u0438\u0441\u0430\u043d\u0438\u0435'}>
-      <header className='task-panel-description__header'>
-        <h3>{'\u041e\u043f\u0438\u0441\u0430\u043d\u0438\u0435'}</h3>
-        <Tooltip as='button' label={'\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u043e\u043f\u0438\u0441\u0430\u043d\u0438\u0435'} className='task-panel-description__edit' type='button' aria-label={'\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u043e\u043f\u0438\u0441\u0430\u043d\u0438\u0435'} onClick={() => setIsEditing((current) => !current)}>
-          <Pencil aria-hidden='true' size={14} strokeWidth={2} />
-        </Tooltip>
-      </header>
+    <section className='task-panel-description' ref={sectionRef} aria-label={'\u041e\u043f\u0438\u0441\u0430\u043d\u0438\u0435'}>
       {isEditing ? (
         <div className='task-panel-description__editor'>
           <textarea value={draftDescription} rows='4' onChange={(event) => setDraftDescription(event.target.value)} />
           <p>{'\u0421\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0438\u0435 \u043e\u043f\u0438\u0441\u0430\u043d\u0438\u044f \u0431\u0443\u0434\u0435\u0442 \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u043e \u043a \u0441\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u044e\u0449\u0435\u043c\u0443 API.'}</p>
         </div>
-      ) : hasDescription ? (
-        <>
-          <p className={!isExpanded && canCollapse ? 'task-panel-description__text task-panel-description__text--clamped' : 'task-panel-description__text'}>{description}</p>
-          {canCollapse && <button className='task-panel-description__toggle' type='button' onClick={() => setIsExpanded((current) => !current)}>{isExpanded ? '\u0421\u0432\u0435\u0440\u043d\u0443\u0442\u044c' : '\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u043f\u043e\u043b\u043d\u043e\u0441\u0442\u044c\u044e'}</button>}
-        </>
       ) : (
-        <p className='drawer-empty'>{'\u041e\u043f\u0438\u0441\u0430\u043d\u0438\u0435 \u043e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442'}</p>
+        <>
+          <div className='task-panel-description__row'>
+            <p className={descriptionClassName}>
+              {hasDescription ? (
+                <>
+                  <strong>{'\u041e\u043f\u0438\u0441\u0430\u043d\u0438\u0435:'}</strong>{' '}
+                  <span>{descriptionText}</span>
+                </>
+              ) : (
+                <span>{'\u041e\u043f\u0438\u0441\u0430\u043d\u0438\u0435 \u043e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442'}</span>
+              )}
+            </p>
+            <Tooltip as='button' label={'\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u043e\u043f\u0438\u0441\u0430\u043d\u0438\u0435'} className='task-panel-description__edit' type='button' aria-label={'\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u043e\u043f\u0438\u0441\u0430\u043d\u0438\u0435'} onClick={() => setIsEditing(true)}>
+              <Pencil aria-hidden='true' size={14} strokeWidth={2} />
+            </Tooltip>
+          </div>
+          {hasDescription && canCollapse && <button className='task-panel-description__toggle' type='button' onClick={() => setIsExpanded((current) => !current)}>{isExpanded ? '\u0421\u0432\u0435\u0440\u043d\u0443\u0442\u044c' : '\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u043f\u043e\u043b\u043d\u043e\u0441\u0442\u044c\u044e'}</button>}
+        </>
       )}
     </section>
   );
@@ -697,7 +727,7 @@ export function TaskDetailsDrawer({
           <button type='button' disabled><Check aria-hidden='true' size={15} strokeWidth={2} /><span>{'\u0412\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u043e'}</span></button>
           <button type='button' disabled><RotateCcw aria-hidden='true' size={15} strokeWidth={2} /><span>{'\u0414\u043e\u0440\u0430\u0431\u043e\u0442\u0430\u0442\u044c'}</span></button>
           <div className='task-panel-header__menu' ref={taskActionMenuRef}>
-            <Tooltip as='button' label={'\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u044f'} className='task-panel-header__menu-button' type='button' aria-label={'\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u044f'} aria-expanded={isTaskActionMenuOpen} onClick={() => setIsTaskActionMenuOpen((current) => !current)}>
+            <Tooltip as='button' label={'\u0414\u043e\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044f'} className='task-panel-header__menu-button' type='button' aria-label={'\u0414\u043e\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044f'} aria-expanded={isTaskActionMenuOpen} onClick={() => setIsTaskActionMenuOpen((current) => !current)}>
               <Ellipsis aria-hidden='true' size={17} strokeWidth={2} />
             </Tooltip>
             {isTaskActionMenuOpen && (
@@ -727,6 +757,8 @@ export function TaskDetailsDrawer({
               <h2>{task.title}</h2>
             </header>
 
+            <TaskDescriptionBlock description={task.description} />
+
             <TaskMetaBar
               task={task}
               variant="panel"
@@ -736,29 +768,27 @@ export function TaskDetailsDrawer({
               subtasksTotal={subtasksTotal}
             />
 
-            <TaskDescriptionBlock description={task.description} />
-
             <nav className="task-drawer-tabs" aria-label={"\u0420\u0430\u0437\u0434\u0435\u043b\u044b \u0437\u0430\u0434\u0430\u0447\u0438"}>
               <button
                 className={activeTab === "chat" ? "task-drawer-tab task-drawer-tab--active" : "task-drawer-tab"}
                 type="button"
                 onClick={() => setActiveTab("chat")}
               >
-                {"\u0427\u0430\u0442"} ({commentsCount})
+                {"\u0427\u0430\u0442"}<span className="task-drawer-tab__badge">{commentsCount}</span>
               </button>
               <button
                 className={activeTab === "subtasks" ? "task-drawer-tab task-drawer-tab--active" : "task-drawer-tab"}
                 type="button"
                 onClick={() => setActiveTab("subtasks")}
               >
-                {"\u041f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0438"} ({subtasksCompleted}/{subtasksTotal})
+                {"\u041f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0438"}<span className="task-drawer-tab__badge">{subtasksCompleted}/{subtasksTotal}</span>
               </button>
               <button
                 className={activeTab === "files" ? "task-drawer-tab task-drawer-tab--active" : "task-drawer-tab"}
                 type="button"
                 onClick={() => setActiveTab("files")}
               >
-                {"\u0424\u0430\u0439\u043b\u044b"} ({filesCount})
+                {"\u0424\u0430\u0439\u043b\u044b"}<span className="task-drawer-tab__badge">{filesCount}</span>
               </button>
               <button
                 className={activeTab === "events" ? "task-drawer-tab task-drawer-tab--active" : "task-drawer-tab"}

@@ -102,3 +102,11 @@ The following UI components are considered stable and should not be redesigned w
 
 - Tooltip
 - TaskMetaBar
+
+## Stable Components
+
+Следующие компоненты UI считаются завершенными и не должны изменяться без отдельного архитектурного решения:
+
+- Tooltip
+- TaskMetaBar v2
+- Task Panel Header v2
