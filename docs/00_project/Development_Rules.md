@@ -135,3 +135,21 @@ After UI Freeze, stable components may only change for:
 - accessibility improvements;
 - performance improvements;
 - approved architecture-wide design decisions.
+
+## UI Freeze additions
+
+The following components are considered visually approved and should not be redesigned without project-wide approval:
+
+- Task Header
+- TaskMetaBar
+- Task Chat
+- Task Composer
+
+Allowed changes:
+
+- bug fixes;
+- accessibility;
+- performance;
+- architecture-wide design decisions.
+
+Visual redesign is prohibited after approval.

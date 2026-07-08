@@ -7277,3 +7277,442 @@ button.task-meta-bar__subtasks:focus-visible {
   margin-right: 4px;
   color: #8a9aad;
 }
+
+/* Task Chat Composer v1.0. */
+.drawer-chat-section {
+  overflow: hidden;
+}
+
+.drawer-chat-section .timeline-list {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+.drawer-chat-section .comment-composer {
+  position: sticky;
+  bottom: 0;
+  z-index: 4;
+  flex: 0 0 auto;
+  margin-top: auto;
+  padding-top: 7px;
+  background: #f3f7fb;
+}
+
+.drawer-chat-section .comment-composer__field {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 4px;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #c7d5e4;
+  border-radius: var(--card-radius, 8px);
+  background: #ffffff;
+  padding: 4px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.drawer-chat-section .comment-composer__field:focus-within {
+  border-color: #86abc9;
+  box-shadow: 0 0 0 2px rgb(47 111 168 / 9%);
+}
+
+.drawer-chat-section .comment-composer__tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding-bottom: 0;
+}
+
+.drawer-chat-section .comment-composer__icon,
+.drawer-chat-section .comment-composer__send {
+  width: 25px;
+  height: 25px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #5b6b7f;
+}
+
+.drawer-chat-section .comment-composer__icon:hover,
+.drawer-chat-section .comment-composer__icon:focus-visible,
+.drawer-chat-section .comment-composer__send:hover,
+.drawer-chat-section .comment-composer__send:focus-visible {
+  background: #eef5fb;
+  color: #1d588f;
+}
+
+.drawer-chat-section .comment-composer__send {
+  color: #2f6fa8;
+}
+
+.drawer-chat-section .comment-composer--timeline textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 25px;
+  max-height: 132px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  resize: none;
+  border: 0 !important;
+  background: transparent !important;
+  color: #1d2430;
+  padding: 4px 5px !important;
+  font: inherit;
+  line-height: 1.28;
+  outline: none;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Composer inactive icon keeps tooltip available. */
+.drawer-chat-section .comment-composer__icon--inactive {
+  opacity: 0.62;
+  cursor: default;
+}
+
+.drawer-chat-section .comment-composer__icon--inactive:hover,
+.drawer-chat-section .comment-composer__icon--inactive:focus-visible {
+  background: transparent;
+  color: #5b6b7f;
+}
+
+/* Final Composer and multiline editor polish. */
+.drawer-chat-section .comment-composer {
+  margin-top: 12px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  border-top: 1px solid #dce4ee;
+  border-bottom: 1px solid #dce4ee;
+}
+
+.drawer-chat-section .comment-composer__tools {
+  gap: 0;
+}
+
+.drawer-chat-section .comment-composer__send {
+  color: #8a98a8;
+}
+
+.drawer-chat-section .comment-composer__send--active {
+  color: #2f6fa8;
+}
+
+.drawer-chat-section .comment-composer--timeline textarea {
+  max-height: 154px;
+}
+
+.drawer-chat-section .timeline-item__body {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.drawer-chat-section .timeline-item__body > p {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.drawer-chat-section .timeline-edited-mark {
+  display: none !important;
+}
+
+.drawer-chat-section .timeline-edited-info {
+  display: block;
+  margin-top: 3px;
+  color: #7b8a9d;
+  font-size: calc(var(--workspace-small-size, 10pt) - 3px);
+  font-weight: 400;
+  line-height: 1.15;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.task-panel-description__editor textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 25px;
+  max-height: 154px;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  resize: none;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Task Panel vertical optimization before footer. */
+.task-panel-title-block {
+  padding-top: 2px;
+  margin-bottom: 2px;
+}
+
+.task-panel-description {
+  margin-bottom: 0;
+}
+
+.task-panel-description__row {
+  align-items: center;
+  gap: 6px;
+}
+
+.task-panel-description__text {
+  line-height: 1.25;
+}
+
+.task-meta-bar--panel {
+  padding-top: 4px;
+}
+
+.drawer-chat-section .timeline-list {
+  gap: 12px;
+  padding-bottom: 2px;
+}
+
+.drawer-chat-section .timeline-list li.timeline-item {
+  gap: 6px;
+}
+
+.drawer-chat-section .timeline-item__body {
+  max-width: 85%;
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+.drawer-chat-section .timeline-meta__main strong {
+  font-weight: 600;
+}
+
+.drawer-chat-section .timeline-meta__main time {
+  font-weight: 400;
+}
+
+.drawer-chat-section .timeline-edited-info {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.drawer-chat-section .comment-composer {
+  margin-top: 10px;
+  padding-top: 7px;
+  padding-bottom: 3px;
+}
+
+/* Task Chat final spacing and author display fix. */
+.task-panel-title-block {
+  padding-top: 1px;
+  margin-bottom: 0;
+}
+
+.task-panel-description {
+  margin-top: -1px;
+  margin-bottom: 0;
+}
+
+.drawer-chat-section .timeline-list li.timeline-item {
+  gap: 10px;
+}
+
+.drawer-chat-section .timeline-item__body {
+  max-width: 90%;
+}
+
+.drawer-chat-section .timeline-meta__main {
+  min-width: max-content;
+}
+
+.drawer-chat-section .timeline-meta__main strong {
+  max-width: 220px;
+  min-width: max-content;
+  flex: 0 0 auto;
+}
+
+.drawer-chat-section .timeline-meta__main time {
+  flex: 0 0 auto;
+}
+
+/* Final Task Chat polish before footer. */
+.task-panel-title-block {
+  padding-top: 0;
+  margin-bottom: -2px;
+}
+
+.task-panel-description {
+  margin-top: -3px;
+  margin-bottom: 0;
+}
+
+.task-panel-description__text {
+  line-height: 1.2;
+}
+
+.drawer-chat-section .timeline-list {
+  gap: 8px;
+}
+
+.drawer-chat-section .timeline-item__body {
+  max-width: 90%;
+  padding-top: 1px;
+  padding-bottom: 1px;
+}
+
+.drawer-chat-section .timeline-edited-info {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.drawer-chat-section .comment-composer {
+  padding-bottom: 0;
+}
+
+/* Restore chat bubble width before percentage limit. */
+.drawer-chat-section .timeline-item__body {
+  max-width: min(100%, 420px);
+}
+
+/* Task Chat empty-state composer anchoring. */
+.drawer-chat-section {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.drawer-chat-section .timeline-list--chat {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+.drawer-chat-section > .drawer-empty {
+  flex: 1 1 auto;
+  margin: 0;
+}
+
+.drawer-chat-section > .comment-composer {
+  flex: 0 0 auto;
+  margin-top: auto;
+}
+
+/* Composer spacing: center between its top and bottom dividers. */
+.drawer-chat-section > .comment-composer {
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
+/* Composer/Footer divider cleanup: keep one divider before participants. */
+.drawer-chat-section > .comment-composer {
+  padding-top: 7px;
+  padding-bottom: 8px;
+  border-bottom: 0 !important;
+}
+
+.task-drawer__footer {
+  padding-top: 0;
+}
+/* Composer bottom gap removal: keep composer closer to footer. */
+.drawer-chat-section > .comment-composer {
+  padding-bottom: 0;
+}
+/* Composer/Footer minimum gap. */
+.drawer-chat-section > .comment-composer {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.task-drawer__footer {
+  margin-top: 0;
+  padding-top: 0 !important;
+}
+/* Task Panel bottom alignment: composer is a normal flex item above footer. */
+.task-drawer__content {
+  padding-bottom: 0;
+}
+
+.drawer-chat-section > .comment-composer {
+  position: relative;
+  bottom: auto;
+}
+/* Task Panel Footer v1.0 participants layout. */
+.task-drawer__footer {
+  border-top: 1px solid #dce4ee;
+  padding: 4px 10px 7px;
+}
+
+.task-drawer__participants {
+  display: grid;
+  gap: 4px;
+}
+
+.task-people-section {
+  display: grid;
+  min-height: 24px;
+  grid-template-columns: minmax(86px, auto) minmax(0, 1fr) 24px;
+  align-items: center;
+  column-gap: 7px;
+  row-gap: 2px;
+}
+
+.task-people-section > h3 {
+  grid-column: 1;
+  grid-row: 1;
+  margin: 0;
+  color: #344054;
+  font-size: var(--workspace-small-size, 10pt);
+  font-weight: 600;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.task-people-section__users {
+  grid-column: 2;
+  grid-row: 1;
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 3px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.task-people-section__add {
+  grid-column: 3;
+  grid-row: 1;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  justify-self: end;
+}
+
+.task-person__avatar,
+.task-person__overflow {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #dbeafe;
+  color: #1d588f;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.task-person__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.task-person__overflow {
+  background: #e8eef5;
+  color: #475467;
+}
+
+.task-people-section > .comment-error {
+  grid-column: 1 / -1;
+  margin: 1px 0 0;
+}

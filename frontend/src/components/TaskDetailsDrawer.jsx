@@ -209,16 +209,15 @@ function getCommentEditedMeta(comment = {}) {
   if (!isEdited) {
     return {
       isEdited: false,
-      tooltip: "",
+      formattedDate: "",
     };
   }
 
   const editDate = editedAt || (isUpdatedAfterCreate ? updatedAt : "");
-  const formattedEditDate = formatDateTime(editDate);
 
   return {
     isEdited: true,
-    tooltip: formattedEditDate ? `\u0418\u0437\u043c\u0435\u043d\u0435\u043d\u043e: ${formattedEditDate}` : "\u0421\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u043e",
+    formattedDate: formatDateTime(editDate),
   };
 }
 
@@ -229,6 +228,7 @@ function isLongDescription(description) {
 
 function TaskDescriptionBlock({ description }) {
   const sectionRef = useRef(null);
+  const descriptionTextareaRef = useRef(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [draftDescription, setDraftDescription] = useState(description || '');
@@ -238,6 +238,17 @@ function TaskDescriptionBlock({ description }) {
   const descriptionClassName = !isExpanded && canCollapse
     ? 'task-panel-description__text task-panel-description__text--clamped'
     : 'task-panel-description__text';
+
+  function resizeDescriptionTextarea(textarea = descriptionTextareaRef.current) {
+    if (!textarea) {
+      return;
+    }
+
+    const maxHeight = 154;
+    textarea.style.height = 'auto';
+    textarea.style.height = `${Math.min(textarea.scrollHeight, maxHeight)}px`;
+    textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
+  }
 
   useEffect(() => {
     setIsExpanded(false);
@@ -268,7 +279,17 @@ function TaskDescriptionBlock({ description }) {
     <section className='task-panel-description' ref={sectionRef} aria-label={'\u041e\u043f\u0438\u0441\u0430\u043d\u0438\u0435'}>
       {isEditing ? (
         <div className='task-panel-description__editor'>
-          <textarea value={draftDescription} rows='4' onChange={(event) => setDraftDescription(event.target.value)} />
+          <textarea
+            ref={descriptionTextareaRef}
+            value={draftDescription}
+            rows='1'
+            onFocus={(event) => resizeDescriptionTextarea(event.currentTarget)}
+            onInput={(event) => resizeDescriptionTextarea(event.currentTarget)}
+            onChange={(event) => {
+              setDraftDescription(event.target.value);
+              resizeDescriptionTextarea(event.target);
+            }}
+          />
           <p>{'\u0421\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0438\u0435 \u043e\u043f\u0438\u0441\u0430\u043d\u0438\u044f \u0431\u0443\u0434\u0435\u0442 \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u043e \u043a \u0441\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u044e\u0449\u0435\u043c\u0443 API.'}</p>
         </div>
       ) : (
@@ -297,7 +318,10 @@ function TaskDescriptionBlock({ description }) {
 
 function TaskPeopleSection({ title, addLabel, users = [], onChange, isUpdating, error }) {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(0);
   const sectionRef = useRef(null);
+  const usersListRef = useRef(null);
+  const safeUsers = asArray(users);
 
   useEffect(() => {
     if (!isPickerOpen) {
@@ -324,32 +348,65 @@ function TaskPeopleSection({ title, addLabel, users = [], onChange, isUpdating, 
     };
   }, [isPickerOpen]);
 
-  const safeUsers = asArray(users);
+  useEffect(() => {
+    function updateVisibleCount() {
+      const containerWidth = usersListRef.current?.clientWidth || 0;
+      const avatarStep = 27;
+      const hiddenBadgeWidth = 34;
 
-  function removeUser(userId) {
-    onChange?.(safeUsers.filter((user) => String(user.id) !== String(userId)));
-  }
+      if (!safeUsers.length) {
+        setVisibleCount(0);
+        return;
+      }
+
+      if (!containerWidth) {
+        setVisibleCount(safeUsers.length);
+        return;
+      }
+
+      const allFitCount = Math.floor(containerWidth / avatarStep);
+      if (allFitCount >= safeUsers.length) {
+        setVisibleCount(safeUsers.length);
+        return;
+      }
+
+      setVisibleCount(Math.max(0, Math.floor((containerWidth - hiddenBadgeWidth) / avatarStep)));
+    }
+
+    updateVisibleCount();
+
+    if (!usersListRef.current || typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', updateVisibleCount);
+      return () => window.removeEventListener('resize', updateVisibleCount);
+    }
+
+    const observer = new ResizeObserver(updateVisibleCount);
+    observer.observe(usersListRef.current);
+    return () => observer.disconnect();
+  }, [safeUsers.length]);
+
+  const visibleUsers = safeUsers.slice(0, visibleCount);
+  const hiddenUsers = safeUsers.slice(visibleCount);
+  const hiddenTooltip = hiddenUsers.map(getUserTitle).filter(Boolean).join('\n');
 
   return (
     <section className='task-people-section' ref={sectionRef}>
-      <header className='task-people-section__header'>
-        <Tooltip as='button' label={addLabel} className='task-people-section__add' type='button' disabled={isUpdating} aria-label={addLabel} aria-expanded={isPickerOpen} onClick={() => setIsPickerOpen((current) => !current)}>
-          +
-        </Tooltip>
-        <h3>{title}</h3>
-      </header>
-      <div className='task-people-section__users'>
-        {safeUsers.map((user) => (
-          <span className='task-person' key={user.id}>
-            <Tooltip label={getUserTitle(user)} className='task-person__avatar'>
-              {user.avatar ? <img src={user.avatar} alt='' /> : <span>{getUserInitials(user)}</span>}
-            </Tooltip>
-            <Tooltip as='button' label={'\u0423\u0431\u0440\u0430\u0442\u044c'} className='task-person__remove' type='button' disabled={isUpdating} aria-label={'\u0423\u0431\u0440\u0430\u0442\u044c ' + getAssigneeName(user)} onClick={() => removeUser(user.id)}>
-              {'\u00d7'}
-            </Tooltip>
-          </span>
+      <h3>{title}</h3>
+      <div className='task-people-section__users' ref={usersListRef}>
+        {visibleUsers.map((user) => (
+          <Tooltip label={getUserTitle(user)} className='task-person__avatar' key={user.id || getUserTitle(user)}>
+            {user.avatar ? <img src={user.avatar} alt='' /> : <span>{getUserInitials(user)}</span>}
+          </Tooltip>
         ))}
+        {hiddenUsers.length > 0 && (
+          <Tooltip label={hiddenTooltip} className='task-person__overflow'>
+            +{hiddenUsers.length}
+          </Tooltip>
+        )}
       </div>
+      <Tooltip as='button' label={addLabel} className='task-people-section__add' type='button' disabled={isUpdating} aria-label={addLabel} aria-expanded={isPickerOpen} onClick={() => setIsPickerOpen((current) => !current)}>
+        +
+      </Tooltip>
       {isPickerOpen && (
         <div className='task-people-section__popover'>
           <UserPicker value={safeUsers} onChange={onChange} disabled={isUpdating} searchOnly autoFocus onSelection={() => setIsPickerOpen(false)} onClose={() => setIsPickerOpen(false)} />
@@ -408,7 +465,6 @@ function TimelineItem({ item, editingCommentId, editText, isSaving, onEditStart,
           <span className='timeline-meta__main'>
             <strong>{item.author}</strong>
             <time>{formatDateTime(item.date)}</time>
-            {editedMeta.isEdited && <Tooltip label={editedMeta.tooltip} className='timeline-edited-mark'>{'\u0438\u0437\u043c\u0435\u043d\u0435\u043d\u043e'}</Tooltip>}
           </span>
           {item.type === 'comment' && comment.can_edit && !isEditing && (
             <div className='timeline-message-actions' ref={messageActionsRef}>
@@ -460,7 +516,12 @@ function TimelineItem({ item, editingCommentId, editText, isSaving, onEditStart,
           </div>
         )}
 
-        {item.type === 'comment' && !isEditing && <p>{comment.text || ''}</p>}
+        {item.type === 'comment' && !isEditing && (
+          <>
+            <p>{comment.text || ''}</p>
+            {editedMeta.isEdited && <span className='timeline-edited-info'>{'\u270e'}{editedMeta.formattedDate ? ` ${editedMeta.formattedDate}` : ''}</span>}
+          </>
+        )}
 
         {item.type === 'file' && (
           <div className='timeline-file-item'>
@@ -496,6 +557,7 @@ export function TaskDetailsDrawer({
   onFileUploaded,
 }) {
   const fileInputRef = useRef(null);
+  const commentTextareaRef = useRef(null);
   const taskActionMenuRef = useRef(null);
   const subtaskMenuRef = useRef(null);
   const [commentText, setCommentText] = useState("");
@@ -708,6 +770,27 @@ export function TaskDetailsDrawer({
     window.addEventListener("mouseup", handleResizeEnd);
   }
 
+  function resizeCommentTextarea(textarea = commentTextareaRef.current) {
+    if (!textarea) {
+      return;
+    }
+
+    const maxHeight = 154;
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.min(textarea.scrollHeight, maxHeight)}px`;
+    textarea.style.overflowY = textarea.scrollHeight > maxHeight ? "auto" : "hidden";
+  }
+
+  function resetCommentTextarea() {
+    const textarea = commentTextareaRef.current;
+    if (!textarea) {
+      return;
+    }
+
+    textarea.style.height = "auto";
+    textarea.style.overflowY = "hidden";
+  }
+
   async function handleCommentSubmit(event) {
     event.preventDefault();
 
@@ -728,6 +811,7 @@ export function TaskDetailsDrawer({
       const comment = await createTaskComment(task.id, text);
       onCommentCreated?.(comment);
       setCommentText("");
+      window.requestAnimationFrame(resetCommentTextarea);
     } catch (submitError) {
       setCommentError("Не удалось отправить комментарий.");
     } finally {
@@ -1021,16 +1105,33 @@ export function TaskDetailsDrawer({
                 <form className='comment-composer comment-composer--timeline' onSubmit={handleCommentSubmit}>
                   <div className='comment-composer__field'>
                     <div className='comment-composer__tools'>
-                      <Tooltip as='button' label={isFileUploading ? '\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430' : '\u041f\u0440\u0438\u043a\u0440\u0435\u043f\u0438\u0442\u044c \u0444\u0430\u0439\u043b'} className='comment-composer__icon' type='button' disabled={!task || isFileUploading} aria-label={'\u041f\u0440\u0438\u043a\u0440\u0435\u043f\u0438\u0442\u044c \u0444\u0430\u0439\u043b'} onClick={() => fileInputRef.current?.click()}>
+                      <Tooltip as='button' label={'\u041f\u0440\u0438\u043a\u0440\u0435\u043f\u0438\u0442\u044c \u0444\u0430\u0439\u043b'} className='comment-composer__icon' type='button' disabled={!task || isFileUploading} aria-label={'\u041f\u0440\u0438\u043a\u0440\u0435\u043f\u0438\u0442\u044c \u0444\u0430\u0439\u043b'} onClick={() => fileInputRef.current?.click()}>
                         <FilePlus aria-hidden='true' size={15} strokeWidth={2} />
                       </Tooltip>
                       <input ref={fileInputRef} className='file-input-hidden' type='file' disabled={!task || isFileUploading} onChange={handleFileChange} />
-                      <Tooltip as='button' label={'\u0423\u043f\u043e\u043c\u044f\u043d\u0443\u0442\u044c'} className='comment-composer__icon' type='button' disabled aria-label={'\u0423\u043f\u043e\u043c\u044f\u043d\u0443\u0442\u044c'}>
+                      <Tooltip as='button' label={'\u0423\u043f\u043e\u043c\u044f\u043d\u0443\u0442\u044c \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f'} className='comment-composer__icon comment-composer__icon--inactive' type='button' aria-disabled='true' tabIndex={-1} aria-label={'\u0423\u043f\u043e\u043c\u044f\u043d\u0443\u0442\u044c \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f'} onClick={(event) => event.preventDefault()}>
                         <AtSign aria-hidden='true' size={15} strokeWidth={2} />
                       </Tooltip>
                     </div>
-                    <textarea placeholder={'\u041d\u043e\u0432\u044b\u0439 \u043a\u043e\u043c\u043c\u0435\u043d\u0442\u0430\u0440\u0438\u0439'} rows='1' value={commentText} disabled={!task || isCommentSubmitting} onChange={(event) => setCommentText(event.target.value)} />
-                    <Tooltip as='button' label={isCommentSubmitting ? '\u041e\u0442\u043f\u0440\u0430\u0432\u043a\u0430' : '\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c'} className='comment-composer__send' type='submit' disabled={!task || isCommentSubmitting} aria-label={'\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c'}>
+                    <textarea
+                      ref={commentTextareaRef}
+                      placeholder={'\u041d\u0430\u043f\u0438\u0448\u0438\u0442\u0435 \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435...'}
+                      rows='1'
+                      value={commentText}
+                      disabled={!task || isCommentSubmitting}
+                      onChange={(event) => {
+                        setCommentText(event.target.value);
+                        resizeCommentTextarea(event.target);
+                      }}
+                      onInput={(event) => resizeCommentTextarea(event.currentTarget)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' && !event.shiftKey) {
+                          event.preventDefault();
+                          handleCommentSubmit(event);
+                        }
+                      }}
+                    />
+                    <Tooltip as='button' label={'\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435'} className={commentText.trim() ? 'comment-composer__send comment-composer__send--active' : 'comment-composer__send'} type='submit' disabled={!task || isCommentSubmitting} aria-label={'\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435'}>
                       <Send aria-hidden='true' size={15} strokeWidth={2} />
                     </Tooltip>
                   </div>

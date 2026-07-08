@@ -327,3 +327,172 @@ Backend should store edit time separately:
 
 - `created_at` — message creation time;
 - `edited_at` or equivalent — last edit time.
+
+## Task Chat v1.0 (Approved)
+
+### Messages
+
+Chat messages use conversation-style bubbles.
+
+Rules:
+
+- avatar on the left;
+- message bubble on the right;
+- author is displayed fully;
+- initials are used only inside avatar;
+- message actions use `⋯`;
+- message bubble keeps approved max-width;
+- vertical spacing between messages is compact;
+- long words/URLs wrap correctly.
+
+### Message meta
+
+Author and creation date are shown in one line:
+
+admin · 25.06.2026, 12:18
+
+Rules:
+
+- author is stronger;
+- date is calmer;
+- messages are sorted by creation time.
+
+### Edited indicator
+
+Edited messages show edit information in the bottom-right corner of the bubble.
+
+Format:
+
+✎ 08.07.2026, 12:36
+
+Rules:
+
+- do not show words like `изменено`, `изм.`, `ред.`;
+- do not replace creation date with edit date;
+- editing does not move message position.
+
+---
+
+## Task Composer v1.0 (Approved)
+
+Composer is fixed above participants footer.
+
+Layout:
+
+📎 @ Напишите сообщение... ➜
+
+Rules:
+
+- file button is inside input;
+- mention button is inside input;
+- send button is inside input;
+- empty send icon is calm gray;
+- active send icon uses accent color;
+- textarea auto-grows up to 7 lines;
+- after 7 lines internal scroll appears;
+- Shift+Enter creates a new line if supported;
+- Composer does not affect message spacing.
+
+# Task Chat v1.0 (Approved)
+
+The Chat is the primary working area of the Task Panel.
+
+## Layout
+
+The Chat consists of three independent areas:
+
+1. Scrollable message list.
+2. Fixed Composer.
+3. Fixed Footer.
+
+Only the message list scrolls.
+
+Composer and Footer never move.
+
+---
+
+## Messages
+
+Messages are displayed from oldest to newest.
+
+Layout:
+
+Avatar | Bubble
+
+Rules:
+
+- avatar on the left;
+- initials inside avatar;
+- author shown in full;
+- creation date shown next to author;
+- author is visually stronger than date;
+- bubble has fixed maximum width;
+- long words wrap correctly;
+- bubble spacing is compact.
+
+---
+
+## Message Actions
+
+Actions are displayed using:
+
+⋯
+
+The menu contains editing/deleting actions according to permissions.
+
+No inline action buttons.
+
+---
+
+## Edited Messages
+
+If a message was edited:
+
+- original creation date remains unchanged;
+- message position never changes;
+- edit information is shown inside the bottom-right corner of the bubble;
+- compact icon is used instead of the text "Edited".
+
+---
+
+## Composer
+
+Composer is permanently fixed above Footer.
+
+Layout:
+
+[file]
+[@]
+Message input
+[Send]
+
+Rules:
+
+- textarea grows automatically;
+- maximum auto height — 7 lines;
+- after that internal scroll appears;
+- buttons live inside Composer;
+- Send icon becomes active only when message contains text.
+
+---
+
+## Empty State
+
+If there are no messages:
+
+- empty state is shown inside the message area;
+- Composer remains fixed above Footer;
+- Footer position never changes.
+
+---
+
+## Visual Rules
+
+Approved:
+
+- compact spacing;
+- compact bubbles;
+- calm blue background;
+- single divider above Composer;
+- single divider above Footer;
+- balanced spacing around Composer.

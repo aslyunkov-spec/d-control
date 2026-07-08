@@ -111,3 +111,23 @@ The following UI components are considered stable and are part of the upcoming U
 - TaskMetaBar v2
 - Task Panel Header v2
 - Task Chat Messages v1.0
+- Task Chat v1.0
+- Task Composer v1.0
+
+## Task Panel Progress
+
+Current completion:
+
+- Header — UI Approved
+- TaskMetaBar — UI Approved
+- Chat — UI Approved
+- Composer — UI Approved
+
+Remaining before Task Panel Freeze:
+
+- Footer (Assignees / Watchers)
+- Subtasks polish
+- Files polish
+- Events polish
+
+After Footer completion Task Panel enters UI Freeze v1.0.
