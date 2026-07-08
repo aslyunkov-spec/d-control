@@ -105,7 +105,7 @@ The following UI components are considered stable and should not be redesigned w
 
 ## Stable Components
 
-Следующие компоненты UI считаются завершенными и не должны изменяться без отдельного архитектурного решения:
+The following UI components are considered stable and are part of the upcoming UI Freeze v1.0:
 
 - Tooltip
 - TaskMetaBar v2
