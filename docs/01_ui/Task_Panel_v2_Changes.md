@@ -249,3 +249,81 @@ Rules:
 Статус задачи в панели не отображается.
 
 Состояние задачи определяется расположением в Kanban.
+
+## Task Chat Messages v1.0 (Approved)
+
+Chat messages are displayed as calm conversation bubbles.
+
+### Layout
+
+Message layout:
+
+- avatar on the left;
+- message bubble on the right;
+- bubble is slightly darker than panel background;
+- bubble is not white;
+- no heavy card shadow;
+- compact vertical spacing.
+
+### Message meta
+
+Message meta line:
+
+admin · 25.06.2026, 12:18
+
+Rules:
+
+- author and date/time stay close together;
+- date/time does not move to the far right;
+- author is slightly stronger;
+- date/time is visually calmer.
+
+### Message actions
+
+Message actions use `⋯`.
+
+The message action menu currently contains:
+
+- Редактировать
+
+The same menu may later contain:
+
+- Ответить
+- Удалить
+
+### Edit mode
+
+Editing keeps the message bubble layout.
+
+Only message text is replaced with textarea.
+
+Rules:
+
+- textarea uses full bubble width;
+- textarea auto-grows;
+- buttons are below textarea, aligned right:
+  - Отмена
+  - Сохранить
+- Esc cancels editing;
+- Ctrl+Enter saves editing.
+
+### Edited timestamp
+
+Message creation time must never be changed.
+
+Messages are sorted by `created_at` from old to new.
+
+Editing a message must not move it down.
+
+Approved display:
+
+admin · 25.06.2026, 12:18 · изменено
+
+If edit timestamp is available, `изменено` has Tooltip:
+
+Изменено: 08.07.2026, 11:37
+
+Backend should store edit time separately:
+
+- `created_at` — message creation time;
+- `edited_at` or equivalent — last edit time.

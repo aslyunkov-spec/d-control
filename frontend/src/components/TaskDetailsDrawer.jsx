@@ -108,8 +108,21 @@ function getEntityId(entity, fallback) {
   return entity?.id ?? fallback;
 }
 
+function sortByCreatedAt(items) {
+  return [...items].sort((left, right) => {
+    const leftTime = new Date(left.created_at || 0).getTime();
+    const rightTime = new Date(right.created_at || 0).getTime();
+
+    if (leftTime !== rightTime) {
+      return leftTime - rightTime;
+    }
+
+    return Number(left.id || 0) - Number(right.id || 0);
+  });
+}
+
 function buildTimeline(task) {
-  const comments = asArray(task?.comments).map((comment, index) => ({
+  const comments = sortByCreatedAt(asArray(task?.comments)).map((comment, index) => ({
     id: `comment-${comment.id}`,
     type: "comment",
     author: comment.author || "\u041a\u043e\u043c\u043c\u0435\u043d\u0442\u0430\u0440\u0438\u0439",
@@ -168,6 +181,45 @@ function getUserInitials(user = {}) {
 function getUserTitle(user = {}) {
   const fullName = `${user.first_name || ""} ${user.last_name || ""}`.trim();
   return [fullName || user.username, user.email, user.role].filter(Boolean).join("\n");
+}
+
+
+function getTimestamp(value) {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.getTime();
+}
+
+function getCommentEditedMeta(comment = {}) {
+  const editedAt = comment.edited_at || comment.modified_at || "";
+  const updatedAt = comment.updated_at || "";
+  const createdAt = comment.created_at || "";
+  const updatedTimestamp = getTimestamp(updatedAt);
+  const createdTimestamp = getTimestamp(createdAt);
+  const isUpdatedAfterCreate = Boolean(
+    updatedTimestamp !== null
+    && createdTimestamp !== null
+    && Math.abs(updatedTimestamp - createdTimestamp) > 1000
+  );
+  const isEdited = Boolean(comment.is_edited || comment.edited || editedAt || isUpdatedAfterCreate);
+
+  if (!isEdited) {
+    return {
+      isEdited: false,
+      tooltip: "",
+    };
+  }
+
+  const editDate = editedAt || (isUpdatedAfterCreate ? updatedAt : "");
+  const formattedEditDate = formatDateTime(editDate);
+
+  return {
+    isEdited: true,
+    tooltip: formattedEditDate ? `\u0418\u0437\u043c\u0435\u043d\u0435\u043d\u043e: ${formattedEditDate}` : "\u0421\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u043e",
+  };
 }
 
 function isLongDescription(description) {
@@ -317,6 +369,34 @@ function TimelineItem({ item, editingCommentId, editText, isSaving, onEditStart,
   const actor = item.actor;
   const actorName = actor ? getUserTitle(actor) : item.author || '\u0421\u0438\u0441\u0442\u0435\u043c\u0430';
   const actorInitials = actor ? getUserInitials(actor) : '?';
+  const editedMeta = item.type === 'comment' ? getCommentEditedMeta(comment) : { isEdited: false, tooltip: '' };
+  const messageActionsRef = useRef(null);
+  const [isMessageActionsOpen, setIsMessageActionsOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isMessageActionsOpen) {
+      return undefined;
+    }
+
+    function closeOnOutsideClick(event) {
+      if (!messageActionsRef.current?.contains(event.target)) {
+        setIsMessageActionsOpen(false);
+      }
+    }
+
+    function closeOnEscape(event) {
+      if (event.key === 'Escape') {
+        setIsMessageActionsOpen(false);
+      }
+    }
+
+    document.addEventListener('pointerdown', closeOnOutsideClick);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsideClick);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [isMessageActionsOpen]);
 
   return (
     <li className={'timeline-item timeline-item--' + item.type}>
@@ -328,23 +408,54 @@ function TimelineItem({ item, editingCommentId, editText, isSaving, onEditStart,
           <span className='timeline-meta__main'>
             <strong>{item.author}</strong>
             <time>{formatDateTime(item.date)}</time>
+            {editedMeta.isEdited && <Tooltip label={editedMeta.tooltip} className='timeline-edited-mark'>{'\u0438\u0437\u043c\u0435\u043d\u0435\u043d\u043e'}</Tooltip>}
           </span>
           {item.type === 'comment' && comment.can_edit && !isEditing && (
-            <Tooltip as='button' label={'\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435'} className='timeline-icon-button' type='button' aria-label={'\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435'} onClick={() => onEditStart(comment)}>
-              <Pencil aria-hidden='true' size={13} strokeWidth={2} />
-            </Tooltip>
+            <div className='timeline-message-actions' ref={messageActionsRef}>
+              <Tooltip as='button' label={'\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u044f \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u044f'} className='timeline-icon-button' type='button' aria-label={'\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u044f \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u044f'} aria-expanded={isMessageActionsOpen} onClick={() => setIsMessageActionsOpen((current) => !current)}>
+                <Ellipsis aria-hidden='true' size={15} strokeWidth={2} />
+              </Tooltip>
+              {isMessageActionsOpen && (
+                <div className='timeline-message-actions__menu' role='menu'>
+                  <button type='button' role='menuitem' onClick={() => { setIsMessageActionsOpen(false); onEditStart(comment); }}>{'\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c'}</button>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
         {item.type === 'comment' && isEditing && (
-          <div className='comment-edit-form'>
-            <textarea autoFocus value={editText} rows='3' disabled={isSaving} onChange={(event) => onEditTextChange(event.target.value)} onKeyDown={(event) => {
-              if (event.key === 'Escape') { event.preventDefault(); onEditCancel(); }
-              if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) { event.preventDefault(); onEditSave(); }
-            }} />
+          <div className='comment-edit-form' onBlur={(event) => {
+            if (event.currentTarget.contains(event.relatedTarget)) {
+              return;
+            }
+
+            if (editText === (comment.text || '')) {
+              onEditCancel();
+            }
+          }}>
+            <textarea
+              autoFocus
+              value={editText}
+              rows='2'
+              disabled={isSaving}
+              onFocus={(event) => {
+                event.currentTarget.style.height = 'auto';
+                event.currentTarget.style.height = `${event.currentTarget.scrollHeight}px`;
+              }}
+              onInput={(event) => {
+                event.currentTarget.style.height = 'auto';
+                event.currentTarget.style.height = `${event.currentTarget.scrollHeight}px`;
+              }}
+              onChange={(event) => onEditTextChange(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') { event.preventDefault(); onEditCancel(); }
+                if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) { event.preventDefault(); onEditSave(); }
+              }}
+            />
             <div className='comment-edit-actions'>
-              <button type='button' disabled={isSaving} onClick={onEditSave}>{'\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c'}</button>
-              <button type='button' disabled={isSaving} onClick={onEditCancel}>{'\u041e\u0442\u043c\u0435\u043d\u0430'}</button>
+              <button className='comment-edit-actions__cancel' type='button' disabled={isSaving} onClick={onEditCancel}>{'\u041e\u0442\u043c\u0435\u043d\u0430'}</button>
+              <button className='comment-edit-actions__save' type='button' disabled={isSaving} onClick={onEditSave}>{'\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c'}</button>
             </div>
           </div>
         )}

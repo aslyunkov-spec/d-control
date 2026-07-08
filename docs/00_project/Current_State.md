@@ -110,3 +110,4 @@ The following UI components are considered stable and are part of the upcoming U
 - Tooltip
 - TaskMetaBar v2
 - Task Panel Header v2
+- Task Chat Messages v1.0

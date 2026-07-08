@@ -273,8 +273,10 @@ class TaskCommentUpdateAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        comment.text = text
-        comment.save(update_fields=["text", "updated_at"])
+        if text != comment.text:
+            comment.text = text
+            comment.save(update_fields=["text", "updated_at"])
+
         serializer = TaskCommentSerializer(comment, context={"user": user})
         return Response(serializer.data)
 

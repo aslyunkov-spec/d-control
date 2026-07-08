@@ -208,6 +208,7 @@ class TaskCommentSerializer(serializers.ModelSerializer):
     author_id = serializers.IntegerField(source="author.id", read_only=True)
     author_details = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
+    is_edited = serializers.SerializerMethodField()
 
     class Meta:
         model = TaskComment
@@ -220,6 +221,7 @@ class TaskCommentSerializer(serializers.ModelSerializer):
             "text",
             "created_at",
             "updated_at",
+            "is_edited",
         )
 
     def get_author_details(self, obj):
@@ -228,6 +230,12 @@ class TaskCommentSerializer(serializers.ModelSerializer):
     def get_can_edit(self, obj):
         user = self.context.get("user") or get_local_dev_user()
         return bool(user and obj.author_id == user.id)
+
+    def get_is_edited(self, obj):
+        if not obj.created_at or not obj.updated_at:
+            return False
+
+        return abs((obj.updated_at - obj.created_at).total_seconds()) > 1
 
 
 class TaskFileSerializer(serializers.ModelSerializer):
@@ -351,7 +359,7 @@ class TaskDetailSerializer(serializers.ModelSerializer):
 
     def get_comments(self, obj):
         return TaskCommentSerializer(
-            obj.comments.all(),
+            obj.comments.order_by("created_at", "id"),
             many=True,
             context={"user": self.context.get("user")},
         ).data
