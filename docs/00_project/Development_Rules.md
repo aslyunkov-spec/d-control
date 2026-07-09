@@ -153,3 +153,16 @@ Allowed changes:
 - architecture-wide design decisions.
 
 Visual redesign is prohibited after approval.
+
+## Component Freeze
+
+When a UI component reaches Approved status:
+
+- its layout is considered stable;
+- future changes require explicit approval;
+- cosmetic redesigns are avoided;
+- only bug fixes and architecture-wide improvements are allowed.
+
+Each frozen component must be recorded in:
+
+docs/01_ui/UI_Freeze_Log.md

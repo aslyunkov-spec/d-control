@@ -318,7 +318,7 @@ function TaskDescriptionBlock({ description }) {
 
 function TaskPeopleSection({ title, addLabel, users = [], onChange, isUpdating, error }) {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(Number.MAX_SAFE_INTEGER);
   const sectionRef = useRef(null);
   const usersListRef = useRef(null);
   const safeUsers = asArray(users);

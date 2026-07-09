@@ -496,3 +496,50 @@ Approved:
 - single divider above Composer;
 - single divider above Footer;
 - balanced spacing around Composer.
+
+### Chat (Final UI)
+
+Approved.
+
+Message layout:
+
+- Avatar is displayed outside the message bubble.
+- Bubble has a light blue background.
+- Message width adapts to content.
+- Long words wrap correctly.
+- Maximum bubble width is limited.
+- Vertical spacing between messages is compact.
+- Author is bold (600).
+- Message date is secondary text.
+- Message menu (...) is aligned to the top-right with sufficient spacing from the timestamp.
+
+Edited messages:
+
+- Editing never changes message order.
+- Original creation date remains unchanged.
+- Edited timestamp is shown in the bottom-right corner.
+- Edited timestamp uses an edit icon instead of text.
+- Edited timestamp uses secondary typography matching other metadata.
+
+Message editing:
+
+- Inline editing.
+- Autosized textarea.
+- Save / Cancel actions.
+- Escape cancels editing.
+
+### Composer (Final UI)
+
+Approved.
+
+- Fixed to the bottom of chat area.
+- Always visible.
+- Placeholder:
+  "Напишите сообщение..."
+- Attachment and mention buttons are inside the input.
+- Send icon:
+  - inactive when empty;
+  - accent color when message contains text.
+- Textarea grows automatically up to approximately 7 lines.
+- After maximum height, internal scrolling is enabled.
+- Composer spacing is visually balanced relative to chat and footer.

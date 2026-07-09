@@ -7716,3 +7716,180 @@ button.task-meta-bar__subtasks:focus-visible {
   grid-column: 1 / -1;
   margin: 1px 0 0;
 }
+/* Task Panel Footer layout fix: label, avatars, add button stay in one row. */
+.task-people-section {
+  display: flex;
+  min-width: 0;
+  width: 100%;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 7px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.task-people-section > h3 {
+  flex: 0 0 auto;
+}
+
+.task-people-section__users {
+  display: inline-flex;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  align-items: center;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.task-people-section__add {
+  flex: 0 0 22px;
+  justify-self: auto;
+}
+/* Final Footer polish. */
+.drawer-chat-section .timeline-edited-info {
+  color: #718195;
+  font-size: calc(var(--workspace-small-size, 10pt) - 2px);
+  font-weight: 400;
+  opacity: 0.78;
+}
+
+.task-people-section {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 150px) 22px;
+  min-width: 0;
+  width: 100%;
+  align-items: center;
+  justify-content: start;
+  column-gap: 10px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.task-people-section > h3 {
+  grid-column: 1;
+  min-width: 0;
+}
+
+.task-people-section__users {
+  grid-column: 2;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.task-people-section__add {
+  grid-column: 3;
+  justify-self: center;
+  align-self: center;
+}
+
+.task-person__avatar,
+.task-person__overflow {
+  align-self: center;
+}
+/* Task Panel Footer alignment fix: natural label -> avatars -> add flow. */
+.task-people-section {
+  display: flex;
+  min-width: 0;
+  width: 100%;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.task-people-section > h3 {
+  flex: 0 0 92px;
+  min-width: 92px;
+  text-align: left;
+}
+
+.task-people-section__users {
+  display: inline-flex;
+  flex: 0 1 auto;
+  width: auto;
+  max-width: min(220px, calc(100% - 122px));
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.task-people-section__users:empty {
+  display: none;
+}
+
+.task-people-section__add {
+  flex: 0 0 22px;
+  justify-self: auto;
+  align-self: center;
+}
+/* Edited timestamp typography matches message date metadata. */
+.drawer-chat-section .timeline-edited-info {
+  color: #718195;
+  font-size: calc(var(--workspace-small-size, 10pt) - 2px);
+  font-weight: 400;
+  line-height: normal;
+  opacity: 1;
+}
+/* Edited timestamp visual correction: match the perceived size of message date. */
+.drawer-chat-section .timeline-edited-info {
+  font-size: calc(var(--workspace-small-size, 10pt) - 3px);
+  line-height: 1.15;
+  font-weight: 400;
+  color: #718195;
+  opacity: 0.78;
+}
+/* Task Panel MetaBar divider position: divider belongs between MetaBar and tabs. */
+.task-meta-bar--panel {
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+}
+
+.task-drawer-tabs {
+  border-top: 1px solid #dce4ee;
+  border-bottom: 0 !important;
+}
+/* Tighten Task Panel information block. */
+.task-meta-bar--panel {
+  padding-top: 2px;
+  padding-bottom: 1px;
+}
+
+.task-drawer-tabs {
+  margin-top: -3px;
+  padding-top: 3px;
+}
+/* Final Task Panel spacing and footer add button polish. */
+.task-panel-description {
+  margin-top: -5px;
+}
+
+.task-drawer-tabs {
+  margin-top: -5px;
+  padding-top: 5px;
+}
+
+.task-people-section__add {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.task-people-section__add:hover,
+.task-people-section__add:focus-visible {
+  background: #e7edf4 !important;
+  color: #1d588f;
+}
+/* Chat bubble header: separate message actions from date metadata. */
+.drawer-chat-section .timeline-message-actions {
+  margin-left: 8px;
+}
+
+.drawer-chat-section .timeline-meta {
+  column-gap: 14px;
+}
