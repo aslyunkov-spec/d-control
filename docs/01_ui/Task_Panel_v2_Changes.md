@@ -543,3 +543,22 @@ Approved.
 - Textarea grows automatically up to approximately 7 lines.
 - After maximum height, internal scrolling is enabled.
 - Composer spacing is visually balanced relative to chat and footer.
+
+### Subtasks v1 polish
+
+Completed:
+
+- progress row;
+- progress bar;
+- completed/total indicator;
+- checklist indentation;
+- contextual footer removal;
+- assignee placeholder;
+- actions menu;
+- hover behavior;
+- compact spacing;
+- collapse control placeholder.
+
+Result:
+
+Subtasks now function as an independent checklist workspace.

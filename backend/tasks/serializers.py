@@ -142,6 +142,14 @@ class TaskSerializer(serializers.ModelSerializer):
                 "parent_task": obj.id,
                 "due_date": subtask.due_date,
                 "created_at": subtask.created_at,
+                "assignees": TaskListAssigneeSerializer(
+                    [
+                        assignment
+                        for assignment in subtask.assignments.all()
+                        if assignment.assignment_type == assignment.ASSIGNMENT_ASSIGNEE
+                    ],
+                    many=True,
+                ).data,
             }
             for subtask in obj.subtasks.all()
         ]

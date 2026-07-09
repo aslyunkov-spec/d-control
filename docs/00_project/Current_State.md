@@ -151,3 +151,41 @@ Task Panel:
 ⏳ Files
 
 ⏳ Events
+
+## Milestone
+
+### Task Panel v2
+
+Status:
+
+≈ 97% Complete
+
+Completed
+
+- Header
+- Task Information
+- TaskMetaBar
+- Chat
+- Composer
+- Subtasks v1
+
+Remaining
+
+- Footer polish
+- Files
+- Events
+
+Next milestone:
+
+Task Panel UI Freeze v1.0
+
+### Planned after UI Freeze
+
+- Footer improvements
+- Files tab
+- Events tab
+- Subtasks v2:
+  - checklist groups;
+  - collapsible sections;
+  - group progress;
+  - drag & drop between groups.

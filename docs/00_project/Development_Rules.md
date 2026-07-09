@@ -166,3 +166,13 @@ When a UI component reaches Approved status:
 Each frozen component must be recorded in:
 
 docs/01_ui/UI_Freeze_Log.md
+
+### Prefer UI composition over new entities
+
+When possible, prefer solving new functionality through UI composition instead of introducing new backend entities.
+
+Example:
+
+Subtasks v2 uses visual checklist groups based on a group name assigned to each subtask instead of creating separate Checklist and ChecklistGroup models.
+
+This keeps the data model simple while allowing richer UI.

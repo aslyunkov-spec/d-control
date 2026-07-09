@@ -583,11 +583,14 @@ export function KanbanPage() {
   }
 
   async function handleTaskUsersChange(taskId, fieldName, nextUsers) {
-    const previousUsers = selectedTask?.id === taskId ? selectedTask[fieldName] || [] : [];
+    const selectedSubtask = selectedTask?.subtasks?.find((subtask) => subtask.id === taskId);
+    const previousUsers = selectedTask?.id === taskId
+      ? selectedTask[fieldName] || []
+      : selectedSubtask?.[fieldName] || [];
     const optimisticTask = { id: taskId, [fieldName]: nextUsers };
 
     setSelectedTask((currentTask) => (
-      currentTask?.id === taskId ? { ...currentTask, [fieldName]: nextUsers } : currentTask
+      currentTask ? updateTaskEverywhere(currentTask, optimisticTask) : currentTask
     ));
     setTasks((currentTasks) => (
       currentTasks.map((currentTask) => updateTaskEverywhere(currentTask, optimisticTask))
@@ -599,7 +602,7 @@ export function KanbanPage() {
         { [fieldName]: nextUsers.map((user) => user.id) },
       );
       setSelectedTask((currentTask) => (
-        currentTask?.id === taskId ? { ...currentTask, ...updatedTask } : currentTask
+        currentTask ? updateTaskEverywhere(currentTask, updatedTask) : currentTask
       ));
       setTasks((currentTasks) => (
         currentTasks.map((currentTask) => updateTaskEverywhere(currentTask, updatedTask))
@@ -608,7 +611,7 @@ export function KanbanPage() {
     } catch (error) {
       const rollbackTask = { id: taskId, [fieldName]: previousUsers };
       setSelectedTask((currentTask) => (
-        currentTask?.id === taskId ? { ...currentTask, [fieldName]: previousUsers } : currentTask
+        currentTask ? updateTaskEverywhere(currentTask, rollbackTask) : currentTask
       ));
       setTasks((currentTasks) => (
         currentTasks.map((currentTask) => updateTaskEverywhere(currentTask, rollbackTask))

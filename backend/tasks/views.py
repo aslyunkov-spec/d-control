@@ -156,6 +156,7 @@ class TaskDetailAPIView(RetrieveAPIView):
             "subtasks__status",
             "subtasks__priority",
             "subtasks__department",
+            "subtasks__assignments__user__profile__role",
         )
 
     def get_serializer_context(self):

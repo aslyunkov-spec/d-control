@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AtSign, Check, Ellipsis, FilePlus, GripVertical, Pencil, RotateCcw, Send, X } from "lucide-react";
+import { AtSign, Check, ChevronDown, ChevronUp, Ellipsis, FilePlus, GripVertical, Pencil, RotateCcw, Send, X } from "lucide-react";
 
 import { TaskMetaBar } from "./TaskMetaBar";
 import { UserPicker } from "./UserPicker";
@@ -181,6 +181,10 @@ function getUserInitials(user = {}) {
 function getUserTitle(user = {}) {
   const fullName = `${user.first_name || ""} ${user.last_name || ""}`.trim();
   return [fullName || user.username, user.email, user.role].filter(Boolean).join("\n");
+}
+
+function getSubtaskAssignee(subtask = {}) {
+  return asArray(subtask.assignees)[0] || subtask.assignee || null;
 }
 
 
@@ -573,6 +577,7 @@ export function TaskDetailsDrawer({
   const [activeTab, setActiveTab] = useState("chat");
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
   const [isSubtaskFormOpen, setIsSubtaskFormOpen] = useState(false);
+  const [isSubtaskListCollapsed, setIsSubtaskListCollapsed] = useState(false);
   const [editingSubtaskId, setEditingSubtaskId] = useState(null);
   const [editingSubtaskTitle, setEditingSubtaskTitle] = useState("");
   const [subtaskError, setSubtaskError] = useState("");
@@ -582,6 +587,7 @@ export function TaskDetailsDrawer({
   const [isWatcherUpdating, setIsWatcherUpdating] = useState(false);
   const [isTaskActionMenuOpen, setIsTaskActionMenuOpen] = useState(false);
   const [openSubtaskMenuId, setOpenSubtaskMenuId] = useState(null);
+  const [openSubtaskAssigneeId, setOpenSubtaskAssigneeId] = useState(null);
   const timeline = task ? buildTimeline(task) : [];
   const chatItems = timeline.filter((item) => item.type === "comment");
   const eventItems = timeline.filter((item) => item.type === "history");
@@ -598,7 +604,9 @@ export function TaskDetailsDrawer({
     setActiveTab("chat");
     setNewSubtaskTitle("");
     setIsSubtaskFormOpen(false);
+    setIsSubtaskListCollapsed(false);
     setEditingSubtaskId(null);
+    setOpenSubtaskAssigneeId(null);
     setSubtaskError("");
   }, [task?.id]);
 
@@ -736,6 +744,20 @@ export function TaskDetailsDrawer({
       setEditingSubtaskId(null);
     } catch {
       setSubtaskError("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u0435\u0440\u0435\u0438\u043c\u0435\u043d\u043e\u0432\u0430\u0442\u044c \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0443.");
+    }
+  }
+
+  async function handleSubtaskAssigneesChange(subtask, nextAssignees) {
+    if (!subtask) {
+      return;
+    }
+
+    setSubtaskError("");
+    try {
+      await onAssigneesChange?.(subtask.id, asArray(nextAssignees).slice(-1));
+      setOpenSubtaskAssigneeId(null);
+    } catch {
+      setSubtaskError("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0431\u043d\u043e\u0432\u0438\u0442\u044c \u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044f \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0438.");
     }
   }
 
@@ -996,12 +1018,23 @@ export function TaskDetailsDrawer({
 
             {activeTab === "subtasks" && (
               <section className="drawer-subtasks">
-                <div className="drawer-subtasks__list">
+                <div className="drawer-subtasks__progress" aria-label={"\u041f\u0440\u043e\u0433\u0440\u0435\u0441\u0441 \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447"}>
+                  <span>{subtasksCompleted}/{subtasksTotal}</span>
+                  <div className="drawer-subtasks__progress-track" aria-hidden="true">
+                    <span style={{ width: `${subtasksTotal ? Math.round((subtasksCompleted / subtasksTotal) * 100) : 0}%` }} />
+                  </div>
+                  <Tooltip as="button" label={isSubtaskListCollapsed ? "\u0420\u0430\u0437\u0432\u0435\u0440\u043d\u0443\u0442\u044c \u0441\u043f\u0438\u0441\u043e\u043a \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447" : "\u0421\u0432\u0435\u0440\u043d\u0443\u0442\u044c \u0441\u043f\u0438\u0441\u043e\u043a \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447"} className="drawer-subtasks__collapse" type="button" aria-label={isSubtaskListCollapsed ? "\u0420\u0430\u0437\u0432\u0435\u0440\u043d\u0443\u0442\u044c \u0441\u043f\u0438\u0441\u043e\u043a \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447" : "\u0421\u0432\u0435\u0440\u043d\u0443\u0442\u044c \u0441\u043f\u0438\u0441\u043e\u043a \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447"} aria-expanded={!isSubtaskListCollapsed} onClick={() => setIsSubtaskListCollapsed((current) => !current)}>
+                    {isSubtaskListCollapsed ? <ChevronDown aria-hidden="true" size={15} strokeWidth={2} /> : <ChevronUp aria-hidden="true" size={15} strokeWidth={2} />}
+                  </Tooltip>
+                </div>
+                {!isSubtaskListCollapsed && <div className="drawer-subtasks__list">
                   {subtasks.map((subtask, index) => {
                     const isDone = ["completed", "archived"].includes(subtask.status_system_type);
                     const isEditing = editingSubtaskId === subtask.id;
+                    const assignee = getSubtaskAssignee(subtask);
+                    const assigneeUsers = assignee ? [assignee] : [];
                     return (
-                      <div className="drawer-subtask-row" key={getEntityId(subtask, index)}>
+                      <div className={isDone ? "drawer-subtask-row drawer-subtask-row--done" : "drawer-subtask-row"} key={getEntityId(subtask, index)}>
                         <input
                           type="checkbox"
                           checked={isDone}
@@ -1011,6 +1044,7 @@ export function TaskDetailsDrawer({
                         {isEditing ? (
                           <input
                             autoFocus
+                            className='drawer-subtask-row__edit'
                             value={editingSubtaskTitle}
                             onChange={(event) => setEditingSubtaskTitle(event.target.value)}
                             onKeyDown={(event) => {
@@ -1032,8 +1066,18 @@ export function TaskDetailsDrawer({
                             {subtask.title}
                           </button>
                         )}
+                        <div className='drawer-subtask-row__assignee'>
+                          <Tooltip as='button' label={assignee ? getUserTitle(assignee) : '\u041d\u0430\u0437\u043d\u0430\u0447\u0438\u0442\u044c \u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044f'} className={assignee ? 'drawer-subtask-assignee' : 'drawer-subtask-assignee drawer-subtask-assignee--empty'} type='button' aria-label={assignee ? getUserTitle(assignee) : '\u041d\u0430\u0437\u043d\u0430\u0447\u0438\u0442\u044c \u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044f'} aria-expanded={openSubtaskAssigneeId === subtask.id} onClick={() => setOpenSubtaskAssigneeId((current) => current === subtask.id ? null : subtask.id)}>
+                            {assignee ? (assignee.avatar ? <img src={assignee.avatar} alt='' /> : <span>{getUserInitials(assignee)}</span>) : '+'}
+                          </Tooltip>
+                          {openSubtaskAssigneeId === subtask.id && (
+                            <div className='drawer-subtask-assignee__popover'>
+                              <UserPicker value={assigneeUsers} onChange={(nextUsers) => handleSubtaskAssigneesChange(subtask, nextUsers)} searchOnly autoFocus onSelection={() => setOpenSubtaskAssigneeId(null)} onClose={() => setOpenSubtaskAssigneeId(null)} />
+                            </div>
+                          )}
+                        </div>
                         <div className='drawer-subtask-row__menu' ref={openSubtaskMenuId === subtask.id ? subtaskMenuRef : null}>
-                          <Tooltip as='button' label={'\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u044f'} className='drawer-subtask-row__more' type='button' aria-label={'\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u044f \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0438'} aria-expanded={openSubtaskMenuId === subtask.id} onClick={() => setOpenSubtaskMenuId((current) => current === subtask.id ? null : subtask.id)}>
+                          <Tooltip as='button' label={'\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u044f \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0438'} className='drawer-subtask-row__more' type='button' aria-label={'\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u044f \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0438'} aria-expanded={openSubtaskMenuId === subtask.id} onClick={() => setOpenSubtaskMenuId((current) => current === subtask.id ? null : subtask.id)}>
                             <Ellipsis aria-hidden='true' size={15} strokeWidth={2} />
                           </Tooltip>
                           {openSubtaskMenuId === subtask.id && (
@@ -1047,9 +1091,9 @@ export function TaskDetailsDrawer({
                     );
                   })}
                   {!subtasks.length && <p className="drawer-empty">{"\u041f\u043e\u0434\u0437\u0430\u0434\u0430\u0447 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442"}</p>}
-                </div>
+                </div>}
                 {subtaskError && <p className="comment-error">{subtaskError}</p>}
-                {isSubtaskFormOpen ? (
+                {!isSubtaskListCollapsed && (isSubtaskFormOpen ? (
                   <form className="drawer-subtasks__create" onSubmit={handleSubtaskCreate}>
                     <input
                       autoFocus
@@ -1075,7 +1119,7 @@ export function TaskDetailsDrawer({
                   >
                     {"\u002b \u041d\u043e\u0432\u0430\u044f \u043f\u043e\u0434\u0437\u0430\u0434\u0430\u0447\u0430"}
                   </button>
-                )}
+                ))}
               </section>
             )}
 
@@ -1193,26 +1237,28 @@ export function TaskDetailsDrawer({
         )}
       </div>
 
-      <footer className="task-drawer__footer">
-        <div className="task-drawer__participants">
-          <TaskPeopleSection
-            title={"\u0418\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u0438"}
-            addLabel={"\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044f"}
-            users={task?.assignees || []}
-            onChange={handleAssigneesChange}
-            isUpdating={isAssigneeUpdating}
-            error={assigneeError}
-          />
-          <TaskPeopleSection
-            title={"\u041d\u0430\u0431\u043b\u044e\u0434\u0430\u0442\u0435\u043b\u0438"}
-            addLabel={"\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043d\u0430\u0431\u043b\u044e\u0434\u0430\u0442\u0435\u043b\u044f"}
-            users={task?.watchers || []}
-            onChange={handleWatchersChange}
-            isUpdating={isWatcherUpdating}
-            error={watcherError}
-          />
-        </div>
-      </footer>
+      {task && activeTab === "chat" && (
+        <footer className="task-drawer__footer">
+          <div className="task-drawer__participants">
+            <TaskPeopleSection
+              title={"\u0418\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u0438"}
+              addLabel={"\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044f"}
+              users={task?.assignees || []}
+              onChange={handleAssigneesChange}
+              isUpdating={isAssigneeUpdating}
+              error={assigneeError}
+            />
+            <TaskPeopleSection
+              title={"\u041d\u0430\u0431\u043b\u044e\u0434\u0430\u0442\u0435\u043b\u0438"}
+              addLabel={"\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043d\u0430\u0431\u043b\u044e\u0434\u0430\u0442\u0435\u043b\u044f"}
+              users={task?.watchers || []}
+              onChange={handleWatchersChange}
+              isUpdating={isWatcherUpdating}
+              error={watcherError}
+            />
+          </div>
+        </footer>
+      )}
     </aside>
   );
 }
