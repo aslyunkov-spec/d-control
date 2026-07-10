@@ -4,7 +4,7 @@ from django.db.models import Count, Max, Q
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.generics import ListAPIView, RetrieveAPIView
-from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -151,6 +151,7 @@ class TaskDetailAPIView(RetrieveAPIView):
         ).prefetch_related(
             "assignments__user__profile__role",
             "comments__author__profile",
+            "comments__attachments__uploaded_by__profile",
             "files__uploaded_by__profile",
             "history_events__user__profile",
             "subtasks__status",
@@ -223,27 +224,48 @@ class TaskDetailAPIView(RetrieveAPIView):
 
 class TaskCommentCreateAPIView(APIView):
     authentication_classes = ()
+    parser_classes = (JSONParser, MultiPartParser, FormParser)
     permission_classes = (AllowAny,)
 
     def post(self, request, pk):
         task = get_object_or_404(Task, pk=pk)
         text = str(request.data.get("text", "")).strip()
+        uploaded_files = request.FILES.getlist("files") or request.FILES.getlist("file")
 
-        if not text:
+        if not text and not uploaded_files:
             return Response(
-                {"text": ["Комментарий не может быть пустым."]},
+                {"text": ["Comment text or file is required."]},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         user = get_request_user_or_fallback(request)
         if user is None:
             return Response(
-                {"detail": "Не найден пользователь для создания комментария."},
+                {"detail": "User for comment creation was not found."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        comment = TaskComment.objects.create(task=task, author=user, text=text)
-        serializer = TaskCommentSerializer(comment, context={"user": user})
+        with transaction.atomic():
+            comment = TaskComment.objects.create(task=task, author=user, text=text)
+            for uploaded_file in uploaded_files:
+                TaskFile.objects.create(
+                    task=task,
+                    comment=comment,
+                    uploaded_by=user,
+                    file=uploaded_file,
+                    original_name=uploaded_file.name,
+                )
+
+        comment = (
+            TaskComment.objects
+            .select_related("author__profile")
+            .prefetch_related("attachments__uploaded_by__profile")
+            .get(pk=comment.pk)
+        )
+        serializer = TaskCommentSerializer(
+            comment,
+            context={"request": request, "user": user},
+        )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -278,7 +300,7 @@ class TaskCommentUpdateAPIView(APIView):
             comment.text = text
             comment.save(update_fields=["text", "updated_at"])
 
-        serializer = TaskCommentSerializer(comment, context={"user": user})
+        serializer = TaskCommentSerializer(comment, context={"request": request, "user": user})
         return Response(serializer.data)
 
 

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { AtSign, Check, ChevronDown, ChevronUp, Ellipsis, FilePlus, GripVertical, Pencil, RotateCcw, Send, X } from "lucide-react";
 
+import { FileTypeIcon } from "./FileTypeIcon";
+import { FileViewer } from "./FileViewer";
 import { TaskMetaBar } from "./TaskMetaBar";
 import { UserPicker } from "./UserPicker";
 import { Tooltip } from "./Tooltip";
@@ -9,8 +11,8 @@ import {
   createTaskComment,
   deleteTaskFile,
   updateTaskComment,
-  uploadTaskFile,
 } from "../api/kanban";
+import { formatFileSize, getFileTypeInfo } from "../utils/fileTypes";
 
 function formatDateTime(value) {
   if (!value) {
@@ -34,36 +36,53 @@ function formatDate(value) {
   return new Date(value).toLocaleDateString("ru-RU");
 }
 
-function getFileExtension(fileName = "") {
-  const parts = fileName.toLowerCase().split(".");
-  return parts.length > 1 ? parts.pop() : "";
+function FilePreviewThumbnail({ fileName, fileUrl, file }) {
+  const [previewError, setPreviewError] = useState(false);
+  const fileType = getFileTypeInfo(file || fileName);
+  const hasPreview = Boolean(fileUrl && fileType.isImage);
+
+  if (hasPreview && !previewError) {
+    return <img src={fileUrl} alt="" onError={() => setPreviewError(true)} />;
+  }
+
+  return <FileTypeIcon file={file || fileName} />;
 }
 
-function getFileIcon(fileName) {
-  const extension = getFileExtension(fileName);
 
-  if (extension === "pdf") {
-    return { label: "PDF", type: "pdf" };
-  }
+function PendingAttachmentItem({ file, onRemove }) {
+  const [previewUrl, setPreviewUrl] = useState("");
+  const fileName = file?.name || "\u0424\u0430\u0439\u043b";
+  const fileType = getFileTypeInfo(file);
+  const fileSize = formatFileSize(file?.size);
+  const canPreview = Boolean(file && fileType.isImage);
 
-  if (["doc", "docx", "odt"].includes(extension)) {
-    return { label: "W", type: "word" };
-  }
+  useEffect(() => {
+    if (!canPreview) {
+      setPreviewUrl("");
+      return undefined;
+    }
 
-  if (["xls", "xlsx", "ods", "csv"].includes(extension)) {
-    return { label: "X", type: "excel" };
-  }
+    const nextPreviewUrl = URL.createObjectURL(file);
+    setPreviewUrl(nextPreviewUrl);
+    return () => URL.revokeObjectURL(nextPreviewUrl);
+  }, [canPreview, file]);
 
-  if (["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(extension)) {
-    return { label: "IMG", type: "image" };
-  }
-
-  if (["zip", "rar", "7z", "tar", "gz"].includes(extension)) {
-    return { label: "ZIP", type: "archive" };
-  }
-
-  return { label: "FILE", type: "file" };
+  return (
+    <li className="comment-attachment-queue__item">
+      <span className="comment-attachment-queue__preview">
+        {previewUrl ? <img src={previewUrl} alt="" /> : <FileTypeIcon file={file} />}
+      </span>
+      <span className="comment-attachment-queue__details">
+        <Tooltip label={fileName} className="comment-attachment-queue__name">{fileName}</Tooltip>
+        {fileSize && <span>{fileSize}</span>}
+      </span>
+      <Tooltip as="button" label="\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u0432\u043b\u043e\u0436\u0435\u043d\u0438\u0435" className="comment-attachment-queue__remove" type="button" aria-label="\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u0432\u043b\u043e\u0436\u0435\u043d\u0438\u0435" onClick={onRemove}>
+        <X aria-hidden="true" size={14} strokeWidth={2} />
+      </Tooltip>
+    </li>
+  );
 }
+
 
 const ASSIGNMENT_STATUS_LABELS = {
   assigned: "assigned",
@@ -131,7 +150,7 @@ function buildTimeline(task) {
     comment,
   }));
 
-  const files = asArray(task?.files).map((file, index) => ({
+  const files = asArray(task?.files).filter((file) => !file.comment_id).map((file, index) => ({
     id: `file-${file.id}`,
     type: "file",
     author: file.author || file.uploaded_by_username || "\u0424\u0430\u0439\u043b",
@@ -421,12 +440,13 @@ function TaskPeopleSection({ title, addLabel, users = [], onChange, isUpdating, 
   );
 }
 
-function TimelineItem({ item, editingCommentId, editText, isSaving, onEditStart, onEditTextChange, onEditSave, onEditCancel, onFileDelete }) {
+function TimelineItem({ item, editingCommentId, editText, isSaving, onEditStart, onEditTextChange, onEditSave, onEditCancel, onFileDelete, onOpenFile }) {
   const comment = item.comment || {};
+  const commentAttachments = asArray(comment.attachments);
   const file = item.file || {};
   const isEditing = item.type === 'comment' && editingCommentId === comment.id;
   const fileName = file.original_name || file.name || '';
-  const fileIcon = item.type === 'file' ? getFileIcon(fileName) : null;
+  const fileSize = item.type === 'file' ? formatFileSize(file.size) : '';
   const actor = item.actor;
   const actorName = actor ? getUserTitle(actor) : item.author || '\u0421\u0438\u0441\u0442\u0435\u043c\u0430';
   const actorInitials = actor ? getUserInitials(actor) : '?';
@@ -522,16 +542,48 @@ function TimelineItem({ item, editingCommentId, editText, isSaving, onEditStart,
 
         {item.type === 'comment' && !isEditing && (
           <>
-            <p>{comment.text || ''}</p>
+            {comment.text && <p>{comment.text}</p>}
+            {commentAttachments.length > 0 && (
+              <ul className="timeline-attachments" aria-label="\u0412\u043b\u043e\u0436\u0435\u043d\u0438\u044f \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u044f">
+                {commentAttachments.map((attachment) => {
+                  const attachmentName = attachment.original_name || attachment.name || "\u0424\u0430\u0439\u043b";
+                  const attachmentUrl = attachment.file_url || attachment.url || attachment.download_url || "";
+                  const attachmentType = getFileTypeInfo(attachment);
+                  const attachmentSize = formatFileSize(attachment.size);
+                  const canPreviewAttachment = Boolean(attachmentUrl && attachmentType.isImage);
+
+                  return (
+                    <li className={canPreviewAttachment ? "timeline-attachment timeline-attachment--image" : "timeline-attachment"} key={attachment.id || attachmentName}>
+                      <Tooltip as="button" label={attachmentName} className="timeline-attachment__button" type="button" disabled={!attachmentUrl} aria-label={attachmentName} onClick={() => onOpenFile?.(attachment)}>
+                        {canPreviewAttachment ? (
+                          <img src={attachmentUrl} alt="" />
+                        ) : (
+                          <>
+                            <span className="timeline-attachment__preview">
+                              <FileTypeIcon file={attachment} />
+                            </span>
+                            <span className="timeline-attachment__details">
+                              <Tooltip label={attachmentName} className="timeline-attachment__name">{attachmentName}</Tooltip>
+                              {attachmentSize && <span className="timeline-attachment__size">{attachmentSize}</span>}
+                            </span>
+                          </>
+                        )}
+                      </Tooltip>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
             {editedMeta.isEdited && <span className='timeline-edited-info'>{'\u270e'}{editedMeta.formattedDate ? ` ${editedMeta.formattedDate}` : ''}</span>}
           </>
         )}
 
         {item.type === 'file' && (
           <div className='timeline-file-item'>
-            <span className={'timeline-file-icon timeline-file-icon--' + fileIcon.type}>{fileIcon.label}</span>
+            <FileTypeIcon file={file} />
             <span className='timeline-file-name'>{fileName}</span>
-            {file.file_url && <a href={file.file_url} target='_blank' rel='noreferrer'>{'\u041e\u0442\u043a\u0440\u044b\u0442\u044c'}</a>}
+            {fileSize && <span className='timeline-file-size'>{fileSize}</span>}
+            {file.file_url && <button type='button' onClick={() => onOpenFile?.(file)}>{'\u041e\u0442\u043a\u0440\u044b\u0442\u044c'}</button>}
             {file.can_delete && <button type='button' onClick={() => onFileDelete(file)}>{'\u0423\u0434\u0430\u043b\u0438\u0442\u044c'}</button>}
           </div>
         )}
@@ -564,12 +616,14 @@ export function TaskDetailsDrawer({
   const commentTextareaRef = useRef(null);
   const taskActionMenuRef = useRef(null);
   const subtaskMenuRef = useRef(null);
+  const fileMenuRef = useRef(null);
   const [commentText, setCommentText] = useState("");
   const [commentError, setCommentError] = useState("");
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editCommentText, setEditCommentText] = useState("");
   const [editCommentError, setEditCommentError] = useState("");
   const [fileError, setFileError] = useState("");
+  const [pendingAttachments, setPendingAttachments] = useState([]);
   const [isCommentSubmitting, setIsCommentSubmitting] = useState(false);
   const [isCommentSaving, setIsCommentSaving] = useState(false);
   const [isFileUploading, setIsFileUploading] = useState(false);
@@ -588,6 +642,8 @@ export function TaskDetailsDrawer({
   const [isTaskActionMenuOpen, setIsTaskActionMenuOpen] = useState(false);
   const [openSubtaskMenuId, setOpenSubtaskMenuId] = useState(null);
   const [openSubtaskAssigneeId, setOpenSubtaskAssigneeId] = useState(null);
+  const [openFileMenuId, setOpenFileMenuId] = useState(null);
+  const [viewerFileIndex, setViewerFileIndex] = useState(null);
   const timeline = task ? buildTimeline(task) : [];
   const chatItems = timeline.filter((item) => item.type === "comment");
   const eventItems = timeline.filter((item) => item.type === "history");
@@ -608,6 +664,8 @@ export function TaskDetailsDrawer({
     setEditingSubtaskId(null);
     setOpenSubtaskAssigneeId(null);
     setSubtaskError("");
+    setPendingAttachments([]);
+    setViewerFileIndex(null);
   }, [task?.id]);
 
   useEffect(() => {
@@ -670,6 +728,31 @@ export function TaskDetailsDrawer({
       document.removeEventListener("keydown", closeOnEscape);
     };
   }, [openSubtaskMenuId]);
+
+  useEffect(() => {
+    if (openFileMenuId === null) {
+      return undefined;
+    }
+
+    function closeOnOutsideClick(event) {
+      if (!fileMenuRef.current?.contains(event.target)) {
+        setOpenFileMenuId(null);
+      }
+    }
+
+    function closeOnEscape(event) {
+      if (event.key === "Escape") {
+        setOpenFileMenuId(null);
+      }
+    }
+
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [openFileMenuId]);
 
 
   async function handleAssigneesChange(nextAssignees) {
@@ -821,23 +904,30 @@ export function TaskDetailsDrawer({
     }
 
     const text = commentText.trim();
-    if (!text) {
-      setCommentError("Введите комментарий.");
+    if (!text && pendingAttachments.length === 0) {
+      setCommentError("\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u0438\u043b\u0438 \u043f\u0440\u0438\u043a\u0440\u0435\u043f\u0438\u0442\u0435 \u0444\u0430\u0439\u043b.");
       return;
     }
 
     setCommentError("");
+    setFileError("");
     setIsCommentSubmitting(true);
+    setIsFileUploading(pendingAttachments.length > 0);
 
     try {
-      const comment = await createTaskComment(task.id, text);
+      const comment = await createTaskComment(task.id, text, pendingAttachments);
       onCommentCreated?.(comment);
       setCommentText("");
+      setPendingAttachments([]);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       window.requestAnimationFrame(resetCommentTextarea);
     } catch (submitError) {
-      setCommentError("Не удалось отправить комментарий.");
+      setCommentError("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u0438\u043b\u0438 \u0432\u043b\u043e\u0436\u0435\u043d\u0438\u0435.");
     } finally {
       setIsCommentSubmitting(false);
+      setIsFileUploading(false);
     }
   }
 
@@ -878,23 +968,26 @@ export function TaskDetailsDrawer({
     }
   }
 
-  async function handleFileChange(event) {
-    const file = event.target.files?.[0];
-    if (!file || !task || isFileUploading) {
+  function handleFileChange(event) {
+    const selectedFiles = Array.from(event.target.files || []);
+    if (!selectedFiles.length) {
       return;
     }
 
     setFileError("");
-    setIsFileUploading(true);
+    setPendingAttachments((currentFiles) => [...currentFiles, ...selectedFiles]);
+    event.target.value = "";
+  }
 
-    try {
-      const uploadedFile = await uploadTaskFile(task.id, file);
-      onFileUploaded?.(uploadedFile);
-      event.target.value = "";
-    } catch (uploadError) {
-      setFileError("Не удалось загрузить файл.");
-    } finally {
-      setIsFileUploading(false);
+  function handlePendingAttachmentRemove(indexToRemove) {
+    setPendingAttachments((currentFiles) => currentFiles.filter((_, index) => index !== indexToRemove));
+  }
+
+  function handleOpenFile(file) {
+    const fileId = file?.id;
+    const nextIndex = files.findIndex((currentFile) => currentFile.id === fileId);
+    if (nextIndex >= 0) {
+      setViewerFileIndex(nextIndex);
     }
   }
 
@@ -1140,6 +1233,7 @@ export function TaskDetailsDrawer({
                         onEditSave={handleEditSave}
                         onEditCancel={handleEditCancel}
                         onFileDelete={handleFileDelete}
+                        onOpenFile={handleOpenFile}
                       />
                     ))}
                   </ol>
@@ -1149,10 +1243,10 @@ export function TaskDetailsDrawer({
                 <form className='comment-composer comment-composer--timeline' onSubmit={handleCommentSubmit}>
                   <div className='comment-composer__field'>
                     <div className='comment-composer__tools'>
-                      <Tooltip as='button' label={'\u041f\u0440\u0438\u043a\u0440\u0435\u043f\u0438\u0442\u044c \u0444\u0430\u0439\u043b'} className='comment-composer__icon' type='button' disabled={!task || isFileUploading} aria-label={'\u041f\u0440\u0438\u043a\u0440\u0435\u043f\u0438\u0442\u044c \u0444\u0430\u0439\u043b'} onClick={() => fileInputRef.current?.click()}>
+                      <Tooltip as='button' label={'\u041f\u0440\u0438\u043a\u0440\u0435\u043f\u0438\u0442\u044c \u0444\u0430\u0439\u043b'} className='comment-composer__icon' type='button' disabled={!task || isCommentSubmitting} aria-label={'\u041f\u0440\u0438\u043a\u0440\u0435\u043f\u0438\u0442\u044c \u0444\u0430\u0439\u043b'} onClick={() => fileInputRef.current?.click()}>
                         <FilePlus aria-hidden='true' size={15} strokeWidth={2} />
                       </Tooltip>
-                      <input ref={fileInputRef} className='file-input-hidden' type='file' disabled={!task || isFileUploading} onChange={handleFileChange} />
+                      <input ref={fileInputRef} className='file-input-hidden' type='file' multiple disabled={!task || isCommentSubmitting} onChange={handleFileChange} />
                       <Tooltip as='button' label={'\u0423\u043f\u043e\u043c\u044f\u043d\u0443\u0442\u044c \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f'} className='comment-composer__icon comment-composer__icon--inactive' type='button' aria-disabled='true' tabIndex={-1} aria-label={'\u0423\u043f\u043e\u043c\u044f\u043d\u0443\u0442\u044c \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f'} onClick={(event) => event.preventDefault()}>
                         <AtSign aria-hidden='true' size={15} strokeWidth={2} />
                       </Tooltip>
@@ -1175,10 +1269,17 @@ export function TaskDetailsDrawer({
                         }
                       }}
                     />
-                    <Tooltip as='button' label={'\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435'} className={commentText.trim() ? 'comment-composer__send comment-composer__send--active' : 'comment-composer__send'} type='submit' disabled={!task || isCommentSubmitting} aria-label={'\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435'}>
+                    <Tooltip as='button' label={'\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435'} className={(commentText.trim() || pendingAttachments.length > 0) ? 'comment-composer__send comment-composer__send--active' : 'comment-composer__send'} type='submit' disabled={!task || isCommentSubmitting} aria-label={'\u041e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435'}>
                       <Send aria-hidden='true' size={15} strokeWidth={2} />
                     </Tooltip>
                   </div>
+                  {pendingAttachments.length > 0 && (
+                    <ul className="comment-attachment-queue" aria-label="\u041f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043b\u0435\u043d\u043d\u044b\u0435 \u0432\u043b\u043e\u0436\u0435\u043d\u0438\u044f">
+                      {pendingAttachments.map((file, index) => (
+                        <PendingAttachmentItem file={file} key={`${file.name}-${file.size}-${file.lastModified}-${index}`} onRemove={() => handlePendingAttachmentRemove(index)} />
+                      ))}
+                    </ul>
+                  )}
                   {(commentError || fileError) && <p className='comment-error'>{commentError || fileError}</p>}
                 </form>
               </section>
@@ -1190,21 +1291,48 @@ export function TaskDetailsDrawer({
                   <ul className="drawer-files-list">
                     {files.map((file, index) => {
                       const fileName = String(file.original_name || file.name || "");
- const fileIcon = getFileIcon(fileName);
+                      const fileUrl = file.file_url || file.url || file.download_url || "";
+                      const fileAuthor = file.author || file.uploaded_by_username || "";
+                      const fileDate = formatDateTime(file.uploaded_at);
+                      const fileSize = formatFileSize(file.size);
+                      const fileMetaItems = [fileAuthor, fileDate, fileSize].filter(Boolean);
                       return (
                         <li className="drawer-file-row" key={getEntityId(file, index)}>
-            <span className={'timeline-file-icon timeline-file-icon--' + fileIcon.type}>{fileIcon.label}</span>
-                          <div>
-                            <strong>{fileName || "Файл"}</strong>
-                            <span>{[file.author || file.uploaded_by_username, formatDateTime(file.uploaded_at)].filter(Boolean).join(" | ")}</span>
+                          <Tooltip as='button' label={fileUrl ? '\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u0444\u0430\u0439\u043b' : fileName || '\u0424\u0430\u0439\u043b'} className='drawer-file-preview' type='button' disabled={!fileUrl} aria-label={fileUrl ? '\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u0444\u0430\u0439\u043b' : fileName || '\u0424\u0430\u0439\u043b'} onClick={() => { if (fileUrl) setViewerFileIndex(index); }}>
+                            <FilePreviewThumbnail fileName={fileName} fileUrl={fileUrl} file={file} />
+                          </Tooltip>
+                          <div className='drawer-file-row__content'>
+                            <Tooltip label={fileName || "\u0424\u0430\u0439\u043b"} className='drawer-file-row__name'>{fileName || "\u0424\u0430\u0439\u043b"}</Tooltip>
+                            <span className='drawer-file-row__meta'>
+                              {fileMetaItems.map((item, metaIndex) => (
+                                <span className='drawer-file-row__meta-item' key={`${item}-${metaIndex}`}>
+                                  {metaIndex > 0 && <span aria-hidden='true'>·</span>}
+                                  {metaIndex === 0 && fileAuthor ? <strong>{item}</strong> : <span>{item}</span>}
+                                </span>
+                              ))}
+                            </span>
                           </div>
-                          {file.file_url && <a href={file.file_url} target="_blank" rel="noreferrer">{"\u0421\u043a\u0430\u0447\u0430\u0442\u044c"}</a>}
+                          <div className='drawer-file-row__menu' ref={openFileMenuId === file.id ? fileMenuRef : null}>
+                            <Tooltip as='button' label={'\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u044f \u0444\u0430\u0439\u043b\u0430'} className='drawer-file-row__more' type='button' aria-label={'\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u044f \u0444\u0430\u0439\u043b\u0430'} aria-expanded={openFileMenuId === file.id} onClick={() => setOpenFileMenuId((current) => current === file.id ? null : file.id)}>
+                              <Ellipsis aria-hidden='true' size={15} strokeWidth={2} />
+                            </Tooltip>
+                            {openFileMenuId === file.id && (
+                              <div className='drawer-file-row__dropdown' role='menu'>
+                                <button type='button' role='menuitem' disabled={!fileUrl} onClick={() => { setOpenFileMenuId(null); if (fileUrl) setViewerFileIndex(index); }}>{'\u041e\u0442\u043a\u0440\u044b\u0442\u044c'}</button>
+                                <a role='menuitem' aria-disabled={!fileUrl} href={fileUrl || undefined} download onClick={() => setOpenFileMenuId(null)}>{'\u0421\u043a\u0430\u0447\u0430\u0442\u044c'}</a>
+                                <button type='button' role='menuitem' disabled={!file.can_delete || isFileDeletingId === file.id} onClick={() => { setOpenFileMenuId(null); handleFileDelete(file); }}>{'\u0423\u0434\u0430\u043b\u0438\u0442\u044c'}</button>
+                              </div>
+                            )}
+                          </div>
                         </li>
                       );
                     })}
                   </ul>
                 ) : (
-                  <p className="drawer-empty">{"\u0424\u0430\u0439\u043b\u043e\u0432 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442"}</p>
+                  <>
+                    <p className="drawer-empty">{"\u0424\u0430\u0439\u043b\u043e\u0432 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442"}</p>
+                    <button className='drawer-files__add' type='button' disabled={!task || isFileUploading} onClick={() => fileInputRef.current?.click()}>{'\u002b \u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0444\u0430\u0439\u043b'}</button>
+                  </>
                 )}
               </section>
             )}
@@ -1225,6 +1353,7 @@ export function TaskDetailsDrawer({
                         onEditSave={handleEditSave}
                         onEditCancel={handleEditCancel}
                         onFileDelete={handleFileDelete}
+                        onOpenFile={handleOpenFile}
                       />
                     ))}
                   </ol>
@@ -1258,6 +1387,13 @@ export function TaskDetailsDrawer({
             />
           </div>
         </footer>
+      )}
+      {viewerFileIndex !== null && (
+        <FileViewer
+          files={files}
+          initialIndex={viewerFileIndex}
+          onClose={() => setViewerFileIndex(null)}
+        />
       )}
     </aside>
   );

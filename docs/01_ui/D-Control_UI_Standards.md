@@ -156,3 +156,112 @@ D-Control UI Standards является живым стандартом.
 Новые правила должны дополнять существующую архитектуру, не противоречить Конституции проекта, Design System и спецификациям компонентов.
 
 Если новое UI-решение затрагивает несколько компонентов, все связанные документы должны быть синхронизированы, чтобы между ними не было противоречий.
+
+## Document Icons (Approved)
+
+Document icons use a custom D-Control design language.
+
+Generic operating system file icons must not be used.
+
+### General Rules
+
+Every document icon consists of:
+
+- colored document body;
+- folded top-right corner;
+- application label;
+- unified geometry.
+
+Only the color palette and label change between file types.
+
+The geometry remains identical.
+
+---
+
+### Labels
+
+The label displays the application name instead of the file extension.
+
+Approved labels:
+
+- WORD
+- EXCEL
+- P.POINT
+- PDF
+- ZIP
+- RAR
+- 7-ZIP
+- TEXT
+- FILE
+
+File extensions must never be displayed on the icon.
+
+---
+
+### Visual Rules
+
+Document body:
+
+- solid color;
+- rounded corners;
+- folded corner;
+- clean surface without decorative symbols.
+
+The document body must not contain:
+
+- text lines;
+- tables;
+- Office letters;
+- logos;
+- decorative graphics.
+
+---
+
+### Label
+
+The label is the primary visual element.
+
+Rules:
+
+- displayed over the document body;
+- larger than the document body;
+- visually separated from the body;
+- centered text;
+- uppercase typography;
+- unified font size across all document types.
+
+---
+
+### Color System
+
+Each application uses its own color.
+
+Examples:
+
+- Word — blue
+- Excel — green
+- PowerPoint — orange
+- PDF — red
+- ZIP — yellow-orange
+- RAR — orange
+- 7-ZIP — purple
+- TEXT — orange
+- FILE — gray
+
+Only colors change.
+
+The icon geometry remains identical.
+
+---
+
+### Future Changes
+
+Only cosmetic improvements are allowed:
+
+- colors;
+- shadows;
+- folded corner shape;
+- typography;
+- proportions.
+
+The approved concept must remain unchanged.

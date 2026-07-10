@@ -447,3 +447,81 @@ Hover state должен быть слабее active state и единым дл
 - расширение состояний кнопок и полей.
 
 Любое расширение дизайн-системы должно соответствовать Конституции проекта и не противоречить уже принятым UI/UX решениям.
+
+# File Preview System (Approved)
+
+## Philosophy
+
+D-Control uses two different attachment presentation modes depending on context.
+
+The visual appearance depends on the user's current task rather than on the file type.
+
+---
+
+## Chat
+
+The Chat is conversation-first.
+
+Attachments are treated as part of the message rather than independent objects.
+
+Rules:
+
+- attachments belong to the message bubble;
+- no nested white cards;
+- no additional attachment container;
+- document previews are compact;
+- image previews are integrated into the bubble;
+- hover provides quick opening;
+- spacing follows the message layout.
+
+The attachment should feel like a natural continuation of the message.
+
+---
+
+## Files
+
+The Files tab is attachment-first.
+
+Every attachment becomes an independent list item.
+
+Rules:
+
+- larger previews;
+- richer metadata;
+- context menu for every file;
+- optimized reading of filenames;
+- consistent alignment of all rows.
+
+The Files tab behaves as a lightweight file manager.
+
+---
+
+## File Viewer
+
+Opening any attachment uses the integrated File Viewer.
+
+The browser's native preview should not be used whenever an internal preview is available.
+
+Approved features:
+
+- full-screen overlay;
+- blurred background;
+- preview inside the application;
+- previous / next navigation;
+- fixed navigation arrows;
+- floating bottom toolbar;
+- image and document navigation without leaving the viewer.
+
+---
+
+## Design Principle
+
+The same file may appear differently depending on context.
+
+Chat prioritizes communication.
+
+Files prioritizes file management.
+
+File Viewer prioritizes content.
+
+These three interfaces intentionally use different visual density while sharing the same visual language.

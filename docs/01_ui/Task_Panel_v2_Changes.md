@@ -562,3 +562,114 @@ Completed:
 Result:
 
 Subtasks now function as an independent checklist workspace.
+
+## Files v1.0 (Approved)
+
+The Files tab is now considered the primary workspace for task attachments.
+
+### Layout
+
+The Files tab displays a compact list of task attachments.
+
+Each row consists of:
+
+- preview;
+- file information;
+- actions.
+
+Rows use compact spacing and a fixed height.
+
+---
+
+### Images
+
+Images are displayed as thumbnails.
+
+Rules:
+
+- keep current thumbnail size;
+- preserve aspect ratio;
+- no additional white card;
+- image is displayed directly on the panel background;
+- hover displays "Открыть" overlay;
+- clicking opens File Viewer.
+
+---
+
+### Documents
+
+Documents are displayed using FileTypeIcon.
+
+Rules:
+
+- no generic file icon;
+- no extension badge;
+- application name is displayed instead of file extension;
+- document title uses primary text;
+- author is displayed below the title;
+- date and file size follow the author;
+- file size is always the last metadata element.
+
+---
+
+### FileTypeIcon
+
+Approved concept:
+
+- colored document body;
+- folded top-right corner;
+- clean document surface;
+- application label instead of extension;
+- unified geometry for every file type.
+
+Supported labels:
+
+- WORD
+- EXCEL
+- P.POINT
+- PDF
+- ZIP
+- RAR
+- 7-ZIP
+- TEXT
+- FILE
+
+Only colors differ between file types.
+
+The overall geometry remains identical.
+
+Minor visual polishing (corner shape, shadows, typography, proportions) is allowed without changing the approved concept.
+
+---
+
+### File Viewer
+
+Opening any attachment launches the integrated File Viewer.
+
+Approved features:
+
+- full-screen overlay;
+- blurred background;
+- preview inside the application;
+- navigation between attachments;
+- fixed navigation arrows;
+- floating bottom toolbar.
+
+The File Viewer replaces browser-native preview whenever possible.
+
+---
+
+### Chat Attachments
+
+Chat attachments follow a different visual philosophy than the Files tab.
+
+Rules:
+
+- attachments are part of the message bubble;
+- no additional white attachment card;
+- no nested attachment container;
+- images use integrated previews;
+- documents use compact FileTypeIcon;
+- attachments inherit bubble spacing.
+
+The Chat remains conversation-first, while the Files tab remains attachment-first.

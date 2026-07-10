@@ -52,6 +52,7 @@ class TaskFileInline(admin.TabularInline):
     extra = 1
     fields = (
         "uploaded_by",
+        "comment",
         "file",
         "original_name",
         "uploaded_at",
@@ -333,6 +334,7 @@ class TaskFileAdmin(admin.ModelAdmin):
     list_display = (
         "task",
         "uploaded_by",
+        "comment",
         "original_name",
         "uploaded_at",
     )
@@ -355,10 +357,12 @@ class TaskFileAdmin(admin.ModelAdmin):
     autocomplete_fields = (
         "task",
         "uploaded_by",
+        "comment",
     )
     list_select_related = (
         "task",
         "uploaded_by",
+        "comment",
     )
 
 

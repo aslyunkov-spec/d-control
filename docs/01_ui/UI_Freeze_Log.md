@@ -1,66 +1,174 @@
 # UI Freeze Log
 
+## Current Status
+
+Current milestone:
+
+**UI Freeze v1.0**
+
+The overall interface architecture has been approved.
+
+Remaining work is limited to visual polishing and final review.
+
+---
+
 ## Approved
 
-### Task Header
+### Workspace Header
 
-Status:
-Approved
+Status: Approved
 
-### TaskMetaBar
+### Sidebar
 
-Status:
-Approved
+Status: Approved
 
-### Task Chat
+### Task Card v1
 
-Status:
-Approved
+Status: Approved
 
-### Task Composer
+### Tooltip System
 
-Status:
-Approved
+Status: Approved
+
+### Quick Actions
+
+Status: Approved
+
+### TaskMetaBar v2
+
+Status: Approved
+
+### Task Panel Header v2
+
+Status: Approved
+
+### Task Chat v1.0
+
+Status: Approved
+
+### Task Composer v1.0
+
+Status: Approved
+
+### Subtasks v1
+
+Status: Approved
+
+### File Viewer
+
+Status: Approved
 
 ---
 
 ## In Progress
 
-Footer
+### FileTypeIcon
 
-Subtasks
+Status:
 
-Files
+Final visual polish.
 
-Events
+Remaining:
+
+- folded corner refinement;
+- label typography;
+- shadows;
+- final proportions.
+
+---
+
+### Files
+
+Status:
+
+Visual polish.
+
+Remaining:
+
+- compact spacing review;
+- metadata alignment;
+- FileTypeIcon integration review.
+
+---
+
+### Events
+
+Status:
+
+Implementation pending.
+
+Layout and UX approved.
+
+---
 
 ## Freeze Milestones
 
 ### UI Freeze v1.0
 
-Будет объявлен после завершения:
+Completed:
 
-- ✅ Tooltip
-- ✅ TaskMetaBar
-- ✅ Task Panel Header
-- ✅ Task Chat
-- ✅ Task Composer
-- ⏳ Footer
-- ⏳ Subtasks
-- ⏳ Files
-- ⏳ Events
+- ✅ Workspace Header
+- ✅ Sidebar
+- ✅ Task Card v1
+- ✅ Tooltip System
+- ✅ Quick Actions
+- ✅ TaskMetaBar v2
+- ✅ Task Panel Header v2
+- ✅ Task Chat v1.0
+- ✅ Task Composer v1.0
+- ✅ Subtasks v1
+- ✅ File Viewer
+
+Remaining:
+
+- ⏳ FileTypeIcon final polish
+- ⏳ Files final polish
+- ⏳ Events implementation
+- ⏳ Final UI review
+
+UI Freeze v1.0 will be declared after the remaining items are completed.
+
+---
 
 ## Frozen
 
 ### Task Panel Chat
 
-Status: Frozen
+Frozen.
 
 Includes:
 
 - Bubble layout
-- Edited indicator
+- Composer
 - Message spacing
 - Inline editing
-- Composer
-- Empty state
+- Edited indicator
+- Attachments architecture
+
+---
+
+### Task Panel Structure
+
+Frozen.
+
+Includes:
+
+- Header
+- Description
+- TaskMetaBar
+- Tabs
+- Participants Footer
+
+---
+
+### File Viewer
+
+Frozen.
+
+Includes:
+
+- In-app preview
+- Blurred background
+- Previous / Next navigation
+- Fixed navigation arrows
+- Floating bottom toolbar

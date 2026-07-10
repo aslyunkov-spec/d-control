@@ -176,3 +176,11 @@ Example:
 Subtasks v2 uses visual checklist groups based on a group name assigned to each subtask instead of creating separate Checklist and ChecklistGroup models.
 
 This keeps the data model simple while allowing richer UI.
+
+## Unified file preview rule
+
+D-Control should use one shared File Preview component for all attachments.
+
+Do not implement separate file viewers for Chat, Files, comments or other modules.
+
+Opening files in a new browser tab should be avoided whenever an internal preview is technically possible.

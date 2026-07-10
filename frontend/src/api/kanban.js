@@ -43,7 +43,18 @@ export function updateTaskTitle(taskId, title) {
   });
 }
 
-export function createTaskComment(taskId, text) {
+export function createTaskComment(taskId, text, files = []) {
+  if (files.length > 0) {
+    const formData = new FormData();
+    formData.append("text", text);
+    files.forEach((file) => formData.append("files", file));
+
+    return apiRequest(`/api/tasks/${taskId}/comments/`, {
+      method: "POST",
+      body: formData,
+    });
+  }
+
   return apiRequest(`/api/tasks/${taskId}/comments/`, {
     method: "POST",
     body: JSON.stringify({ text }),

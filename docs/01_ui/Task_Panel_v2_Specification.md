@@ -501,3 +501,17 @@ Subtasks tab is an independent workspace.
 Task executors and watchers are not displayed here.
 
 Each subtask manages its own assignee.
+
+## File Preview
+
+All file attachments in D-Control must use a unified built-in File Preview component.
+
+Opening files in a new browser tab should be avoided whenever technically possible.
+
+Preview behavior:
+
+- image files open in an internal preview overlay;
+- PDF files should open in an internal viewer when supported;
+- unsupported files show a fallback preview card;
+- download remains available as an action;
+- the same File Preview component must be reused in Chat, Files, comments and future attachment areas.

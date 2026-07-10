@@ -66,10 +66,24 @@
   box-sizing: border-box;
 }
 
+html {
+  min-width: 320px;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body,
+#root {
+  min-width: 320px;
+  min-height: 100%;
+}
+
 body {
   margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 button,
@@ -8146,4 +8160,2294 @@ button.task-meta-bar__subtasks:focus-visible {
 .drawer-subtask-row__title,
 .drawer-subtask-row__edit {
   min-width: 0;
+}
+/* Task Panel Files v1.0 lightweight list. */
+.drawer-files-section {
+  min-width: 0;
+  overflow-x: hidden;
+  background: transparent;
+}
+
+.drawer-files-list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.drawer-file-row {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 24px;
+  min-height: 48px;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: var(--card-radius, 6px);
+  background: transparent !important;
+  padding: 4px;
+}
+
+.drawer-file-row:hover {
+  background: #e6eef7 !important;
+}
+
+.drawer-file-preview {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--card-radius, 7px);
+}
+
+.drawer-file-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.drawer-file-preview .timeline-file-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--card-radius, 7px);
+}
+
+.drawer-file-row__content {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.drawer-file-row__content strong,
+.drawer-file-row__content span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drawer-file-row__content strong {
+  color: #24384d;
+  font-size: var(--workspace-small-size, 10pt);
+  font-weight: 600;
+}
+
+.drawer-file-row__content span {
+  color: #718195;
+  font-size: calc(var(--workspace-small-size, 10pt) - 2px);
+}
+
+.drawer-file-row__menu {
+  position: relative;
+  display: inline-flex;
+  justify-self: end;
+  align-items: center;
+}
+
+.drawer-file-row__more {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--card-radius, 6px);
+  background: transparent;
+  color: #5b6b7f;
+  padding: 0;
+}
+
+.drawer-file-row__more:hover,
+.drawer-file-row__more:focus-visible {
+  background: #d9e8f6;
+  color: #1d588f;
+}
+
+.drawer-file-row__dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 45;
+  display: grid;
+  min-width: 128px;
+  border: 1px solid #d7dde5;
+  border-radius: var(--card-radius, 6px);
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgb(16 24 40 / 14%);
+  padding: 4px;
+}
+
+.drawer-file-row__dropdown button,
+.drawer-file-row__dropdown a {
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #344054;
+  padding: 5px 7px;
+  text-align: left;
+  text-decoration: none;
+  font-size: var(--workspace-small-size, 10pt);
+}
+
+.drawer-file-row__dropdown button:hover,
+.drawer-file-row__dropdown button:focus-visible,
+.drawer-file-row__dropdown a:hover,
+.drawer-file-row__dropdown a:focus-visible {
+  background: #eef5fb;
+}
+
+.drawer-file-row__dropdown button:disabled,
+.drawer-file-row__dropdown a[aria-disabled="true"] {
+  color: #98a2b3;
+  pointer-events: none;
+}
+
+.drawer-files__add {
+  margin-top: 4px;
+  border: 0;
+  background: transparent;
+  color: #2f6fa8;
+  padding: 0;
+  font-size: var(--workspace-small-size, 10pt);
+  text-align: left;
+}
+
+.drawer-files__add:hover,
+.drawer-files__add:focus-visible {
+  color: #1d588f;
+}
+/* Task Panel Files preview polish. */
+.drawer-file-row {
+  grid-template-columns: 70px minmax(0, 1fr) 24px;
+  min-height: 76px;
+  gap: 10px;
+}
+
+.drawer-file-preview {
+  width: 68px;
+  height: 68px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.drawer-file-preview:disabled {
+  cursor: default;
+}
+
+.drawer-file-preview:hover,
+.drawer-file-preview:focus-visible {
+  background: transparent;
+}
+
+.drawer-file-preview .timeline-file-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: var(--card-radius, 8px);
+}
+
+.drawer-file-row__name {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: #24384d;
+  font-size: var(--workspace-small-size, 10pt);
+  font-weight: 600;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drawer-file-row__meta {
+  display: inline-flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 5px;
+  overflow: hidden;
+  color: #718195;
+  font-size: calc(var(--workspace-small-size, 10pt) - 2px);
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.drawer-file-row__meta strong {
+  overflow: hidden;
+  max-width: 160px;
+  color: #24384d;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drawer-file-row__meta time {
+  flex: 0 0 auto;
+  color: #718195;
+  font-weight: 400;
+}
+/* Unified File Preview foundation and Files v1 polish. */
+.drawer-file-row {
+  grid-template-columns: 66px minmax(0, 1fr) 24px;
+  min-height: 72px;
+  gap: 10px;
+}
+
+.drawer-file-preview {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--card-radius, 8px);
+}
+
+.drawer-file-preview .timeline-file-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--card-radius, 8px);
+}
+
+.drawer-file-row__content {
+  padding-right: 8px;
+}
+/* Modern File Viewer. */
+body.file-viewer-open .task-drawer {
+  transform: translateX(calc(var(--file-viewer-scrollbar-width, 0px) * -1));
+}
+
+.file-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 1900;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: rgb(20 28 40 / 38%);
+  backdrop-filter: blur(6px);
+}
+
+.file-viewer__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: transparent;
+}
+
+.file-viewer__stage {
+  position: absolute;
+  top: 88px;
+  right: 4vw;
+  bottom: 72px;
+  left: 4vw;
+  z-index: 1;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  max-width: 92vw;
+  max-height: calc(100vh - 160px);
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.file-viewer__stage img {
+  display: block;
+  flex: 0 1 auto;
+  min-width: 0;
+  min-height: 0;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  box-shadow: 0 14px 38px rgb(0 0 0 / 24%), 0 0 0 1px rgb(255 255 255 / 10%);
+}
+
+.file-viewer__fallback {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  color: rgb(248 250 252 / 84%);
+  font-size: var(--workspace-small-size, 10pt);
+}
+
+.file-viewer__fallback .timeline-file-icon {
+  width: 76px;
+  height: 76px;
+  border-radius: var(--card-radius, 10px);
+}
+
+.file-viewer__topbar {
+  position: absolute;
+  top: 26px;
+  right: 30px;
+  left: 30px;
+  z-index: 3;
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  pointer-events: none;
+}
+
+.file-viewer__title,
+.file-viewer__bottombar,
+.file-viewer__close,
+.file-viewer__nav {
+  pointer-events: auto;
+}
+
+.file-viewer__title {
+  display: grid;
+  min-width: 0;
+  max-width: min(620px, calc(100vw - 110px));
+  gap: 3px;
+  color: #f8fafc;
+  text-shadow: 0 1px 10px rgb(0 0 0 / 38%);
+}
+
+.file-viewer__title strong {
+  overflow: hidden;
+  font-size: var(--app-font-size, 11pt);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-viewer__title span {
+  display: inline-flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 5px;
+  overflow: hidden;
+  color: rgb(226 232 240 / 82%);
+  font-size: calc(var(--workspace-small-size, 10pt) - 2px);
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.file-viewer__title b {
+  overflow: hidden;
+  max-width: 220px;
+  color: #f8fafc;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-viewer__title em {
+  color: rgb(226 232 240 / 74%);
+  font-style: normal;
+}
+
+.file-viewer__close,
+.file-viewer__nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(15 23 42 / 42%);
+  color: rgb(248 250 252 / 90%);
+  transition: background-color 170ms ease, box-shadow 170ms ease, color 170ms ease, transform 170ms ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 22px rgb(0 0 0 / 18%);
+}
+
+.file-viewer__close {
+  width: 44px;
+  height: 44px;
+}
+
+.file-viewer__nav {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translateY(-50%);
+}
+
+.file-viewer__nav--prev {
+  left: max(24px, calc((100vw - 92vw) / 2 + 28px));
+}
+
+.file-viewer__nav--next {
+  right: max(24px, calc((100vw - 92vw) / 2 + 28px));
+}
+
+.file-viewer__close:hover,
+.file-viewer__close:focus-visible,
+.file-viewer__nav:hover,
+.file-viewer__nav:focus-visible {
+  background: rgb(30 41 59 / 72%);
+  color: #ffffff;
+  transform: scale(1.06);
+  box-shadow: 0 12px 28px rgb(0 0 0 / 24%);
+}
+
+.file-viewer__nav:hover,
+.file-viewer__nav:focus-visible {
+  transform: translateY(-50%) scale(1.06);
+}
+
+.file-viewer__bottombar {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  z-index: 3;
+  display: grid;
+  min-width: min(430px, calc(100vw - 36px));
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  border-radius: 999px;
+  background: rgb(15 23 42 / 46%);
+  color: #f8fafc;
+  padding: 6px 10px;
+  transform: translateX(-50%);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 20%);
+}
+
+.file-viewer__action {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 999px;
+  color: rgb(248 250 252 / 90%);
+  padding: 0 10px;
+  text-decoration: none;
+  font-size: var(--workspace-small-size, 10pt);
+  font-weight: 500;
+}
+
+.file-viewer__action:hover,
+.file-viewer__action:focus-visible {
+  background: rgb(255 255 255 / 12%);
+  color: #ffffff;
+}
+
+.file-viewer__action[aria-disabled="true"] {
+  color: rgb(203 213 225 / 48%);
+  pointer-events: none;
+}
+
+.file-viewer__counter {
+  color: rgb(226 232 240 / 82%);
+  font-size: var(--workspace-small-size, 10pt);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .file-viewer__stage {
+    top: 78px;
+    right: 4vw;
+    bottom: 68px;
+    left: 4vw;
+    max-width: 92vw;
+    max-height: calc(100vh - 146px);
+  }
+
+  .file-viewer__stage img {
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  .file-viewer__nav--prev {
+    left: 12px;
+  }
+
+  .file-viewer__nav--next {
+    right: 12px;
+  }
+
+  .file-viewer__bottombar {
+    min-width: calc(100vw - 20px);
+    gap: 6px;
+  }
+}
+
+/* Chat attachments MVP. */
+.comment-attachment-queue {
+  display: grid;
+  gap: 4px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.comment-attachment-queue__item {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  border-radius: var(--card-radius, 6px);
+  background: rgb(255 255 255 / 62%);
+  padding: 3px 5px;
+}
+
+.comment-attachment-queue__preview {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--card-radius, 5px);
+}
+
+.comment-attachment-queue__preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.comment-attachment-queue__preview .timeline-file-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--card-radius, 5px);
+  font-size: 8px;
+}
+
+.comment-attachment-queue__name {
+  min-width: 0;
+  overflow: hidden;
+  color: #344054;
+  font-size: calc(var(--workspace-small-size, 10pt) - 1px);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.comment-attachment-queue__remove {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--card-radius, 5px);
+  background: transparent;
+  color: #6b7a8d;
+  padding: 0;
+}
+
+.comment-attachment-queue__remove:hover,
+.comment-attachment-queue__remove:focus-visible {
+  background: #e6eef7;
+  color: #1d588f;
+}
+
+.timeline-attachments {
+  display: grid;
+  gap: 5px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-attachment {
+  min-width: 0;
+}
+
+.timeline-attachment__button {
+  display: inline-flex;
+  max-width: 100%;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-radius: var(--card-radius, 6px);
+  background: rgb(255 255 255 / 48%);
+  color: #344054;
+  padding: 4px 6px;
+  text-align: left;
+}
+
+.timeline-attachment__button:hover,
+.timeline-attachment__button:focus-visible {
+  background: #e6eef7;
+  color: #1d588f;
+}
+
+.timeline-attachment__button span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeline-attachment__button .timeline-file-icon {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--card-radius, 5px);
+  font-size: 8px;
+}
+
+.timeline-attachment--image .timeline-attachment__button {
+  display: block;
+  overflow: hidden;
+  max-width: min(220px, 100%);
+  border-radius: var(--card-radius, 7px);
+  background: transparent;
+  padding: 0;
+}
+
+.timeline-attachment--image .timeline-attachment__button img {
+  display: block;
+  max-width: 100%;
+  max-height: 150px;
+  border-radius: var(--card-radius, 7px);
+  object-fit: contain;
+}
+
+/* Unified file attachment styling. */
+.file-type-icon {
+  display: inline-grid;
+  width: 64px;
+  height: 64px;
+  grid-template-rows: 1fr auto;
+  align-items: center;
+  justify-items: center;
+  flex: 0 0 auto;
+  border-radius: var(--card-radius, 8px);
+  background: #eef4fb;
+  color: #52657a;
+  padding: 8px 7px 7px;
+}
+
+.file-type-icon > span {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-type-icon--word {
+  background: #e5f0ff;
+  color: #225ea8;
+}
+
+.file-type-icon--excel {
+  background: #e4f5ed;
+  color: #1d7a4d;
+}
+
+.file-type-icon--pdf {
+  background: #fdebea;
+  color: #bd3a33;
+}
+
+.file-type-icon--powerpoint {
+  background: #fceee7;
+  color: #c55226;
+}
+
+.file-type-icon--archive {
+  background: #f1edf9;
+  color: #6d4aa4;
+}
+
+.file-type-icon--text {
+  background: #edf3f8;
+  color: #4b647a;
+}
+
+.file-type-icon--code {
+  background: #e9f5f6;
+  color: #1f7280;
+}
+
+.file-type-icon--file {
+  background: #edf1f6;
+  color: #627386;
+}
+
+.drawer-file-preview .file-type-icon {
+  width: 64px;
+  height: 64px;
+}
+
+.drawer-file-row__meta {
+  gap: 0;
+}
+
+.drawer-file-row__meta-item {
+  display: inline-flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.drawer-file-row__meta-item > span:last-child,
+.drawer-file-row__meta-item strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.comment-attachment-queue__preview .file-type-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--card-radius, 5px);
+  padding: 3px;
+}
+
+.comment-attachment-queue__preview .file-type-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.comment-attachment-queue__preview .file-type-icon > span {
+  font-size: 6px;
+}
+
+.comment-attachment-queue__details {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.comment-attachment-queue__details > span:last-child {
+  color: #7b8a9d;
+  font-size: calc(var(--workspace-small-size, 10pt) - 3px);
+  line-height: 1;
+}
+
+.timeline-attachment__button {
+  background: rgb(236 244 250 / 68%);
+}
+
+.timeline-attachment__details {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.timeline-attachment__name {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeline-attachment__size {
+  color: #718195;
+  font-size: calc(var(--workspace-small-size, 10pt) - 3px);
+  line-height: 1.05;
+}
+
+.timeline-attachment__button .file-type-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--card-radius, 6px);
+  padding: 4px;
+}
+
+.timeline-attachment__button .file-type-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.timeline-attachment__button .file-type-icon > span {
+  font-size: 6px;
+}
+
+.timeline-attachment--image .timeline-attachment__button {
+  position: relative;
+  background: transparent;
+}
+
+.timeline-attachment--image .timeline-attachment__button::after {
+  content: "\041E\0442\043A\0440\044B\0442\044C";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: inherit;
+  background: rgb(15 23 42 / 0%);
+  color: transparent;
+  font-size: calc(var(--workspace-small-size, 10pt) - 1px);
+  font-weight: 600;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.timeline-attachment--image .timeline-attachment__button:hover::after,
+.timeline-attachment--image .timeline-attachment__button:focus-visible::after {
+  background: rgb(15 23 42 / 28%);
+  color: #ffffff;
+}
+
+.timeline-file-item .file-type-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--card-radius, 6px);
+  padding: 4px;
+}
+
+.timeline-file-item .file-type-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.timeline-file-item .file-type-icon > span {
+  font-size: 6px;
+}
+
+.timeline-file-size {
+  color: #718195;
+  font-size: calc(var(--workspace-small-size, 10pt) - 2px);
+}
+
+
+/* Unified extension-style file icons and attachment surfaces. */
+.file-type-icon {
+  display: inline-flex;
+  width: 64px;
+  height: 64px;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border-radius: 0;
+  background: transparent;
+  color: #607287;
+  padding: 0;
+}
+
+.file-type-icon__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.file-type-icon__sheet {
+  fill: rgb(255 255 255 / 32%);
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linejoin: round;
+}
+
+.file-type-icon__fold {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.file-type-icon__label {
+  fill: currentColor;
+  font-family: var(--app-font-family, system-ui, sans-serif);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.file-type-icon__glyph {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.9;
+}
+
+.file-type-icon--document,
+.file-type-icon--text {
+  color: #2f6fa8;
+}
+
+.file-type-icon--spreadsheet {
+  color: #25805a;
+}
+
+.file-type-icon--pdf {
+  color: #c9403b;
+}
+
+.file-type-icon--presentation {
+  color: #c45f32;
+}
+
+.file-type-icon--archive {
+  color: #7a5aa8;
+}
+
+.file-type-icon--image {
+  color: #367fa4;
+}
+
+.file-type-icon--audio {
+  color: #8a5eb8;
+}
+
+.file-type-icon--video {
+  color: #b1547f;
+}
+
+.file-type-icon--code {
+  color: #1f7f88;
+}
+
+.file-type-icon--file {
+  color: #64748b;
+}
+
+.drawer-file-preview .file-type-icon {
+  width: 64px;
+  height: 64px;
+}
+
+.comment-attachment-queue__preview .file-type-icon,
+.timeline-attachment__button .file-type-icon,
+.timeline-file-item .file-type-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.comment-attachment-queue__preview .file-type-icon__sheet,
+.timeline-attachment__button .file-type-icon__sheet,
+.timeline-file-item .file-type-icon__sheet {
+  fill: rgb(255 255 255 / 18%);
+  stroke-width: 2.4;
+}
+
+.comment-attachment-queue__preview .file-type-icon__label,
+.timeline-attachment__button .file-type-icon__label,
+.timeline-file-item .file-type-icon__label {
+  font-size: 8.5px;
+}
+
+.comment-attachment-queue__preview .file-type-icon__glyph,
+.timeline-attachment__button .file-type-icon__glyph,
+.timeline-file-item .file-type-icon__glyph {
+  stroke-width: 2.3;
+}
+
+.timeline-attachments {
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.timeline-attachment__button {
+  gap: 7px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #344054;
+  padding: 3px 4px;
+  cursor: pointer;
+}
+
+.timeline-attachment__button:hover,
+.timeline-attachment__button:focus-visible {
+  background: rgb(230 238 247 / 58%);
+  color: #1d588f;
+}
+
+.timeline-attachment__details {
+  gap: 2px;
+}
+
+.timeline-attachment__name {
+  max-width: min(260px, 100%);
+}
+
+.timeline-attachment__size {
+  color: #718195;
+}
+
+.timeline-attachment--image .timeline-attachment__button {
+  display: inline-block;
+  overflow: hidden;
+  max-width: min(260px, 100%);
+  border-radius: var(--card-radius, 7px);
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+}
+
+.timeline-attachment--image .timeline-attachment__button:hover,
+.timeline-attachment--image .timeline-attachment__button:focus-visible {
+  background: transparent;
+}
+
+.timeline-attachment--image .timeline-attachment__button img {
+  display: block;
+  max-width: 100%;
+  max-height: 170px;
+  border: 0;
+  border-radius: var(--card-radius, 7px);
+  background: transparent;
+  object-fit: contain;
+}
+
+
+/* Final attachment polish: no nested white surfaces, square document icons, shared open overlay. */
+.timeline-attachments {
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.timeline-attachment__button {
+  display: inline-flex;
+  max-width: 100%;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: var(--card-radius, 7px);
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #344054;
+  padding: 2px 3px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.timeline-attachment__button:hover,
+.timeline-attachment__button:focus-visible {
+  background: rgb(230 238 247 / 42%) !important;
+  color: #1d588f;
+}
+
+.timeline-attachment__preview {
+  position: relative;
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 32px;
+  overflow: hidden;
+  border-radius: var(--card-radius, 6px);
+}
+
+.timeline-attachment__preview .file-type-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.timeline-attachment__preview::after,
+.timeline-attachment--image .timeline-attachment__button::after {
+  content: "\041E\0442\043A\0440\044B\0442\044C";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: inherit;
+  background: rgb(15 23 42 / 0%);
+  color: transparent;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0;
+  transition: background-color 160ms ease, color 160ms ease, opacity 160ms ease;
+}
+
+.timeline-attachment__button:hover .timeline-attachment__preview::after,
+.timeline-attachment__button:focus-visible .timeline-attachment__preview::after,
+.timeline-attachment--image .timeline-attachment__button:hover::after,
+.timeline-attachment--image .timeline-attachment__button:focus-visible::after {
+  background: rgb(15 23 42 / 28%);
+  color: #ffffff;
+  opacity: 1;
+}
+
+.timeline-attachment--image .timeline-attachment__button {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  max-width: min(260px, 100%);
+  border-radius: var(--card-radius, 7px);
+  background: transparent !important;
+  padding: 0;
+}
+
+.timeline-attachment--image .timeline-attachment__button:hover,
+.timeline-attachment--image .timeline-attachment__button:focus-visible {
+  background: transparent !important;
+}
+
+.timeline-attachment--image .timeline-attachment__button img {
+  display: block;
+  max-width: 100%;
+  max-height: 170px;
+  border: 0 !important;
+  border-radius: var(--card-radius, 7px);
+  background: transparent !important;
+  box-shadow: none !important;
+  object-fit: contain;
+}
+
+.timeline-attachment__details {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.timeline-attachment__name {
+  min-width: 0;
+  max-width: min(260px, 100%);
+  overflow: hidden;
+  color: #2f4054;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeline-attachment__size {
+  color: #718195;
+  font-size: calc(var(--workspace-small-size, 10pt) - 3px);
+  line-height: 1.05;
+}
+
+.file-type-icon {
+  background: transparent !important;
+}
+
+.file-type-icon__sheet {
+  fill: rgb(255 255 255 / 14%);
+  stroke-width: 2.3;
+}
+
+.file-type-icon__label {
+  font-size: 8.5px;
+  font-weight: 800;
+}
+
+.file-type-icon__glyph {
+  stroke-width: 2.1;
+}
+
+.timeline-attachment__preview .file-type-icon__sheet,
+.timeline-file-item .file-type-icon__sheet,
+.comment-attachment-queue__preview .file-type-icon__sheet {
+  fill: rgb(255 255 255 / 10%);
+  stroke-width: 2.7;
+}
+
+.timeline-attachment__preview .file-type-icon__label,
+.timeline-file-item .file-type-icon__label,
+.comment-attachment-queue__preview .file-type-icon__label {
+  font-size: 9.5px;
+}
+
+.drawer-file-row {
+  align-items: center;
+}
+
+.drawer-file-preview,
+.drawer-file-preview .file-type-icon,
+.drawer-file-preview img {
+  width: 64px;
+  height: 64px;
+}
+
+.drawer-file-preview .file-type-icon__sheet {
+  fill: rgb(255 255 255 / 22%);
+}
+
+.drawer-file-row__content {
+  align-self: center;
+  gap: 4px;
+}
+
+.drawer-file-row__name {
+  color: #1f2d3d;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.drawer-file-row__meta {
+  color: #718195;
+  font-size: calc(var(--workspace-small-size, 10pt) - 2px);
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+.drawer-file-row__meta-item {
+  color: #718195;
+  font-weight: 400;
+}
+
+.drawer-file-row__meta-item strong {
+  color: #667789;
+  font-size: inherit;
+  font-weight: 600;
+}
+
+
+/* Remove every remaining white surface from sent chat attachments. */
+.timeline-attachments,
+.timeline-attachment,
+.timeline-attachment__button,
+.timeline-attachment__preview,
+.timeline-attachment__details {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.timeline-attachment__button:hover,
+.timeline-attachment__button:focus-visible {
+  background: transparent !important;
+}
+
+.timeline-attachment__preview .file-type-icon,
+.timeline-attachment__button .file-type-icon {
+  background: transparent !important;
+}
+
+.timeline-attachment__preview .file-type-icon__sheet,
+.timeline-attachment__button .file-type-icon__sheet {
+  fill: transparent !important;
+}
+
+.timeline-attachment--image .timeline-attachment__button img {
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+
+/* Chat document attachment icon sizing. */
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview {
+  width: 32px;
+  height: 32px;
+  flex-basis: 32px;
+  border-radius: 6px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label {
+  font-size: 9.5px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__glyph {
+  stroke-width: 2.6;
+}
+
+
+/* Ensure chat document attachment SVG is not constrained by legacy icon rules. */
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__svg,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon svg {
+  width: 32px !important;
+  height: 32px !important;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon {
+  display: flex;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0 !important;
+}
+
+
+/* Material/Fluent-style file type icons. */
+.file-type-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent !important;
+  color: var(--file-icon-color, #6b7787);
+  padding: 0 !important;
+}
+
+.file-type-icon__svg {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: visible;
+}
+
+.file-type-icon__body {
+  fill: var(--file-icon-color, #6b7787);
+}
+
+.file-type-icon__corner-shadow {
+  fill: rgb(0 0 0 / 18%);
+}
+
+.file-type-icon__corner {
+  fill: rgb(255 255 255 / 28%);
+}
+
+.file-type-icon__long-shadow {
+  fill: var(--file-icon-shadow, rgb(0 0 0 / 24%));
+  opacity: 0.34;
+}
+
+.file-type-icon__label-box {
+  fill: var(--file-icon-label, #566273);
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 20%));
+}
+
+.file-type-icon__label {
+  fill: #ffffff;
+  font-family: var(--app-font-family, system-ui, sans-serif);
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0;
+  dominant-baseline: middle;
+}
+
+.file-type-icon__glyph {
+  fill: none;
+  stroke: rgb(255 255 255 / 64%);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.file-type-icon--powerpoint .file-type-icon__label {
+  font-size: 5.8px;
+}
+
+.file-type-icon--excel .file-type-icon__label,
+.file-type-icon--video .file-type-icon__label,
+.file-type-icon--audio .file-type-icon__label,
+.file-type-icon--code .file-type-icon__label {
+  font-size: 6.2px;
+}
+
+.file-type-icon--7zip .file-type-icon__label {
+  font-size: 6px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label {
+  font-size: 6px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--powerpoint .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--excel .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--video .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--audio .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--code .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--7zip .file-type-icon__label {
+  font-size: 4.8px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__glyph {
+  stroke-width: 2.3;
+}
+
+
+/* Approved application-label geometry for FileTypeIcon. */
+.file-type-icon__body {
+  fill: var(--file-icon-color, #6b7787) !important;
+}
+
+.file-type-icon__corner-shadow {
+  fill: rgb(0 0 0 / 18%) !important;
+}
+
+.file-type-icon__corner {
+  fill: rgb(255 255 255 / 30%) !important;
+}
+
+.file-type-icon__long-shadow,
+.file-type-icon__label-shadow {
+  fill: var(--file-icon-shadow, rgb(0 0 0 / 24%)) !important;
+  opacity: 0.26;
+}
+
+.file-type-icon__label-box {
+  fill: var(--file-icon-label, #566273) !important;
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 24%));
+}
+
+.file-type-icon__label {
+  fill: #ffffff !important;
+  font-size: 7.2px;
+  font-weight: 800;
+  dominant-baseline: middle;
+}
+
+.file-type-icon__glyph {
+  stroke: rgb(255 255 255 / 58%) !important;
+  stroke-width: 1.8;
+}
+
+.file-type-icon--powerpoint .file-type-icon__label,
+.file-type-icon--7zip .file-type-icon__label {
+  font-size: 6.2px;
+}
+
+.file-type-icon--excel .file-type-icon__label,
+.file-type-icon--video .file-type-icon__label,
+.file-type-icon--audio .file-type-icon__label,
+.file-type-icon--code .file-type-icon__label {
+  font-size: 6.6px;
+}
+
+.timeline-attachment__preview,
+.drawer-file-preview {
+  overflow: visible;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label {
+  font-size: 6px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--powerpoint .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--7zip .file-type-icon__label {
+  font-size: 5px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--excel .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--video .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--audio .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--code .file-type-icon__label {
+  font-size: 5.2px;
+}
+
+
+/* FileTypeIcon final CSS-only application-label composition. */
+.file-type-icon {
+  position: relative;
+  display: inline-block;
+  width: 64px;
+  height: 64px;
+  flex: 0 0 auto;
+  overflow: visible;
+  background: transparent !important;
+  color: #ffffff;
+  padding: 0 !important;
+  line-height: 1;
+}
+
+.file-type-icon__document {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  width: 48px;
+  height: 58px;
+  overflow: hidden;
+  border-radius: 7px 3px 7px 7px;
+  background: var(--file-icon-body, #7a8794);
+  transform: translateX(-50%);
+}
+
+.file-type-icon__fold {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 3;
+  width: 16px;
+  height: 16px;
+  background: var(--file-icon-fold, #aeb7bf);
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+}
+
+.file-type-icon__diagonal-shadow {
+  position: absolute;
+  top: 7px;
+  right: -12px;
+  z-index: 2;
+  width: 62px;
+  height: 72px;
+  background: rgb(0 0 0 / 14%);
+  transform: rotate(-45deg);
+  transform-origin: top right;
+  pointer-events: none;
+}
+
+.file-type-icon__label {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  z-index: 5;
+  display: flex;
+  width: 64px;
+  min-height: 22px;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border-radius: 7px;
+  background: var(--file-icon-label, #56616c);
+  box-shadow: 0 3px 7px rgb(0 0 0 / 18%);
+  color: #ffffff !important;
+  padding: 0 5px;
+  transform: translateX(-50%);
+  font-family: var(--app-font-family, system-ui, sans-serif);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.file-type-icon--powerpoint .file-type-icon__label,
+.file-type-icon--7zip .file-type-icon__label {
+  font-size: 8.8px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview,
+.drawer-file-preview {
+  overflow: visible;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__document {
+  top: 1px;
+  width: 24px;
+  height: 29px;
+  border-radius: 4px 2px 4px 4px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__fold {
+  width: 8px;
+  height: 8px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__diagonal-shadow {
+  top: 4px;
+  right: -6px;
+  width: 31px;
+  height: 36px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label {
+  top: 15px;
+  width: 32px;
+  min-height: 11px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
+  padding: 0 2px;
+  font-size: 5.4px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--powerpoint .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--7zip .file-type-icon__label {
+  font-size: 4.7px;
+}
+
+
+/* FileTypeIcon final visual polish. */
+.file-type-icon__document {
+  width: 52px;
+  height: 58px;
+  border-radius: 8px 4px 7px 7px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--file-icon-body, #7a8794) 96%, #ffffff 4%), var(--file-icon-body, #7a8794)) !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%), inset 0 -1px 0 rgb(0 0 0 / 8%);
+}
+
+.file-type-icon__fold {
+  width: 18px;
+  height: 18px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--file-icon-fold, #aeb7bf) 92%, #ffffff 8%), var(--file-icon-fold, #aeb7bf));
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+  filter: drop-shadow(-1px 1px 1px rgb(0 0 0 / 18%));
+}
+
+.file-type-icon__fold::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 44%, rgb(0 0 0 / 18%) 48%, transparent 54%);
+  clip-path: inherit;
+}
+
+.file-type-icon__diagonal-shadow {
+  top: 8px;
+  right: -13px;
+  width: 66px;
+  height: 76px;
+  background: linear-gradient(90deg, rgb(0 0 0 / 0%), rgb(0 0 0 / 18%) 34%, rgb(0 0 0 / 10%) 100%);
+  opacity: 1;
+  transform: rotate(-45deg);
+}
+
+.file-type-icon__label {
+  left: calc(50% - 8px);
+  width: 66px;
+  min-height: 22px;
+  border-radius: 7px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--file-icon-label, #56616c) 94%, #ffffff 6%), var(--file-icon-label, #56616c));
+  box-shadow: 0 4px 9px rgb(0 0 0 / 26%), 0 1px 0 rgb(255 255 255 / 12%) inset;
+  font-size: 10.4px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0;
+}
+
+.file-type-icon--powerpoint .file-type-icon__label,
+.file-type-icon--7zip .file-type-icon__label,
+.file-type-icon--excel .file-type-icon__label,
+.file-type-icon--video .file-type-icon__label,
+.file-type-icon--audio .file-type-icon__label,
+.file-type-icon--code .file-type-icon__label {
+  font-size: 10.4px !important;
+  font-weight: 600 !important;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__document {
+  width: 26px;
+  height: 29px;
+  border-radius: 4px 2px 4px 4px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__fold {
+  width: 9px;
+  height: 9px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__diagonal-shadow {
+  top: 4px;
+  right: -7px;
+  width: 33px;
+  height: 38px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label {
+  left: calc(50% - 4px);
+  width: 33px;
+  min-height: 11px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 26%), 0 1px 0 rgb(255 255 255 / 12%) inset;
+  font-size: 5.2px !important;
+  font-weight: 600 !important;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--powerpoint .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--7zip .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--excel .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--video .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--audio .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--code .file-type-icon__label {
+  font-size: 5.2px !important;
+  font-weight: 600 !important;
+}
+
+
+/* FileTypeIcon final cleanup: clean fold, flat body, label-only shadow. */
+.file-type-icon__document {
+  background: var(--file-icon-body, #7a8794) !important;
+  box-shadow: none !important;
+}
+
+.file-type-icon__fold {
+  background: var(--file-icon-fold, #aeb7bf) !important;
+  filter: none !important;
+  box-shadow: none !important;
+}
+
+.file-type-icon__fold::after {
+  content: none !important;
+}
+
+.file-type-icon__corner-shadow,
+.file-type-icon__long-shadow,
+.file-type-icon__label-shadow {
+  display: none !important;
+}
+
+.file-type-icon__label {
+  background: var(--file-icon-label, #56616c) !important;
+  box-shadow: 0 4px 10px rgb(0 0 0 / 18%) !important;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label {
+  box-shadow: 0 2px 5px rgb(0 0 0 / 18%) !important;
+}
+
+
+/* Remove remaining colored top-right fold from FileTypeIcon. */
+.file-type-icon__fold {
+  display: none !important;
+}
+
+
+/* FileTypeIcon folded corner without any backing shape. */
+.file-type-icon__document {
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%);
+}
+
+.file-type-icon__fold {
+  display: block !important;
+  width: 18px;
+  height: 18px;
+  background: var(--file-icon-fold, #aeb7bf) !important;
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+  filter: none !important;
+  box-shadow: none !important;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__document {
+  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 0 100%);
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__fold {
+  width: 9px;
+  height: 9px;
+}
+
+
+/* Match folded corner rounding with the document body. */
+.file-type-icon__fold {
+  border-radius: 0 4px 0 3px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__fold {
+  border-radius: 0 2px 0 2px;
+}
+
+
+/* Align folded corner radius with the document body radius. */
+.file-type-icon__fold {
+  border-radius: 0 8px 0 0;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__fold {
+  border-radius: 0 4px 0 0;
+}
+
+
+/* FileTypeIcon label cleanup: no shadow, centered readable text. */
+.file-type-icon__label {
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  display: flex !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+}
+
+.file-type-icon--powerpoint .file-type-icon__label,
+.file-type-icon--7zip .file-type-icon__label,
+.file-type-icon--excel .file-type-icon__label,
+.file-type-icon--video .file-type-icon__label,
+.file-type-icon--audio .file-type-icon__label,
+.file-type-icon--code .file-type-icon__label {
+  font-size: 9px !important;
+  font-weight: 700 !important;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label {
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  font-size: 4.5px !important;
+  font-weight: 700 !important;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--powerpoint .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--7zip .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--excel .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--video .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--audio .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--code .file-type-icon__label {
+  font-size: 4.5px !important;
+  font-weight: 700 !important;
+}
+
+
+/* FileTypeIcon label text size adjustment. */
+.file-type-icon__label,
+.file-type-icon--powerpoint .file-type-icon__label,
+.file-type-icon--7zip .file-type-icon__label,
+.file-type-icon--excel .file-type-icon__label,
+.file-type-icon--video .file-type-icon__label,
+.file-type-icon--audio .file-type-icon__label,
+.file-type-icon--code .file-type-icon__label {
+  font-size: 10px !important;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--powerpoint .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--7zip .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--excel .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--video .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--audio .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--code .file-type-icon__label {
+  font-size: 5px !important;
+}
+
+
+/* Remove folded corner shadow completely. */
+.file-type-icon__fold {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.file-type-icon__fold::before,
+.file-type-icon__fold::after {
+  content: none !important;
+  display: none !important;
+}
+
+
+/* Remove remaining triangular shadow above FileTypeIcon label. */
+.file-type-icon__diagonal-shadow {
+  display: none !important;
+}
+
+
+/* Subtle neutral label shadow for FileTypeIcon. */
+.file-type-icon__label {
+  box-shadow: 0 2px 5px rgb(0 0 0 / 16%) !important;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label {
+  box-shadow: 0 1px 3px rgb(0 0 0 / 16%) !important;
+}
+
+
+/* Slightly stronger neutral FileTypeIcon label shadow. */
+.file-type-icon__label {
+  box-shadow: 0 3px 7px rgb(0 0 0 / 22%) !important;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label {
+  box-shadow: 0 2px 4px rgb(0 0 0 / 22%) !important;
+}
+
+
+/* Soften the folded corner point to match the icon radius. */
+.file-type-icon__fold {
+  clip-path: polygon(2px 0, 100% 100%, 0 100%, 0 2px) !important;
+  border-radius: 0 8px 0 5px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__fold {
+  clip-path: polygon(1px 0, 100% 100%, 0 100%, 0 1px) !important;
+  border-radius: 0 4px 0 3px;
+}
+
+
+/* Keep FileTypeIcon label inside its allocated viewport. */
+.file-type-icon__label {
+  left: calc(50% - 5px);
+  width: 58px;
+  padding: 0 4px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label {
+  left: calc(50% - 2.5px);
+  width: 29px;
+  padding: 0 1px;
+}
+
+
+/* Center the FileTypeIcon composition as a whole inside its viewport. */
+.file-type-icon__document {
+  left: calc(50% + 3px);
+}
+
+.file-type-icon__label {
+  left: calc(50% + 1px);
+  width: 58px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__document {
+  left: calc(50% + 1.5px);
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label {
+  left: calc(50% + 0.5px);
+  width: 29px;
+}
+
+
+/* Align document body to the label right edge; label protrudes left only. */
+.file-type-icon__document {
+  left: calc(50% + 4px);
+}
+
+.file-type-icon__label {
+  left: calc(50% + 1px);
+  width: 58px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__document {
+  left: calc(50% + 2px);
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label {
+  left: calc(50% + 0.5px);
+  width: 29px;
+}
+
+
+/* Pin FileTypeIcon label left and document body right. */
+.file-type-icon__label {
+  left: 0;
+  transform: none;
+}
+
+.file-type-icon__document {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label {
+  left: 0;
+  transform: none;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__document {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+
+/* FileTypeIcon label: 5% wider, right-pinned, stronger shadow. */
+.file-type-icon__label {
+  left: auto;
+  right: 0;
+  width: 61px;
+  transform: none;
+  box-shadow: 0 4px 10px rgb(0 0 0 / 28%) !important;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label {
+  left: auto;
+  right: 0;
+  width: 30.5px;
+  transform: none;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 28%) !important;
+}
+
+
+/* FileTypeIcon label pinned left. */
+.file-type-icon__label {
+  left: 0;
+  right: auto;
+  transform: none;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label {
+  left: 0;
+  right: auto;
+  transform: none;
+}
+
+
+/* FileTypeIcon label typography refinement. */
+.file-type-icon__label,
+.file-type-icon--powerpoint .file-type-icon__label,
+.file-type-icon--7zip .file-type-icon__label,
+.file-type-icon--excel .file-type-icon__label,
+.file-type-icon--video .file-type-icon__label,
+.file-type-icon--audio .file-type-icon__label,
+.file-type-icon--code .file-type-icon__label {
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--powerpoint .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--7zip .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--excel .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--video .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--audio .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--code .file-type-icon__label {
+  font-size: 5.25px !important;
+  font-weight: 600 !important;
+}
+
+
+/* FileTypeIcon label final color and size. */
+.file-type-icon__label,
+.file-type-icon--powerpoint .file-type-icon__label,
+.file-type-icon--7zip .file-type-icon__label,
+.file-type-icon--excel .file-type-icon__label,
+.file-type-icon--video .file-type-icon__label,
+.file-type-icon--audio .file-type-icon__label,
+.file-type-icon--code .file-type-icon__label {
+  color: #ffffff !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--powerpoint .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--7zip .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--excel .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--video .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--audio .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--code .file-type-icon__label {
+  color: #ffffff !important;
+  font-size: 5.5px !important;
+  font-weight: 600 !important;
+}
+
+
+/* FileTypeIcon label text size trial. */
+.file-type-icon__label,
+.file-type-icon--powerpoint .file-type-icon__label,
+.file-type-icon--7zip .file-type-icon__label,
+.file-type-icon--excel .file-type-icon__label,
+.file-type-icon--video .file-type-icon__label,
+.file-type-icon--audio .file-type-icon__label,
+.file-type-icon--code .file-type-icon__label {
+  font-size: 11.5px !important;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--powerpoint .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--7zip .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--excel .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--video .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--audio .file-type-icon__label,
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon--code .file-type-icon__label {
+  font-size: 5.75px !important;
+}
+
+
+/* FileTypeIcon label shadow: smaller and more contrast. */
+.file-type-icon__label {
+  box-shadow: 0 2px 4px rgb(0 0 0 / 34%) !important;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 34%) !important;
+}
+
+
+/* FileTypeIcon label shadow contrast boost. */
+.file-type-icon__label {
+  box-shadow: 0 2px 4px rgb(0 0 0 / 45%) !important;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 45%) !important;
+}
+
+
+/* Chat document attachments: 15% larger, images unchanged. */
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview {
+  width: 37px;
+  height: 37px;
+  flex-basis: 37px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon {
+  width: 37px !important;
+  height: 37px !important;
+  min-width: 37px;
+  min-height: 37px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__document {
+  width: 30px;
+  height: 33px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__fold {
+  width: 10px;
+  height: 10px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label {
+  width: 35px;
+  min-height: 13px;
+  font-size: 6.3px !important;
+}
+
+
+/* Chat document attachments: 42px icon size, images unchanged. */
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview {
+  width: 42px;
+  height: 42px;
+  flex-basis: 42px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px;
+  min-height: 42px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__document {
+  width: 34px;
+  height: 38px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__fold {
+  width: 12px;
+  height: 12px;
+}
+
+.timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label {
+  width: 39px;
+  min-height: 14px;
+  font-size: 7px !important;
+}
+
+
+/* Compact spacing for chat messages that contain attachments. */
+.drawer-chat-section .timeline-item__body:has(.timeline-attachments) {
+  padding: 4px 5px;
+}
+
+.drawer-chat-section .timeline-item__body:has(.timeline-attachments) .timeline-meta {
+  margin-bottom: 1px;
+}
+
+.drawer-chat-section .timeline-item__body:has(.timeline-attachments) > p {
+  line-height: 1.22;
+}
+
+.drawer-chat-section .timeline-item__body:has(.timeline-attachments) .timeline-attachments {
+  gap: 2px;
+  margin-top: 3px;
+}
+
+.drawer-chat-section .timeline-item__body:has(.timeline-attachments) .timeline-attachment__button {
+  padding: 1px 2px;
+}
+
+.drawer-chat-section .timeline-item__body:has(.timeline-attachments) .timeline-attachment--image .timeline-attachment__button {
+  padding: 0;
+}
+
+
+/* Extra compact spacing for chat messages with attachments. */
+.drawer-chat-section .timeline-item__body:has(.timeline-attachments) {
+  padding: 2px 3px;
+}
+
+.drawer-chat-section .timeline-item__body:has(.timeline-attachments) .timeline-meta {
+  margin-bottom: 0;
+}
+
+.drawer-chat-section .timeline-item__body:has(.timeline-attachments) .timeline-attachments {
+  gap: 1px;
+  margin-top: 1px;
+}
+
+.drawer-chat-section .timeline-item__body:has(.timeline-attachments) .timeline-attachment__button {
+  padding: 0 1px;
+}
+
+.drawer-chat-section .timeline-item__body:has(.timeline-attachments) .timeline-attachment--image .timeline-attachment__button {
+  padding: 0;
+}
+
+
+/* Attachment message bubble final padding. */
+.drawer-chat-section .timeline-item__body:has(.timeline-attachments) {
+  padding: 1px 2px;
+}
+
+
+/* Attachment block starts immediately after meta. */
+.drawer-chat-section .timeline-item__body:has(.timeline-attachments) .timeline-attachments {
+  margin-top: 0;
+}
+
+
+/* Attachment list has no internal vertical spacing. */
+.drawer-chat-section .timeline-item__body:has(.timeline-attachments) .timeline-attachments {
+  gap: 0;
+  margin-top: 0;
+}
+
+
+/* No gap between document attachment icon and filename in chat. */
+.drawer-chat-section .timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__button {
+  gap: 0;
+}
+
+
+/* Chat document icons reuse the Files icon geometry, scaled down. */
+.drawer-chat-section .timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  overflow: visible;
+}
+
+.drawer-chat-section .timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 64px !important;
+  height: 64px !important;
+  min-width: 64px;
+  min-height: 64px;
+  transform: scale(0.65625);
+  transform-origin: top left;
+}
+
+.drawer-chat-section .timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__document {
+  top: 2px;
+  right: 0;
+  left: auto;
+  width: 52px;
+  height: 58px;
+  transform: none;
+}
+
+.drawer-chat-section .timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__fold {
+  width: 18px;
+  height: 18px;
+}
+
+.drawer-chat-section .timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon__label {
+  top: 30px;
+  left: 0;
+  right: auto;
+  width: 61px;
+  min-height: 22px;
+  border-radius: 8px;
+  padding: 0 4px;
+  transform: none;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+}
+
+
+/* Shift chat file icons 2px left. */
+.drawer-chat-section .timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__preview .file-type-icon {
+  left: -2px;
+}
+
+
+/* Tiny gap between chat document icon and filename. */
+.drawer-chat-section .timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__button {
+  gap: 1px;
+}
+
+
+/* Chat document icon-to-filename gap: 2px. */
+.drawer-chat-section .timeline-attachment:not(.timeline-attachment--image) .timeline-attachment__button {
+  gap: 2px;
+}
+
+
+/* Match chat attachment filename size to chat message text. */
+.drawer-chat-section .timeline-attachment__name {
+  font-size: var(--app-font-size, 11pt);
+  line-height: 1.22;
 }

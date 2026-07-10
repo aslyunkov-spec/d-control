@@ -318,6 +318,14 @@ class TaskFile(models.Model):
         related_name="files",
         verbose_name="Задача",
     )
+    comment = models.ForeignKey(
+        TaskComment,
+        on_delete=models.CASCADE,
+        related_name="attachments",
+        verbose_name="Comment",
+        null=True,
+        blank=True,
+    )
     uploaded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,

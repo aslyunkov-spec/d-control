@@ -1,191 +1,138 @@
 # D-Control — Current State
 
-## Next session
-
-Continue with:
-
-Feature:
-Task Panel v2 polishing
-
-Pending:
-
-- TaskMetaBar panel layout
-- Header actions
-- Description editing
-- Chat polishing
-- Participants footer
-- Header resize
-
-## Current branch
+## Current Branch
 
 `feature/codex-test-admin-view`
 
-## Development process
+---
 
-Current process:
+# Current Development Stage
 
-- ChatGPT is used as Solution Architect and UX Lead.
-- Codex is used only for small approved implementation tasks.
-- One Codex request = one visual component or one small bugfix.
-- Large mixed tasks are avoided.
-- Code and documentation are committed separately.
+Current milestone:
 
-## Completed UI foundation
+**UI Freeze v1.0**
 
-Completed or mostly completed:
+The overall interface architecture is complete.
+
+Current work is focused on:
+
+- visual polishing;
+- UI consistency;
+- documentation;
+- preparing the interface for UI Freeze.
+
+---
+
+# Development Process
+
+Current workflow:
+
+- ChatGPT acts as Solution Architect, UX Lead and Documentation Owner.
+- Codex performs only approved implementation tasks.
+- One Codex request = one isolated feature or one visual polish task.
+- Documentation and source code are committed separately.
+- Documentation is the primary source of truth.
+
+---
+
+# Stable UI Components
+
+The following components are considered stable and should not be redesigned without an architectural decision:
 
 - Workspace Header
 - Sidebar
-- Task Card
-- Unified Tooltip system
+- Task Card v1
+- Tooltip System
 - Quick Actions
 - Appearance Settings
-- Local web fonts
-- Text size settings
-- TaskMetaBar initial implementation
-
-## Important UI rules
-
-- Documentation is the source of truth.
-- `docs/` must not be changed together with code.
-- One Feature = one commit.
-- Every icon-only control must have Tooltip.
-- Shared UI components must have one reusable implementation.
-- Tooltip must render above all UI layers and stay inside viewport.
-- TaskMetaBar must be reused in Task Card and Task Panel.
-- Task Panel is the main working space for a task.
-
-## Current active Feature
-
-Current active Feature:
-
-`Task Panel v2`
-
-The first implementation exists, but still needs polishing.
-
-## Current uncommitted code state
-
-There are uncommitted frontend changes related to Task Panel v2:
-
-- `frontend/src/components/TaskCard.jsx`
-- `frontend/src/components/TaskDetailsDrawer.jsx`
-- `frontend/src/components/TaskMetaBar.jsx`
-- `frontend/src/pages/KanbanPage.jsx`
-- `frontend/src/styles.css`
-
-These changes should not be considered final until Task Panel v2 is visually accepted.
-
-## Current known Task Panel issues
-
-Known issues to finish:
-
-- TaskMetaBar panel variant must be redesigned into two rows.
-- TaskMetaBar card variant must not break Task Card layout.
-- Top action bar must show only:
-  - close
-  - `Выполнено`
-  - `Доработать`
-  - `⋯`
-- `Закрыть` and `Удалить` must be moved into `⋯`.
-- Description must show `Описание отсутствует` when empty.
-- Description must have edit icon if editing is available.
-- Participants footer must be fixed at the bottom.
-- Chat input must be fixed above participants footer.
-- File and mention buttons must be inside the input row.
-- Subtask rows must be lightweight, without card backgrounds.
-- Subtask delete action must be inside `⋯`.
-- Chat and Events date/time must be close to author name/event text.
-
-## Stable Components
-
-The following UI components are considered stable and should not be redesigned without an architecture decision:
-
-- Tooltip
-- TaskMetaBar
-
-## Stable Components
-
-The following UI components are considered stable and are part of the upcoming UI Freeze v1.0:
-
-- Tooltip
 - TaskMetaBar v2
 - Task Panel Header v2
-- Task Chat Messages v1.0
-- Task Chat v1.0
-- Task Composer v1.0
+- Chat Messages v1
+- Composer v1
+- Subtasks v1
 
-## Task Panel Progress
+---
 
-Current completion:
+# Task Panel Status
 
-- Header — UI Approved
-- TaskMetaBar — UI Approved
-- Chat — UI Approved
-- Composer — UI Approved
+Task Panel is functionally complete.
 
-Remaining before Task Panel Freeze:
-
-- Footer (Assignees / Watchers)
-- Subtasks polish
-- Files polish
-- Events polish
-
-After Footer completion Task Panel enters UI Freeze v1.0.
-
-### Current Progress
-
-Task Panel:
-
-✅ Header finalized
-
-✅ Task information block finalized
-
-✅ Chat finalized
-
-✅ Composer finalized
-
-⏳ Footer in progress
-
-⏳ Subtasks
-
-⏳ Files
-
-⏳ Events
-
-## Milestone
-
-### Task Panel v2
-
-Status:
-
-≈ 97% Complete
-
-Completed
+Completed:
 
 - Header
-- Task Information
+- Description
 - TaskMetaBar
 - Chat
 - Composer
-- Subtasks v1
-
-Remaining
-
-- Footer polish
+- Participants Footer
+- Subtasks
 - Files
-- Events
+- File Viewer
 
-Next milestone:
+Events layout is approved and scheduled for implementation.
 
-Task Panel UI Freeze v1.0
+---
 
-### Planned after UI Freeze
+# Files
 
-- Footer improvements
-- Files tab
-- Events tab
-- Subtasks v2:
-  - checklist groups;
-  - collapsible sections;
-  - group progress;
-  - drag & drop between groups.
+Current status:
+
+Functionally complete.
+
+Completed:
+
+- compact attachment list;
+- image previews;
+- document previews;
+- integrated File Viewer;
+- attachment metadata;
+- FileTypeIcon architecture.
+
+Remaining:
+
+- final FileTypeIcon visual polish.
+
+---
+
+# File Viewer
+
+Completed.
+
+Features:
+
+- integrated viewer;
+- blurred background;
+- in-app preview;
+- previous / next navigation;
+- fixed navigation arrows;
+- floating bottom toolbar.
+
+---
+
+# Remaining Before UI Freeze
+
+- FileTypeIcon final polish.
+- Files visual polish.
+- Events implementation.
+- Final UI review.
+
+---
+
+# Next Milestone
+
+**UI Freeze v1.0**
+
+After UI Freeze the project moves to functional development only.
+
+Visual changes after UI Freeze should be limited to bug fixes and approved UX improvements.
+
+---
+
+# Planned After UI Freeze
+
+- Notifications.
+- Permissions.
+- Drag & Drop persistence.
+- Task ordering.
+- Recurring tasks.
+- Performance optimization.

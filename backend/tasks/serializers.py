@@ -217,6 +217,7 @@ class TaskCommentSerializer(serializers.ModelSerializer):
     author_details = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
     is_edited = serializers.SerializerMethodField()
+    attachments = serializers.SerializerMethodField()
 
     class Meta:
         model = TaskComment
@@ -230,6 +231,7 @@ class TaskCommentSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "is_edited",
+            "attachments",
         )
 
     def get_author_details(self, obj):
@@ -245,16 +247,28 @@ class TaskCommentSerializer(serializers.ModelSerializer):
 
         return abs((obj.updated_at - obj.created_at).total_seconds()) > 1
 
+    def get_attachments(self, obj):
+        return TaskFileSerializer(
+            obj.attachments.all(),
+            many=True,
+            context={
+                "request": self.context.get("request"),
+                "user": self.context.get("user"),
+            },
+        ).data
+
 
 class TaskFileSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
     uploaded_by_details = serializers.SerializerMethodField()
+    comment_id = serializers.IntegerField(source="comment.id", read_only=True)
     uploaded_by_id = serializers.IntegerField(source="uploaded_by.id", read_only=True)
     uploaded_by_username = serializers.CharField(source="uploaded_by.username", read_only=True)
     uploaded_by_first_name = serializers.CharField(source="uploaded_by.first_name", read_only=True)
     uploaded_by_last_name = serializers.CharField(source="uploaded_by.last_name", read_only=True)
     can_delete = serializers.SerializerMethodField()
     file_url = serializers.SerializerMethodField()
+    size = serializers.SerializerMethodField()
 
     class Meta:
         model = TaskFile
@@ -262,6 +276,7 @@ class TaskFileSerializer(serializers.ModelSerializer):
             "id",
             "author",
             "uploaded_by_details",
+            "comment_id",
             "uploaded_by_id",
             "uploaded_by_username",
             "uploaded_by_first_name",
@@ -270,6 +285,7 @@ class TaskFileSerializer(serializers.ModelSerializer):
             "original_name",
             "uploaded_at",
             "file_url",
+            "size",
         )
 
     def get_author(self, obj):
@@ -291,6 +307,15 @@ class TaskFileSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(obj.file.url)
 
         return obj.file.url
+
+    def get_size(self, obj):
+        if not obj.file:
+            return None
+
+        try:
+            return obj.file.size
+        except (OSError, ValueError):
+            return None
 
 
 class TaskHistorySerializer(serializers.ModelSerializer):
@@ -369,7 +394,10 @@ class TaskDetailSerializer(serializers.ModelSerializer):
         return TaskCommentSerializer(
             obj.comments.order_by("created_at", "id"),
             many=True,
-            context={"user": self.context.get("user")},
+            context={
+                "request": self.context.get("request"),
+                "user": self.context.get("user"),
+            },
         ).data
 
     def get_files(self, obj):

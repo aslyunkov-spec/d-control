@@ -629,16 +629,36 @@ export function KanbanPage() {
   }
 
   function handleCommentCreated(comment) {
+    const attachments = Array.isArray(comment.attachments) ? comment.attachments : [];
+
     setSelectedTask((currentTask) => {
       if (!currentTask) {
         return currentTask;
       }
 
+      const currentFiles = currentTask.files || [];
+      const currentFileIds = new Set(currentFiles.map((file) => file.id));
+      const nextFiles = [
+        ...attachments.filter((file) => !currentFileIds.has(file.id)),
+        ...currentFiles,
+      ];
+
       return {
         ...currentTask,
         comments: [...(currentTask.comments || []), comment],
+        files: nextFiles,
       };
     });
+
+    setTasks((currentTasks) => currentTasks.map((task) => (
+      task.id === selectedTask?.id
+        ? {
+            ...task,
+            comments_count: Number(task.comments_count || 0) + 1,
+            files_count: Number(task.files_count || 0) + attachments.length,
+          }
+        : task
+    )));
   }
 
   function handleCommentUpdated(comment) {
@@ -678,6 +698,10 @@ export function KanbanPage() {
       return {
         ...currentTask,
         files: (currentTask.files || []).filter((file) => file.id !== fileId),
+        comments: (currentTask.comments || []).map((comment) => ({
+          ...comment,
+          attachments: (comment.attachments || []).filter((file) => file.id !== fileId),
+        })),
       };
     });
   }
